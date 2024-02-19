@@ -3,13 +3,30 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "wrangler deploy",
+		"deploy:index": "wrangler deploy -c wrangler.toml",
+		"deploy:absorb": "wrangler deploy -c wrangler.absorb.toml",
+		"create:migration": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
+		"migrate": "wrangler d1 migrations apply eigo-d1 --local",
+		"migrate:prod": "wrangler d1 migrations apply eigo-d1",
+		"seed": "wrangler d1 execute eigo-d1 --file d1/seed.sql --local",
+		"seed:prod": "wrangler d1 execute eigo-d1 --file d1/seed.sql",
     "dev": "wrangler dev",
+		"dev:absorb": "wrangler dev -c wrangler.absorb.toml --test-scheduled",
     "start": "wrangler dev"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",
+    "drizzle-kit": "^0.20.14",
+    "prettier": "^3.2.5",
     "typescript": "^5.0.4",
     "wrangler": "^3.0.0"
+  },
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.12",
+    "cloudflare-workers-and-google-oauth": "^2.0.0",
+    "drizzle-orm": "^0.29.4",
+    "fast-xml-parser": "^4.3.5",
+    "hono": "^4.0.7",
+    "music-metadata-browser": "^2.5.10"
   }
 }

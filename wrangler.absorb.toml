@@ -1,0 +1,14 @@
+name = "eigo-absorb"
+main = "src/absorb.ts"
+compatibility_date = "2024-02-23"
+
+# Cron Triggers
+# Docs: https://developers.cloudflare.com/workers/platform/triggers/cron-triggers/
+# Configuration: https://developers.cloudflare.com/workers/wrangler/configuration/#triggers
+[triggers]
+crons = ["0 * * * *"] # Every hour
+
+[[d1_databases]]
+binding = "DB" # i.e. available in your Worker on env.DB
+database_name = "eigo-d1"
+database_id = "acfed3c7-00b7-4ac7-8b66-13899f9895e2"
