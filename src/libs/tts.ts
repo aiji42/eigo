@@ -17,13 +17,17 @@ export type TTSResponseData = {
 	};
 };
 
-export const ttsWithCache = async (token: string, text: string, cache: KVNamespace) => {
+export const ttsWithCache = async (
+	token: string,
+	{ text, speakingRate = 1, pitch = 0 }: { text: string; speakingRate?: number; pitch?: number },
+	cache: KVNamespace,
+) => {
 	const body = {
 		audioConfig: {
 			audioEncoding: 'MP3',
 			effectsProfileId: ['headphone-class-device'],
-			pitch: 0,
-			speakingRate: 0.5,
+			pitch,
+			speakingRate,
 		},
 		input: {
 			text,
@@ -57,7 +61,7 @@ export const ttsWithCache = async (token: string, text: string, cache: KVNamespa
 	}
 	if (!ttsData) throw new Error('TTS API failed');
 
-	const { audioContent, audioConfig, timepoints } = ttsData;
+	const { audioContent } = ttsData;
 	const duration = (await mm.parseBuffer(base64ToUint8Array(audioContent)).then((metadata) => metadata.format.duration)) ?? 0;
 
 	return { key: cacheKey, text, duration };

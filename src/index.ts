@@ -15,6 +15,8 @@ const app = new Hono<{
 	Bindings: Bindings;
 }>();
 
+const SPEAKING_RATE = 0.65;
+
 app.get('/audio/:key{.+\\.mp3}', async (c) => {
 	const key = c.req.param('key').replace(/\.mp3$/, '');
 	const audioData = await getAudioByCache(key, c.env.CACHE);
@@ -33,7 +35,18 @@ app.get('/playlist/:id{.+\\.m3u8}', async (c) => {
 	const token = await oauth.getGoogleAuthToken();
 	if (!token) throw new Error('Failed to get token');
 
-	const audioData = await Promise.all(paragraphs.map((p) => ttsWithCache(token, p, c.env.CACHE)));
+	const audioData = await Promise.all(
+		paragraphs.map((text) =>
+			ttsWithCache(
+				token,
+				{
+					text,
+					speakingRate: SPEAKING_RATE,
+				},
+				c.env.CACHE,
+			),
+		),
+	);
 
 	return new Response(createM3U(audioData), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
@@ -50,7 +63,18 @@ app.get('/:id', async (c) => {
 	const token = await oauth.getGoogleAuthToken();
 	if (!token) throw new Error('Failed to get token');
 
-	const audioData = await Promise.all(paragraphs.map((p) => ttsWithCache(token, p, c.env.CACHE)));
+	const audioData = await Promise.all(
+		paragraphs.map((text) =>
+			ttsWithCache(
+				token,
+				{
+					text,
+					speakingRate: SPEAKING_RATE,
+				},
+				c.env.CACHE,
+			),
+		),
+	);
 
 	let duration = 0;
 	return c.html(`<html>
@@ -63,8 +87,6 @@ app.get('/:id', async (c) => {
 							padding: 8px;
 						}
 						p.active {
-							/* 要素の左側に緑色のボーダーを表示する */
-							/* ただし、他のpと左側を揃える */
 							border-left: 4px solid #4CAF50;
 							padding-left: 8px;
 							background-color: #333;
