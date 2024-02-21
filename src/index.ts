@@ -4,6 +4,7 @@ import { ttsWithCache } from './libs/tts';
 import { createM3U } from './libs/m3u';
 import { getAudioByCache } from './libs/kv';
 import { Hono } from 'hono';
+import { displayRelativeTime } from './libs/utils';
 
 export type Bindings = {
 	CACHE: KVNamespace;
@@ -91,15 +92,22 @@ app.get('/:id', async (c) => {
 							padding-left: 8px;
 							background-color: #333;
 						}
+						h1 {
+							font-size: 1.25em;
+						}
+						.publishdAt {
+							color: #aaa;
+							font-size: 0.8em;
+						}
 					</style>
-					<title>VOA News</title>
+					<title>${entry.title}</title>
 					<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 				</head>
 				<body>
-					<input type="range" min="12" max="24" value="36" id="fontSize">
+					<input type="range" min="12" max="64" value="24" id="fontSize">
 					<h1>${entry.title}</h1>
 					<img src="${entry.thumbnailUrl}" alt="${entry.title}" width="100%">
-					<p>${entry.publishedAt}</p>
+					<p class="publishdAt">${displayRelativeTime(new Date(entry.publishedAt))} ago</p>
 					${audioData
 						.map((audio) => {
 							const start = duration;
@@ -177,25 +185,42 @@ app.get('/', async (c) => {
 							padding: 0;
 						}
 						li {
-							margin-bottom: 8px;
+							margin-bottom: 16px;
 						}
 						a {
 							text-decoration: none;
 							color: #fff;
 						}
+						p, h2 {
+							margin: 0;
+						}
 						.flex {
+							width: 100%;
 							display: flex;
 							justify-content: space-between;
 							align-items: center;
 							gap: 16px;
 						}
 						.flex img {
-							width: 30%;
-							height: 120px;
+							width: 80px;
+							height: 80px;
 							object-fit: cover;
+							border-radius: 10%;
+						}
+						.flex div {
+							flex: 1;
+							min-width: 0;
 						}
 						.flex h2 {
-							font-size: 1.2rem;
+							font-size: 1rem;
+							white-space: nowrap;
+							overflow: hidden;
+							text-overflow: ellipsis;
+						}
+						.flex p {
+							margin-top: 8px;
+							font-size: 0.8rem;
+							color: #aaa;
 						}
 						.next {
 							display: block;
@@ -216,7 +241,10 @@ app.get('/', async (c) => {
 							<a href="/${entry.id}">
 								<div class="flex">
 									<img src="${entry.thumbnailUrl}" alt="${entry.title}">
-									<h2>${entry.title}</h2>
+									<div>
+										<h2>${entry.title}</h2>
+										<p>${displayRelativeTime(new Date(entry.publishedAt))} ago</p>
+									</div>
 								</div>
 							</a>
 						</li>`,
