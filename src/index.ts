@@ -154,7 +154,6 @@ app.get('/:id', async (c) => {
 							}
 						});
 
-
 						const fontSize = document.getElementById('fontSize');
 						const adjustFontSize = () => {
 							const size = fontSize.value;
@@ -162,6 +161,39 @@ app.get('/:id', async (c) => {
 						}
 						fontSize.addEventListener('input', adjustFontSize);
 						adjustFontSize();
+
+
+					if ('mediaSession' in navigator) {
+						navigator.mediaSession.metadata = new MediaMetadata({
+							title: '${entry.title}',
+							artwork: [
+								{ src: '${entry.thumbnailUrl}', sizes: '96x96', type: 'image/jpeg' },
+								{ src: '${entry.thumbnailUrl}', sizes: '128x128', type: 'image/jpeg' }
+							]
+						});
+
+						// 再生コントロールのハンドラを定義
+						navigator.mediaSession.setActionHandler('play', () => {
+							audio.play();
+							// 再生に関連する追加のロジック
+						});
+
+						navigator.mediaSession.setActionHandler('pause', () => {
+							audio.pause();
+							// 一時停止に関連する追加のロジック
+						});
+
+						// 必要に応じて、他のアクションハンドラ（nexttrack, previoustrack, stopなど）を設定
+					}
+
+					// メディア要素にイベントリスナーを追加して、再生状態の変化をメディアセッションに反映
+					audio.addEventListener('play', () => {
+						navigator.mediaSession.playbackState = 'playing';
+					});
+
+					audio.addEventListener('pause', () => {
+						navigator.mediaSession.playbackState = 'paused';
+					});
 					</script>
 				</body>
 			</html>`);
