@@ -157,6 +157,14 @@ app.get('/:id', async (c) => {
 						.join('')}
 					<audio src="/playlist/${id}.m3u8" controls autoplay id="audio"></audio>
 					<script>
+						let isTouch = false;
+						window.addEventListener('touchstart', () => {
+							isTouch = true;
+						});
+						window.addEventListener('touchend', () => {
+							isTouch = false;
+						})
+
 						// スクロールしたらフォントサイズ変更ボタンを表示
 						window.addEventListener('scroll', () => {
 							const fontSize = document.querySelector('.fontSize');
@@ -211,7 +219,9 @@ app.get('/:id', async (c) => {
 								if (currentTime　> 0 && offset <= currentTime && currentTime < offset + duration) {
 									p.classList.add('active');
 									const isInView = p.offsetTop < window.scrollY && window.scrollY < p.offsetTop + p.offsetHeight;
-									if (!isInView) p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+									if (!isInView && !isTouch) {
+										p.scrollIntoView({ behavior: 'smooth', block: 'start' });
+									}
 								} else {
 									p.classList.remove('active');
 								}
