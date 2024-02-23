@@ -111,7 +111,6 @@ app.get('/:id', async (c) => {
 						}
 						#audio {
 							width: 100%;
-							height: 100px;
 							position: fixed;
 							bottom: 0;
 							left: 0;
