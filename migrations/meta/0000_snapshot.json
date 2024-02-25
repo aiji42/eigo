@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "sqlite",
-  "id": "884c6c1e-110d-4c84-ba19-9ea6d49ab863",
+  "id": "d2bb4192-94ca-4664-a875-8e506f389ef4",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "AbsorbRules": {
@@ -88,18 +88,10 @@
         },
         "lastUpdatedAt": {
           "name": "lastUpdatedAt",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
-        },
-        "importedAt": {
-          "name": "importedAt",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
         }
       },
       "indexes": {
@@ -190,18 +182,18 @@
         },
         "publishedAt": {
           "name": "publishedAt",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
         },
-        "importedAt": {
-          "name": "importedAt",
-          "type": "text",
+        "isTTSed": {
+          "name": "isTTSed",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false,
-          "default": "CURRENT_TIMESTAMP"
+          "default": false
         }
       },
       "indexes": {

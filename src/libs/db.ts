@@ -1,7 +1,9 @@
 import { drizzle } from 'drizzle-orm/d1';
-import { eq } from 'drizzle-orm';
+import { eq, InferSelectModel } from 'drizzle-orm';
 import * as schema from '../schema';
 import { RSSFeed, RSSItem } from './rss-parser';
+import { Content } from './scrape';
+import { entries } from '../schema';
 
 export const getAllRules = async (d1: D1Database) => {
 	const db = drizzle(d1, { schema });
@@ -13,6 +15,9 @@ export const upsertChannel = async (d1: D1Database, rule: Awaited<ReturnType<typ
 		channel: { title, link, image, lastBuildDate },
 	} = feed;
 	const db = drizzle(d1, { schema });
+
+	const lastUpdatedAt = lastBuildDate ? new Date(lastBuildDate) : new Date();
+
 	const result = await db
 		.insert(schema.channels)
 		.values({
@@ -20,14 +25,12 @@ export const upsertChannel = async (d1: D1Database, rule: Awaited<ReturnType<typ
 			title,
 			url: link,
 			thumbnailUrl: image?.url ?? null,
-			lastUpdatedAt: (lastBuildDate ? new Date(lastBuildDate) : new Date()).toISOString(),
-			importedAt: new Date().toISOString(),
+			lastUpdatedAt,
 		})
 		.onConflictDoUpdate({
 			target: schema.channels.url,
 			set: {
-				lastUpdatedAt: (lastBuildDate ? new Date(lastBuildDate) : new Date()).toISOString(),
-				importedAt: new Date().toISOString(),
+				lastUpdatedAt,
 			},
 		})
 		.returning();
@@ -35,14 +38,13 @@ export const upsertChannel = async (d1: D1Database, rule: Awaited<ReturnType<typ
 	return result[0];
 };
 
-export const upsertEntry = async (d1: D1Database, channel: Awaited<ReturnType<typeof upsertChannel>>, item: RSSItem, content: string) => {
+export const insertEntry = async (d1: D1Database, channel: Awaited<ReturnType<typeof upsertChannel>>, item: RSSItem, content: Content) => {
 	const { link: url, title, description: _description, enclosure, pubDate, category, author } = item;
 
 	const description = _description?.replace(/\n+/g, ' ') ?? null;
 	const metadata = { category, author };
 	const thumbnailUrl = enclosure?.url ?? null;
-	const publishedAt = (pubDate ? new Date(pubDate) : new Date()).toISOString();
-	const now = new Date().toISOString();
+	const publishedAt = pubDate ? new Date(pubDate) : new Date();
 
 	const db = drizzle(d1, { schema });
 	const result = await db
@@ -57,25 +59,25 @@ export const upsertEntry = async (d1: D1Database, channel: Awaited<ReturnType<ty
 			metadata,
 			publishedAt,
 		})
-		.onConflictDoUpdate({
-			target: schema.entries.url,
-			set: {
-				title,
-				description,
-				content,
-				thumbnailUrl,
-				metadata,
-				importedAt: now,
-			},
-		})
 		.returning();
 
 	return result[0];
 };
 
+export const updateEntry = async (d1: D1Database, id: number, entry: Partial<InferSelectModel<typeof entries>>) => {
+	const db = drizzle(d1, { schema });
+	const [result] = await db.update(entries).set(entry).where(eq(entries.id, id)).returning();
+	return result;
+};
+
 export const getEntryById = async (d1: D1Database, id: number) => {
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findFirst({ where: eq(schema.entries.id, id) });
+};
+
+export const getEntryByUrl = async (d1: D1Database, url: string) => {
+	const db = drizzle(d1, { schema });
+	return db.query.entries.findFirst({ where: eq(schema.entries.url, url) });
 };
 
 export const paginateEntries = async (d1: D1Database, limit: number, offset: number) => {

@@ -1,5 +1,6 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { relations, sql } from 'drizzle-orm';
+import { relations } from 'drizzle-orm';
+import { Content } from './libs/scrape';
 
 export const absorbRules = sqliteTable('AbsorbRules', {
 	id: integer('id').primaryKey({ autoIncrement: true }).notNull(),
@@ -23,10 +24,7 @@ export const channels = sqliteTable('Channels', {
 	title: text('title').notNull(),
 	url: text('url').notNull().unique(),
 	thumbnailUrl: text('thumbnailUrl'),
-	lastUpdatedAt: text('lastUpdatedAt').notNull(),
-	importedAt: text('importedAt')
-		.notNull()
-		.default(sql`CURRENT_TIMESTAMP`),
+	lastUpdatedAt: integer('lastUpdatedAt', { mode: 'timestamp' }).notNull(),
 });
 
 export const channelsRelations = relations(channels, ({ many }) => ({
@@ -41,11 +39,9 @@ export const entries = sqliteTable('Entries', {
 	url: text('url').notNull().unique(),
 	title: text('title').notNull(),
 	description: text('description'),
-	content: text('content').notNull(),
+	content: text('content', { mode: 'json' }).notNull().$type<Content>(),
 	thumbnailUrl: text('thumbnailUrl'),
 	metadata: text('metadata', { mode: 'json' }),
-	publishedAt: text('publishedAt').notNull(),
-	importedAt: text('importedAt')
-		.notNull()
-		.default(sql`CURRENT_TIMESTAMP`),
+	publishedAt: integer('publishedAt', { mode: 'timestamp' }).notNull(),
+	isTTSed: integer('isTTSed', { mode: 'boolean' }).notNull().default(false),
 });

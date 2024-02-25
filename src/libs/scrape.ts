@@ -1,16 +1,63 @@
 import * as cheerio from 'cheerio';
+import { sha256 } from './utils';
 
-export const scrapeContent = async (url: string, selector: string): Promise<string> => {
+export type Content = Paragraph[];
+
+export type Paragraph = {
+	type: 'paragraph';
+	key: string;
+	duration: number | null;
+	offset: number | null;
+	sentences: Sentence[];
+};
+
+export type Sentence = {
+	type: 'sentence';
+	key: string;
+	text: string;
+	duration: number | null;
+	offset: number | null;
+};
+
+const segmenter = new Intl.Segmenter('en-US', { granularity: 'sentence' });
+
+export const scrapeContent = async (url: string, selector: string): Promise<Content> => {
 	const res = await fetch(url);
 	const text = await res.text();
 	const $ = cheerio.load(text);
 
 	const paragraphs: string[] = [];
 	$(selector).each((i, elem) => {
-		const paragraph = $(elem).text();
-		paragraph.split('\n').forEach((p) => paragraphs.push(p));
+		$(elem)
+			.text()
+			.split('\n')
+			.forEach((p) => {
+				if (ignorableParagraph(p)) return;
+				paragraphs.push(p);
+			});
 	});
 
-	// ピリオドで終わらず、数単語で構成されているparagraphはただの小タイトルとみなして除外
-	return paragraphs.filter((p) => p.endsWith('.') && p.split(' ').length > 5).join('\n');
+	return await Promise.all(
+		paragraphs.map(async (paragraph) => ({
+			type: 'paragraph',
+			key: await sha256(paragraph),
+			duration: null,
+			offset: null,
+			sentences: await Promise.all(
+				Array.from(segmenter.segment(paragraph)).map(async ({ segment }) => {
+					return {
+						type: 'sentence',
+						key: await sha256(segment),
+						text: segment,
+						duration: null,
+						offset: null,
+					};
+				}),
+			),
+		})),
+	);
+};
+
+const ignorableParagraph = (text: string) => {
+	return text.split(' ').length <= 5 || !text.endsWith('.');
 };

@@ -12,8 +12,7 @@ CREATE TABLE `Channels` (
 	`title` text NOT NULL,
 	`url` text NOT NULL,
 	`thumbnailUrl` text,
-	`lastUpdatedAt` text NOT NULL,
-	`importedAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`lastUpdatedAt` integer NOT NULL,
 	FOREIGN KEY (`absorbRuleId`) REFERENCES `AbsorbRules`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
@@ -26,8 +25,8 @@ CREATE TABLE `Entries` (
 	`content` text NOT NULL,
 	`thumbnailUrl` text,
 	`metadata` text,
-	`publishedAt` text NOT NULL,
-	`importedAt` text DEFAULT CURRENT_TIMESTAMP NOT NULL,
+	`publishedAt` integer NOT NULL,
+	`isTTSed` integer DEFAULT false NOT NULL,
 	FOREIGN KEY (`channelId`) REFERENCES `Channels`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint

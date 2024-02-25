@@ -1,10 +1,9 @@
-import GoogleAuth from 'cloudflare-workers-and-google-oauth';
-import { getEntryById, paginateEntries } from './libs/db';
-import { ttsWithCache } from './libs/tts';
+import { getEntryById, paginateEntries, updateEntry } from './libs/db';
+import { getGoogleToken, ttsFromEntryWithCache } from './libs/tts';
 import { createM3U } from './libs/m3u';
-import { getAudioByCache } from './libs/kv';
 import { Hono } from 'hono';
 import { displayRelativeTime } from './libs/utils';
+import { getAudio, putAudio } from './libs/kv';
 
 export type Bindings = {
 	CACHE: KVNamespace;
@@ -16,68 +15,36 @@ const app = new Hono<{
 	Bindings: Bindings;
 }>();
 
-const SPEAKING_RATE = 0.65;
-
-app.get('/audio/:key{.+\\.mp3}', async (c) => {
-	const key = c.req.param('key').replace(/\.mp3$/, '');
-	const audioData = await getAudioByCache(key, c.env.CACHE);
-	return new Response(audioData, { headers: { 'Content-Type': 'audio/mpeg' } });
+app.get('/audio/:entryId/:key/voice.mp3', async (c) => {
+	const key = c.req.param('key');
+	const id = c.req.param('entryId');
+	const audio = await getAudio(c.env.CACHE, id, key);
+	if (!audio) return c.notFound();
+	return new Response(audio, { headers: { 'Content-Type': 'audio/mpeg' } });
 });
 
-app.get('/playlist/:id{.+\\.m3u8}', async (c) => {
-	const id = c.req.param('id').replace(/\.m3u8$/, '');
+app.get('/playlist/:entryId/voice.m3u8', async (c) => {
+	const id = c.req.param('entryId');
 	const entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
+	// TODO: 404ではなく適切なステータスコードを返却
+	if (!entry.isTTSed) return c.notFound();
 
-	const paragraphs = entry.content.split('\n');
-
-	const scopes: string[] = ['https://www.googleapis.com/auth/cloud-platform'];
-	const oauth = new GoogleAuth(JSON.parse(c.env.GOOGLE_AUTH), scopes);
-	const token = await oauth.getGoogleAuthToken();
-	if (!token) throw new Error('Failed to get token');
-
-	const audioData = await Promise.all(
-		paragraphs.map((text) =>
-			ttsWithCache(
-				token,
-				{
-					text,
-					speakingRate: SPEAKING_RATE,
-				},
-				c.env.CACHE,
-			),
-		),
-	);
-
-	return new Response(createM3U(audioData), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
+	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
 
 app.get('/:id', async (c) => {
 	const id = c.req.param('id').replace(/\.m3u8$/, '');
-	const entry = await getEntryById(c.env.DB, Number(id));
+	let entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
 
-	const paragraphs = entry.content.split('\n');
+	if (!entry.isTTSed) {
+		const token = await getGoogleToken(JSON.parse(c.env.GOOGLE_AUTH));
+		const { newContent, audios } = await ttsFromEntryWithCache(token, entry, c.env.CACHE);
+		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
+		entry = await updateEntry(c.env.DB, entry.id, { content: newContent, isTTSed: true });
+	}
 
-	const scopes: string[] = ['https://www.googleapis.com/auth/cloud-platform'];
-	const oauth = new GoogleAuth(JSON.parse(c.env.GOOGLE_AUTH), scopes);
-	const token = await oauth.getGoogleAuthToken();
-	if (!token) throw new Error('Failed to get token');
-
-	const audioData = await Promise.all(
-		paragraphs.map((text) =>
-			ttsWithCache(
-				token,
-				{
-					text,
-					speakingRate: SPEAKING_RATE,
-				},
-				c.env.CACHE,
-			),
-		),
-	);
-
-	let duration = 0;
 	return c.html(`<html>
 				<head>
 					<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -102,6 +69,12 @@ app.get('/:id', async (c) => {
 						p.active {
 						  scroll-margin-top: 64px;
 							background-color: #333;
+						}
+						span {
+							padding: 4px;
+						}
+						span.active {
+						  background-color: rgb(33 150 243 / 50%);
 						}
 						.publishdAt {
 							margin-top: 4px;
@@ -147,15 +120,17 @@ app.get('/:id', async (c) => {
 					</div>
           <h1>${entry.title}</h1>
 					<img src="${entry.thumbnailUrl}" alt="${entry.title}">
-					<div class="publishdAt">${displayRelativeTime(new Date(entry.publishedAt))} ago</div>
-					${audioData
-						.map((audio) => {
-							const start = duration;
-							duration += audio.duration;
-							return `<p data-offset="${start}" data-duration="${audio.duration}">${audio.text}</p>`;
+					<div class="publishdAt">${displayRelativeTime(entry.publishedAt)} ago</div>
+					${entry?.content
+						.map((p) => {
+							return `<p data-offset="${p.offset}" data-duration="${p.duration}">${p.sentences
+								.map((span) => {
+									return `<span data-offset="${span.offset}" data-duration="${span.duration}">${span.text}</span>`;
+								})
+								.join('')}</p>`;
 						})
 						.join('')}
-					<audio src="/playlist/${id}.m3u8" controls autoplay id="audio"></audio>
+					<audio src="/playlist/${id}/voice.m3u8" controls autoplay id="audio"></audio>
 					<script>
 						let isTouch = false;
 						window.addEventListener('touchstart', () => {
@@ -198,14 +173,14 @@ app.get('/:id', async (c) => {
 
 						if(Hls.isSupported()) {
 							const hls = new Hls();
-							hls.loadSource('/playlist/${id}.m3u8');
+							hls.loadSource('/playlist/${id}/voice.m3u8');
 							hls.attachMedia(audio);
 							hls.on(Hls.Events.MANIFEST_PARSED,function() {
 								audio.play();
 							});
 						}
 						else if (audio.canPlayType('application/vnd.apple.mpegurl')) {
-							audio.src = '/playlist/${id}.m3u8';
+							audio.src = '/playlist/${id}/voice.m3u8';
 							audio.addEventListener('loadedmetadata',function() {
 								audio.play();
 							});
@@ -213,6 +188,7 @@ app.get('/:id', async (c) => {
 						audio.addEventListener('timeupdate', function() {
 							const currentTime = audio.currentTime;
 							const parapraphs = document.querySelectorAll('p[data-offset]');
+							const sentences = document.querySelectorAll('span[data-offset]');
 							for (const p of parapraphs) {
 								const offset = parseFloat(p.dataset.offset);
 								const duration = parseFloat(p.dataset.duration);
@@ -224,6 +200,15 @@ app.get('/:id', async (c) => {
 									}
 								} else {
 									p.classList.remove('active');
+								}
+							}
+							for (const span of sentences) {
+								const offset = parseFloat(span.dataset.offset);
+								const duration = parseFloat(span.dataset.duration);
+								if (currentTime　> 0 && offset <= currentTime && currentTime < offset + duration) {
+									span.classList.add('active');
+								} else {
+									span.classList.remove('active');
 								}
 							}
 						});
@@ -345,7 +330,7 @@ app.get('/', async (c) => {
 									<img src="${entry.thumbnailUrl}" alt="${entry.title}">
 									<div>
 										<h2>${entry.title}</h2>
-										<p>${displayRelativeTime(new Date(entry.publishedAt))} ago</p>
+										<p>${displayRelativeTime(entry.publishedAt)} ago</p>
 									</div>
 								</div>
 							</a>

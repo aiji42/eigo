@@ -1,6 +1,6 @@
 import { fetchAndParseRSS } from './libs/rss-parser';
 import { scrapeContent } from './libs/scrape';
-import { getAllRules, upsertChannel, upsertEntry } from './libs/db';
+import { getAllRules, getEntryByUrl, insertEntry, upsertChannel } from './libs/db';
 
 interface Env {
 	DB: D1Database;
@@ -17,9 +17,11 @@ export default {
 			if (!channel) continue;
 
 			for (const item of feed.items) {
+				const persistedEntry = await getEntryByUrl(env.DB, item.link);
+				if (persistedEntry) continue;
 				const content = await scrapeContent(item.link, rule.rule.contentSelector);
 				if (!content.length) continue;
-				const entry = await upsertEntry(env.DB, channel, item, content);
+				const entry = await insertEntry(env.DB, channel, item, content);
 				console.log(entry);
 			}
 		}

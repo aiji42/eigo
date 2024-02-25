@@ -20,7 +20,7 @@ id = "54f8390b169d4c198f8f42ad93bac347"
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB
 database_name = "eigo-d1"
-database_id = "acfed3c7-00b7-4ac7-8b66-13899f9895e2"
+database_id = "7c0ddc05-f95e-4f80-8aeb-aa569d74a3ee"
 
 # Bind an R2 Bucket. Use R2 to store arbitrarily large blobs of data, such as files.
 # Docs: https://developers.cloudflare.com/r2/api/workers/workers-api-usage/
