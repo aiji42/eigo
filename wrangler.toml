@@ -16,6 +16,7 @@ node_compat = true
 [[kv_namespaces]]
 binding = "CACHE"
 id = "54f8390b169d4c198f8f42ad93bac347"
+preview_id = "54f8390b169d4c198f8f42ad93bac347" # ※ TTSで無駄な費用が発生しないようにpreviewとprodで同じKVを使う
 
 [[d1_databases]]
 binding = "DB" # i.e. available in your Worker on env.DB

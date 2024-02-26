@@ -1,5 +1,6 @@
 import * as cheerio from 'cheerio';
 import { sha256 } from './utils';
+import { Ai } from '@cloudflare/ai';
 
 export type Content = Paragraph[];
 
@@ -15,13 +16,14 @@ export type Sentence = {
 	type: 'sentence';
 	key: string;
 	text: string;
+	translation: string;
 	duration: number | null;
 	offset: number | null;
 };
 
 const segmenter = new Intl.Segmenter('en-US', { granularity: 'sentence' });
 
-export const scrapeContent = async (url: string, selector: string): Promise<Content> => {
+export const scrapeContent = async (url: string, selector: string, ai: Ai): Promise<Content> => {
 	const res = await fetch(url);
 	const text = await res.text();
 	const $ = cheerio.load(text);
@@ -49,6 +51,7 @@ export const scrapeContent = async (url: string, selector: string): Promise<Cont
 						type: 'sentence',
 						key: await sha256(segment),
 						text: segment,
+						translation: await translate(ai, segment),
 						duration: null,
 						offset: null,
 					};
@@ -56,6 +59,15 @@ export const scrapeContent = async (url: string, selector: string): Promise<Cont
 			),
 		})),
 	);
+};
+
+const translate = async (ai: Ai, text: string) => {
+	const res = await ai.run('@cf/meta/m2m100-1.2b', {
+		text,
+		target_lang: 'ja',
+		source_lang: 'en',
+	});
+	return res.translated_text;
 };
 
 const ignorableParagraph = (text: string) => {

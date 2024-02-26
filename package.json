@@ -3,15 +3,15 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-		"deploy:index": "wrangler deploy -c wrangler.toml",
-		"deploy:absorb": "wrangler deploy -c wrangler.absorb.toml",
-		"create:migration": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
-		"migrate": "wrangler d1 migrations apply eigo-d1 --local",
-		"migrate:prod": "wrangler d1 migrations apply eigo-d1",
-		"seed": "wrangler d1 execute eigo-d1 --file d1/seed.sql --local",
-		"seed:prod": "wrangler d1 execute eigo-d1 --file d1/seed.sql",
+    "deploy:index": "wrangler deploy -c wrangler.toml",
+    "deploy:absorb": "wrangler deploy -c wrangler.absorb.toml",
+    "create:migration": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
+    "migrate": "wrangler d1 migrations apply eigo-d1 --local",
+    "migrate:prod": "wrangler d1 migrations apply eigo-d1",
+    "seed": "wrangler d1 execute eigo-d1 --file d1/seed.sql --local",
+    "seed:prod": "wrangler d1 execute eigo-d1 --file d1/seed.sql",
     "dev": "wrangler dev",
-		"dev:absorb": "wrangler dev -c wrangler.absorb.toml --test-scheduled",
+    "dev:absorb": "wrangler dev -c wrangler.absorb.toml --test-scheduled",
     "start": "wrangler dev"
   },
   "devDependencies": {
@@ -22,6 +22,7 @@
     "wrangler": "^3.0.0"
   },
   "dependencies": {
+    "@cloudflare/ai": "^1.0.53",
     "cheerio": "^1.0.0-rc.12",
     "cloudflare-workers-and-google-oauth": "^2.0.0",
     "drizzle-orm": "^0.29.4",

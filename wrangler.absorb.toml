@@ -12,3 +12,6 @@ crons = ["0 * * * *"] # Every hour
 binding = "DB" # i.e. available in your Worker on env.DB
 database_name = "eigo-d1"
 database_id = "7c0ddc05-f95e-4f80-8aeb-aa569d74a3ee"
+
+[ai]
+binding = "AI"

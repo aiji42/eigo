@@ -51,6 +51,7 @@ export const ttsFromEntryWithCache = async (token: string, entry: InferSelectMod
 				type: 'sentence',
 				key: sentence.key,
 				text: sentence.text,
+				translation: sentence.translation,
 				duration,
 				offset,
 			} satisfies Sentence;

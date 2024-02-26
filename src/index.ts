@@ -70,11 +70,11 @@ app.get('/:id', async (c) => {
 						  scroll-margin-top: 64px;
 							background-color: #333;
 						}
-						span {
-							padding: 4px;
-						}
 						span.active {
 						  background-color: rgb(33 150 243 / 50%);
+						}
+						p.translation {
+							display: none;
 						}
 						.publishdAt {
 							margin-top: 4px;
@@ -122,10 +122,14 @@ app.get('/:id', async (c) => {
 					<img src="${entry.thumbnailUrl}" alt="${entry.title}">
 					<div class="publishdAt">${displayRelativeTime(entry.publishedAt)} ago</div>
 					${entry?.content
-						.map((p) => {
-							return `<p data-offset="${p.offset}" data-duration="${p.duration}">${p.sentences
+						.map((p, i) => {
+							return `<p class="original" data-translation="${p.key}" data-offset="${p.offset}" data-duration="${p.duration}">${p.sentences
 								.map((span) => {
 									return `<span data-offset="${span.offset}" data-duration="${span.duration}">${span.text}</span>`;
+								})
+								.join('')}</p><p class="translation" id="${p.key}" data-offset="${p.offset}" data-duration="${p.duration}">${p.sentences
+								.map((span) => {
+									return `<span data-offset="${span.offset}" data-duration="${span.duration}">${span.translation}</span>`;
 								})
 								.join('')}</p>`;
 						})
@@ -249,6 +253,27 @@ app.get('/:id', async (c) => {
 						audio.addEventListener('ended', () => {
 							navigator.mediaSession.playbackState = 'none';
 						});
+
+						// 翻訳と原文を切り替える(activeなもののみ)
+						const originals = document.querySelectorAll('p.original');
+						for (const p of originals) {
+							p.addEventListener('click', () => {
+								if (!p.classList.contains('active')) return;
+								p.style.display = 'none';
+								const translation = document.getElementById(p.dataset.translation);
+								translation.style.display = 'block';
+								audio.pause();
+							});
+						}
+						const translation = document.querySelectorAll('p.translation');
+						for (const p of translation) {
+							p.addEventListener('click', () => {
+								p.style.display = 'none';
+								const original = document.querySelector('p[data-translation="' + p.id + '"]');
+								original.style.display = 'block';
+								audio.play();
+							});
+						}
 					</script>
 				</body>
 			</html>`);
