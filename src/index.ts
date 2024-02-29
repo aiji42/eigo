@@ -1,14 +1,16 @@
 import { getEntryById, paginateEntries, updateEntry } from './libs/db';
-import { getGoogleToken, ttsFromEntryWithCache } from './libs/tts';
+import { ttsFromEntryWithCache } from './libs/tts';
 import { createM3U } from './libs/m3u';
 import { Hono } from 'hono';
 import { displayRelativeTime } from './libs/utils';
 import { getAudio, putAudio } from './libs/kv';
+import { createTTS, serviceBindingsMock } from './libs/service-bindings';
 
 export type Bindings = {
 	CACHE: KVNamespace;
 	DB: D1Database;
 	GOOGLE_AUTH: string;
+	TTS: Fetcher;
 };
 
 const app = new Hono<{
@@ -39,8 +41,8 @@ app.get('/:id', async (c) => {
 	if (!entry) return c.notFound();
 
 	if (!entry.isTTSed) {
-		const token = await getGoogleToken(JSON.parse(c.env.GOOGLE_AUTH));
-		const { newContent, audios } = await ttsFromEntryWithCache(token, entry, c.env.CACHE);
+		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
+		const { newContent, audios } = await ttsFromEntryWithCache(tts, entry);
 		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
 		entry = await updateEntry(c.env.DB, entry.id, { content: newContent, isTTSed: true });
 	}

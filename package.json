@@ -4,14 +4,16 @@
   "private": true,
   "scripts": {
     "deploy:index": "wrangler deploy -c wrangler.toml",
-    "deploy:absorb": "wrangler deploy -c wrangler.absorb.toml",
+		"deploy:absorb": "wrangler deploy -c wrangler.absorb.toml",
+		"deploy:tts": "wrangler deploy -c wrangler.sb-tts.toml",
     "create:migration": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
     "migrate": "wrangler d1 migrations apply eigo-d1 --local",
     "migrate:prod": "wrangler d1 migrations apply eigo-d1",
     "seed": "wrangler d1 execute eigo-d1 --file d1/seed.sql --local",
     "seed:prod": "wrangler d1 execute eigo-d1 --file d1/seed.sql",
     "dev": "wrangler dev",
-    "dev:absorb": "wrangler dev -c wrangler.absorb.toml --test-scheduled",
+		"dev:absorb": "wrangler dev -c wrangler.absorb.toml --test-scheduled",
+		"dev:tts": "wrangler dev -c wrangler.sb-tts.toml",
     "start": "wrangler dev"
   },
   "devDependencies": {
