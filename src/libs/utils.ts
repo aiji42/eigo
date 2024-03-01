@@ -15,7 +15,8 @@ export const sha256 = async (text: string): Promise<string> => {
 };
 
 // 相対時間表記(min, mins, hour, hours, day, days)をつけて表示する
-export const displayRelativeTime = (date: Date) => {
+export const displayRelativeTime = (_date: Date | string) => {
+	const date = typeof _date === 'string' ? new Date(_date) : _date;
 	const now = new Date();
 	const diff = now.getTime() - date.getTime();
 	const minutes = Math.floor(diff / 60000);

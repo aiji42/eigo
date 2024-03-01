@@ -3,12 +3,21 @@ const mapping: Record<string, string> = { TTS: 'http://localhost:8050' };
 export const serviceBindingsMock = <T extends Record<string, unknown>>(bindings: T) => {
 	return new Proxy(bindings, {
 		get(target: T, p: string, receiver: unknown): Fetcher {
-			if (p in target) return Reflect.get(target, p, receiver) as Fetcher;
+			if (import.meta.env.PROD && p in target) return Reflect.get(target, p, receiver) as Fetcher;
 
 			const endpoint: string | undefined = mapping[p];
 			if (!endpoint) throw new Error(`Called unknown Service: ${p}`);
 
-			return { fetch: async (input: Request) => fetch(endpoint, input) } as unknown as Fetcher;
+			return {
+				fetch: async (input: Request) => {
+					return fetch(endpoint, {
+						method: input.method,
+						body: input.body,
+						headers: input.headers,
+						duplex: 'half',
+					});
+				},
+			} as unknown as Fetcher;
 		},
 	});
 };
@@ -25,6 +34,7 @@ export const createTTS =
 		});
 
 		const res = await fetcher.fetch(newReq);
+		if (!res.ok) throw new Error(await res.text());
 		const duration = Number(res.headers.get('X-Duration'));
 		const audio = await res.arrayBuffer();
 		return { duration, audio: new Uint8Array(audio) };

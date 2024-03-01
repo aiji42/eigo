@@ -5,6 +5,7 @@ import { Hono } from 'hono';
 import { displayRelativeTime } from './libs/utils';
 import { getAudio, putAudio } from './libs/kv';
 import { createTTS, serviceBindingsMock } from './libs/service-bindings';
+import { renderToString } from 'react-dom/server';
 
 export type Bindings = {
 	CACHE: KVNamespace;
@@ -35,8 +36,23 @@ app.get('/playlist/:entryId/voice.m3u8', async (c) => {
 	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
 
-app.get('/:id', async (c) => {
-	const id = c.req.param('id').replace(/\.m3u8$/, '');
+app.get('/api/entry/:id', async (c) => {
+	const id = c.req.param('id');
+	let entry = await getEntryById(c.env.DB, Number(id));
+	if (!entry) return c.notFound();
+
+	if (!entry.isTTSed) {
+		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
+		const { newContent, audios } = await ttsFromEntryWithCache(tts, entry);
+		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
+		entry = await updateEntry(c.env.DB, entry.id, { content: newContent, isTTSed: true });
+	}
+
+	return c.json(entry);
+});
+
+app.get('/old/:id', async (c) => {
+	const id = c.req.param('id');
 	let entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
 
@@ -281,94 +297,33 @@ app.get('/:id', async (c) => {
 			</html>`);
 });
 
-// リストページ
-app.get('/', async (c) => {
+app.get('/api/list', async (c) => {
 	const offset = c.req.query('offset');
 	const entries = await paginateEntries(c.env.DB, 20, offset ? Number(offset) : 0);
-	return c.html(`<html>
+
+	return c.json(entries);
+});
+
+app.get('*', (c) => {
+	return c.html(
+		renderToString(
+			<html>
 				<head>
-					<meta name="viewport" content="width=device-width, initial-scale=1.0">
-					<style>
-						body {
-							background-color: #1e1e1e;
-							color: #fff;
-							padding: 8px;
-						}
-						ul {
-							list-style-type: none;
-							padding: 0;
-						}
-						li {
-							margin-bottom: 16px;
-						}
-						a {
-							text-decoration: none;
-							color: #fff;
-						}
-						p, h2 {
-							margin: 0;
-						}
-						.flex {
-							width: 100%;
-							display: flex;
-							justify-content: space-between;
-							align-items: center;
-							gap: 16px;
-						}
-						.flex img {
-							width: 80px;
-							height: 80px;
-							object-fit: cover;
-							border-radius: 10%;
-						}
-						.flex div {
-							flex: 1;
-							min-width: 0;
-						}
-						.flex h2 {
-							font-size: 1rem;
-							white-space: nowrap;
-							overflow: hidden;
-							text-overflow: ellipsis;
-						}
-						.flex p {
-							margin-top: 8px;
-							font-size: 0.8rem;
-							color: #aaa;
-						}
-						.next {
-							display: block;
-							text-align: center;
-							margin-top: 16px;
-							color: #fff;
-							text-decoration: none;
-						}
-					</style>
-					<title>VOA News</title>
+					<meta charSet="utf-8" />
+					<meta content="width=device-width, initial-scale=1" name="viewport" />
+					<link rel="stylesheet" href="/static/style.css" />
+					{import.meta.env.PROD ? (
+						<script type="module" src="/static/client.js"></script>
+					) : (
+						<script type="module" src="/src/client.tsx"></script>
+					)}
 				</head>
-				<body>
-					<h1>VOA News</h1>
-					<ul>
-						${entries
-							.map(
-								(entry) => `<li>
-							<a href="/${entry.id}">
-								<div class="flex">
-									<img src="${entry.thumbnailUrl}" alt="${entry.title}">
-									<div>
-										<h2>${entry.title}</h2>
-										<p>${displayRelativeTime(entry.publishedAt)} ago</p>
-									</div>
-								</div>
-							</a>
-						</li>`,
-							)
-							.join('')}
-					</ul>
-          <!-- pagenation	-->
-          <a class="next" href="/?offset=${Number(offset ?? 0) + 20}">Next</a>
+				<body className="m-auto max-w-4xl bg-neutral-950 p-4 text-white">
+					<div id="root"></div>
 				</body>
-			</html>`);
+			</html>,
+		),
+	);
 });
 
 export default app;
