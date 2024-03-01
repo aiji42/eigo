@@ -3,8 +3,7 @@ import devServer from '@hono/vite-dev-server';
 import { defineConfig } from 'vite';
 import { getPlatformProxy } from 'wrangler';
 
-export default defineConfig(async ({ mode }) => {
-	const { env, dispose } = await getPlatformProxy();
+export default defineConfig(async ({ mode, command }) => {
 	if (mode === 'client') {
 		return {
 			build: {
@@ -23,13 +22,13 @@ export default defineConfig(async ({ mode }) => {
 			},
 			plugins: [
 				pages(),
-				devServer({
+				command === 'serve' && await getPlatformProxy().then(({ env, dispose }) => devServer({
 					entry: 'src/index.tsx',
 					adapter: {
 						env,
 						onServerClose: dispose,
 					},
-				}),
+				}))
 			],
 		};
 	}

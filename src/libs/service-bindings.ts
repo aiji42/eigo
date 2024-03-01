@@ -14,6 +14,7 @@ export const serviceBindingsMock = <T extends Record<string, unknown>>(bindings:
 						method: input.method,
 						body: input.body,
 						headers: input.headers,
+						// @ts-ignore
 						duplex: 'half',
 					});
 				},
