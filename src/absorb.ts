@@ -1,7 +1,6 @@
 import { fetchAndParseRSS } from './libs/rss-parser';
 import { scrapeContent } from './libs/scrape';
 import { getAllRules, getEntryByUrl, insertEntry, upsertChannel } from './libs/db';
-import { Ai } from '@cloudflare/ai';
 
 interface Env {
 	DB: D1Database;
@@ -21,7 +20,7 @@ export default {
 			for (const item of feed.items) {
 				const persistedEntry = await getEntryByUrl(env.DB, item.link);
 				if (persistedEntry) continue;
-				const content = await scrapeContent(item.link, rule.rule.contentSelector, new Ai(env.AI));
+				const content = await scrapeContent(item.link, rule.rule.contentSelector);
 				if (!content.length) continue;
 				const entry = await insertEntry(env.DB, channel, item, content);
 				console.log(entry);

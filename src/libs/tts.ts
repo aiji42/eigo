@@ -2,22 +2,6 @@ import { InferSelectModel } from 'drizzle-orm';
 import { entries } from '../schema';
 import { Content, Paragraph, Sentence } from './scrape';
 
-export type TTSResponseData = {
-	audioContent: string;
-	timepoints: {
-		markName: string;
-		timeSeconds: number;
-	}[];
-	audioConfig: {
-		audioEncoding: string;
-		speakingRate: number;
-		pitch: number;
-		volumeGainDb: number;
-		sampleRateHertz: number;
-		effectsProfileId: string[];
-	};
-};
-
 export const ttsFromEntryWithCache = async (
 	tts: (text: string) => Promise<{ audio: Uint8Array; duration: number }>,
 	entry: InferSelectModel<typeof entries>,
@@ -38,7 +22,6 @@ export const ttsFromEntryWithCache = async (
 				type: 'sentence',
 				key: sentence.key,
 				text: sentence.text,
-				translation: sentence.translation,
 				duration,
 				offset,
 			} satisfies Sentence;

@@ -3,9 +3,10 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy:index": "wrangler deploy -c wrangler.toml",
     "deploy:absorb": "wrangler deploy -c wrangler.absorb.toml",
-    "deploy:tts": "wrangler deploy -c wrangler.sb-tts.toml",
+		"deploy:tts": "wrangler deploy -c wrangler.sb-tts.toml",
+		"deploy:translate": "wrangler deploy -c wrangler.sb-translate.toml",
+		"deploy": "$npm_execpath run build && wrangler pages deploy dist",
     "create:migration": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
     "migrate": "wrangler d1 migrations apply eigo-d1 --local",
     "migrate:prod": "wrangler d1 migrations apply eigo-d1",
@@ -14,10 +15,10 @@
     "dev": "vite",
     "dev:css": "tailwind -i ./src/index.css -o ./public/static/style.css --watch",
     "dev:absorb": "wrangler dev -c wrangler.absorb.toml --test-scheduled",
-    "dev:tts": "wrangler dev -c wrangler.sb-tts.toml --port 8050",
+		"dev:tts": "wrangler dev -c wrangler.sb-tts.toml --port 8050",
+		"dev:translate": "wrangler dev -c wrangler.sb-translate.toml --port 8051",
     "build": "vite build --mode client && vite build",
-    "preview": "wrangler pages dev dist",
-    "deploy": "$npm_execpath run build && wrangler pages deploy dist"
+    "preview": "wrangler pages dev dist"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20240222.0",
@@ -39,7 +40,6 @@
     "wrangler": "^3.0.0"
   },
   "dependencies": {
-    "@cloudflare/ai": "^1.0.53",
     "cheerio": "^1.0.0-rc.12",
     "cloudflare-workers-and-google-oauth": "^2.0.0",
     "clsx": "^2.1.0",

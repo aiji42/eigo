@@ -1,15 +1,20 @@
-import GoogleAuth, { GoogleKey } from 'cloudflare-workers-and-google-oauth';
 import { base64ToUint8Array } from '../../libs/utils';
 import { parseBuffer as mmParseBuffer } from 'music-metadata/lib/core';
-import { TTSResponseData } from '../../libs/tts';
 
-export const getGoogleToken = async (key: GoogleKey) => {
-	const scopes: string[] = ['https://www.googleapis.com/auth/cloud-platform'];
-	const oauth = new GoogleAuth(key, scopes);
-	const token = await oauth.getGoogleAuthToken();
-	if (!token) throw new Error('Failed to get token');
-
-	return token;
+export type TTSResponseData = {
+	audioContent: string;
+	timepoints: {
+		markName: string;
+		timeSeconds: number;
+	}[];
+	audioConfig: {
+		audioEncoding: string;
+		speakingRate: number;
+		pitch: number;
+		volumeGainDb: number;
+		sampleRateHertz: number;
+		effectsProfileId: string[];
+	};
 };
 
 export const ttsByGoogle = async (token: string, text: string) => {

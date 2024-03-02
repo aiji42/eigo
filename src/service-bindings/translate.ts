@@ -1,5 +1,5 @@
-import { inspectDuration, ttsByGoogle } from './libs/tts';
 import { sha256 } from './libs/utils';
+import { translateByGoogle } from './libs/translate';
 import { getGoogleToken } from './libs/api-token';
 
 interface Env {
@@ -23,26 +23,15 @@ export default {
 			return new Response('400 Bad Request', { status: 400 });
 
 		const token = await getGoogleToken(JSON.parse(env.GOOGLE_AUTH));
-		const cacheKey = await sha256(payload.text);
-		const { value, metadata } = await env.CACHE.getWithMetadata<{ duration: number }>(cacheKey, 'arrayBuffer');
+		const cacheKey = `translate:${await sha256(payload.text)}`;
+		const value = await env.CACHE.get(cacheKey);
 
-		if (value && metadata)
-			return new Response(value, {
-				headers: {
-					'X-Duration': String(metadata.duration),
-				},
-			});
+		if (value) return new Response(value);
 
-		const audio = await ttsByGoogle(token, payload.text);
-		const duration = await inspectDuration(audio);
+		const translated = await translateByGoogle(token, payload.text);
 
-		context.waitUntil(env.CACHE.put(cacheKey, audio, { metadata: { duration } }));
+		context.waitUntil(env.CACHE.put(cacheKey, translated));
 
-		return new Response(audio, {
-			headers: {
-				'Content-Type': 'audio/mpeg',
-				'X-Duration': String(duration),
-			},
-		});
+		return new Response(translated);
 	},
 };

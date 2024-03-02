@@ -3,14 +3,14 @@ import { ttsFromEntryWithCache } from './libs/tts';
 import { createM3U } from './libs/m3u';
 import { Hono } from 'hono';
 import { getAudio, putAudio } from './libs/kv';
-import { createTTS, serviceBindingsMock } from './libs/service-bindings';
+import { createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
 
 export type Bindings = {
 	CACHE: KVNamespace;
 	DB: D1Database;
-	GOOGLE_AUTH: string;
 	TTS: Fetcher;
+	Translate: Fetcher;
 };
 
 const app = new Hono<{
@@ -55,6 +55,15 @@ app.get('/api/list', async (c) => {
 	const entries = await paginateEntries(c.env.DB, 20, offset ? Number(offset) : 0);
 
 	return c.json(entries);
+});
+
+app.post('/api/translate', async (c) => {
+	const translate = createTranslate(serviceBindingsMock(c.env).Translate, c.req.raw.clone());
+
+	const { text } = await c.req.json<{ text: string }>();
+	if (!text) return new Response('400 Bad request', { status: 400 });
+
+	return c.json({ translated: await translate(text, true) });
 });
 
 app.get('*', (c) => {

@@ -1,8 +1,9 @@
-import { useEffect, useReducer, useRef, useState } from 'react';
+import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { InferSelectModel } from 'drizzle-orm';
 import { entries } from '../schema';
 
+// TODO: リファクタ & テスト & (各deps系が正しいか確認)
 export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undefined, autoPlay = false) => {
 	const [isMounted, mount] = useReducer(() => true, false);
 	const [playing, setPlaying] = useState(false);
@@ -15,7 +16,6 @@ export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undef
 	useEffect(() => {
 		if (!entry || !isMounted || !ref.current) return;
 		if ('mediaSession' in navigator) {
-			console.log(entry.thumbnailUrl);
 			navigator.mediaSession.metadata = new MediaMetadata({
 				title: entry.title,
 				artist: 'eigo',
@@ -80,27 +80,28 @@ export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undef
 		};
 	}, [src, autoPlay, isMounted]);
 
-	const play = () => ref.current?.play();
-	const pause = () => ref.current?.pause();
-	const toggle = () => (playing ? pause() : play());
-	const seek = (time: number) => {
+	const play = useCallback(() => ref.current?.play(), []);
+	const pause = useCallback(() => ref.current?.pause(), []);
+	// FIXME: playingに依存しないようにする
+	const toggle = useCallback(() => (playing ? pause() : play()), [playing, pause, play]);
+	const seek = useCallback((time: number) => {
 		if (ref.current) ref.current.currentTime = time;
-	};
-	const setVolume = (volume: number) => {
+	}, []);
+	const setVolume = useCallback((volume: number) => {
 		if (ref.current) ref.current.volume = volume;
-	};
-	const rewind = () => seek(0);
-	const back10 = () => seek(current - 10);
-	const forward10 = () => seek(current + 10);
-	const setPlaybackRate = (rate: number) => {
+	}, []);
+	const rewind = useCallback(() => seek(0), [seek]);
+	const back10 = useCallback(() => seek((ref.current?.currentTime ?? 0) - 10), [seek]);
+	const forward10 = useCallback(() => seek((ref.current?.currentTime ?? 0) + 10), [seek]);
+	const setPlaybackRate = useCallback((rate: number) => {
 		if (ref.current) ref.current.playbackRate = rate;
-	};
-	const switchRate = () => {
+	}, []);
+	const switchRate = useCallback(() => {
 		const selectable = [0.5, 0.75, 1, 1.25, 1.5, 2];
-		const index = selectable.indexOf(currentRate);
+		const index = selectable.indexOf(ref.current?.playbackRate ?? 1);
 		const nextIndex = index === selectable.length - 1 ? 0 : index + 1;
 		setPlaybackRate(selectable[nextIndex]);
-	};
+	}, [setPlaybackRate]);
 
 	return [
 		ref,

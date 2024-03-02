@@ -21,7 +21,7 @@ export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenc
 	}, [!!activeSentenceKey, scrollInActive]);
 
 	return (
-		<p className={clsx('scroll-mt-32 hyphens-auto break-words rounded-md p-2', activeSentenceKey && 'bg-neutral-800')} ref={ref}>
+		<p className={clsx('scroll-mt-32 hyphens-auto break-words p-2', showTranslation && 'opacity-75')} ref={ref}>
 			{paragraph.sentences.map(({ text, key }) => (
 				<span key={key} className={clsx(key === activeSentenceKey && 'text-green-600')} lang="en">
 					{text}
