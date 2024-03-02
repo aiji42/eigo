@@ -171,5 +171,5 @@ dist
 .dev.vars
 .wrangler/
 
-public/static/style.css
+public/static
 .mf

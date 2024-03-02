@@ -64,11 +64,16 @@ app.get('*', (c) => {
 				<head>
 					<meta charSet="utf-8" />
 					<meta content="width=device-width, initial-scale=1" name="viewport" />
-					<link rel="stylesheet" href="/static/style.css" />
 					{import.meta.env.PROD ? (
-						<script type="module" src="/static/client.js"></script>
+						<>
+							<script type="module" src="/static/client.__DIGEST__.js" />
+							<link rel="stylesheet" href="/static/style.__DIGEST__.css" />
+						</>
 					) : (
-						<script type="module" src="/src/client.tsx"></script>
+						<>
+							<script type="module" src="/src/client.tsx" />
+							<link rel="stylesheet" href="/static/style.css" />
+						</>
 					)}
 				</head>
 				<body className="m-auto max-w-4xl bg-neutral-950 p-4 text-slate-100">
