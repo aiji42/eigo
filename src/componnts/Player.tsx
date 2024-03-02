@@ -127,8 +127,8 @@ const SkipIcon = () => {
 
 const PlayIcon = () => {
 	return (
-		<svg width="30" height="32" fill="none" stroke="currentColor" strokeWidth="6" strokeLinecap="round" strokeLinejoin="round">
-			<path d="M 9,4 L 26,16 L 9,28 Z" />
+		<svg width="30" height="32" fill="currentColor" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+			<path d="M 9,5 L 26,16 L 9,27 Z" />
 		</svg>
 	);
 };

@@ -15,6 +15,7 @@ export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undef
 	useEffect(() => {
 		if (!entry || !isMounted || !ref.current) return;
 		if ('mediaSession' in navigator) {
+			console.log(entry.thumbnailUrl);
 			navigator.mediaSession.metadata = new MediaMetadata({
 				title: entry.title,
 				artist: 'eigo',
@@ -39,7 +40,7 @@ export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undef
 				// ページを戻す
 			});
 		}
-	}, [entry]);
+	}, [entry, isMounted]);
 
 	useEffect(() => {
 		if (!isMounted || !ref.current) return;
