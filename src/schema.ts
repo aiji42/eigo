@@ -40,7 +40,6 @@ export const entries = sqliteTable('Entries', {
 	title: text('title').notNull(),
 	description: text('description'),
 	content: text('content', { mode: 'json' }).notNull().$type<Content>(),
-	calibratedContentA1: text('calibratedContentA1', { mode: 'json' }).$type<Content>(),
 	thumbnailUrl: text('thumbnailUrl'),
 	metadata: text('metadata', { mode: 'json' }),
 	publishedAt: integer('publishedAt', { mode: 'timestamp' }).notNull(),
