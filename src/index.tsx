@@ -1,5 +1,5 @@
 import { getEntryById, paginateEntries, updateEntry } from './libs/db';
-import { ttsFromEntryWithCache } from './libs/tts';
+import { ttsFromEntry } from './libs/tts';
 import { createM3U } from './libs/m3u';
 import { Hono } from 'hono';
 import { getAudio, putAudio } from './libs/kv';
@@ -27,10 +27,16 @@ app.get('/audio/:entryId/:key/voice.mp3', async (c) => {
 
 app.get('/playlist/:entryId/voice.m3u8', async (c) => {
 	const id = c.req.param('entryId');
-	const entry = await getEntryById(c.env.DB, Number(id));
+	let entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
-	// TODO: 404ではなく適切なステータスコードを返却
-	if (!entry.isTTSed) return c.notFound();
+
+	if (!entry.isTTSed) {
+		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
+		const { newContent, audios } = await ttsFromEntry(tts, entry);
+		// TODO: KVではなくR2にする
+		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
+		entry = await updateEntry(c.env.DB, entry.id, { content: newContent, isTTSed: true });
+	}
 
 	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
@@ -39,13 +45,6 @@ app.get('/api/entry/:id', async (c) => {
 	const id = c.req.param('id');
 	let entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
-
-	if (!entry.isTTSed) {
-		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
-		const { newContent, audios } = await ttsFromEntryWithCache(tts, entry);
-		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
-		entry = await updateEntry(c.env.DB, entry.id, { content: newContent, isTTSed: true });
-	}
 
 	return c.json(entry);
 });

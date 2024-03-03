@@ -2,7 +2,7 @@ import { InferSelectModel } from 'drizzle-orm';
 import { entries } from '../schema';
 import { Content, Paragraph, Sentence } from './scrape';
 
-export const ttsFromEntryWithCache = async (
+export const ttsFromEntry = async (
 	tts: (text: string) => Promise<{ audio: Uint8Array; duration: number }>,
 	entry: InferSelectModel<typeof entries>,
 ) => {

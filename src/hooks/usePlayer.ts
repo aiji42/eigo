@@ -7,8 +7,9 @@ import { entries } from '../schema';
 export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undefined, autoPlay = false) => {
 	const [isMounted, mount] = useReducer(() => true, false);
 	const [playing, setPlaying] = useState(false);
-	const [current, setCurrent] = useState(0);
+	const [current, setCurrent] = useState(-1);
 	const [currentRate, setCurrentRate] = useState(1);
+	const [loading, setLoading] = useState(false);
 	const ref = useRef<HTMLAudioElement>(null);
 
 	const src = entry ? `/playlist/${entry.id}/voice.m3u8` : '';
@@ -63,11 +64,15 @@ export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undef
 		const timeupdate = () => setCurrent(ref.current?.currentTime ?? 0);
 		const ratechange = () => setCurrentRate(ref.current?.playbackRate ?? 1);
 		const ended = () => (navigator.mediaSession.playbackState = 'none');
+		const loadstart = () => setLoading(true);
+		const loadeddata = () => setLoading(false);
 		ref.current.addEventListener('play', play);
 		ref.current.addEventListener('pause', pause);
 		ref.current.addEventListener('timeupdate', timeupdate);
 		ref.current.addEventListener('ratechange', ratechange);
 		ref.current.addEventListener('ended', ended);
+		ref.current.addEventListener('loadstart', loadstart);
+		ref.current.addEventListener('loadeddata', loadeddata);
 
 		if (autoPlay) ref.current.play();
 
@@ -77,6 +82,8 @@ export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undef
 			ref.current?.removeEventListener('timeupdate', timeupdate);
 			ref.current?.removeEventListener('ratechange', ratechange);
 			ref.current?.removeEventListener('ended', ended);
+			ref.current?.removeEventListener('loadstart', loadstart);
+			ref.current?.removeEventListener('loadeddata', loadeddata);
 		};
 	}, [src, autoPlay, isMounted]);
 
@@ -105,6 +112,21 @@ export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undef
 
 	return [
 		ref,
-		{ playing, current, play, pause, toggle, setVolume, rewind, back10, forward10, setPlaybackRate, switchRate, currentRate, mount },
+		{
+			playing,
+			current,
+			play,
+			pause,
+			toggle,
+			setVolume,
+			rewind,
+			back10,
+			forward10,
+			setPlaybackRate,
+			switchRate,
+			currentRate,
+			mount,
+			loading,
+		},
 	] as const;
 };
