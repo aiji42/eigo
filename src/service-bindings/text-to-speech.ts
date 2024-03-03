@@ -22,17 +22,19 @@ export default {
 		if (!payload || typeof payload !== 'object' || !('text' in payload) || typeof payload.text !== 'string')
 			return new Response('400 Bad Request', { status: 400 });
 
-		const token = await getGoogleToken(JSON.parse(env.GOOGLE_AUTH));
 		const cacheKey = await sha256(payload.text);
 		const { value, metadata } = await env.CACHE.getWithMetadata<{ duration: number }>(cacheKey, 'arrayBuffer');
 
-		if (value && metadata)
+		if (value && metadata) {
+			console.log('cache hit');
 			return new Response(value, {
 				headers: {
 					'X-Duration': String(metadata.duration),
 				},
 			});
+		}
 
+		const token = await getGoogleToken(JSON.parse(env.GOOGLE_AUTH));
 		const audio = await ttsByGoogle(token, payload.text);
 		const duration = await inspectDuration(audio);
 
