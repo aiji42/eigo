@@ -2,7 +2,7 @@ import { drizzle } from 'drizzle-orm/d1';
 import { eq, InferSelectModel } from 'drizzle-orm';
 import * as schema from '../schema';
 import { RSSFeed, RSSItem } from './rss-parser';
-import { Content } from './scrape';
+import { Content } from './content';
 import { entries } from '../schema';
 
 export const getAllRules = async (d1: D1Database) => {

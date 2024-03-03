@@ -3,14 +3,16 @@ import { ttsFromEntry } from './libs/tts';
 import { createM3U } from './libs/m3u';
 import { Hono } from 'hono';
 import { getAudio, putAudio } from './libs/kv';
-import { createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
+import { createCalibrate, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
+import { createContent } from './libs/content';
 
 export type Bindings = {
 	CACHE: KVNamespace;
 	DB: D1Database;
 	TTS: Fetcher;
 	Translate: Fetcher;
+	Calibrate: Fetcher;
 };
 
 const app = new Hono<{
@@ -47,6 +49,19 @@ app.get('/api/entry/:id', async (c) => {
 	if (!entry) return c.notFound();
 
 	return c.json(entry);
+});
+
+app.get('/calibrate/:entryId', async (c) => {
+	const id = c.req.param('entryId');
+	let entry = await getEntryById(c.env.DB, Number(id));
+	if (!entry) return c.notFound();
+
+	const calibre = createCalibrate(serviceBindingsMock(c.env).Calibrate, c.req.raw.clone());
+	const calibrated = await calibre(entry.content.map((p) => p.sentences.map((s) => s.text).join(' ')).join('\n\n'));
+
+	const paragraphs = calibrated.trim().split('\n').filter(Boolean);
+
+	return c.json(await createContent(paragraphs));
 });
 
 app.get('/api/list', async (c) => {

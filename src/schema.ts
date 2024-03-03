@@ -1,6 +1,6 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
 import { relations } from 'drizzle-orm';
-import { Content } from './libs/scrape';
+import { Content } from './libs/content';
 
 export const absorbRules = sqliteTable('AbsorbRules', {
 	id: integer('id').primaryKey({ autoIncrement: true }).notNull(),
@@ -40,6 +40,7 @@ export const entries = sqliteTable('Entries', {
 	title: text('title').notNull(),
 	description: text('description'),
 	content: text('content', { mode: 'json' }).notNull().$type<Content>(),
+	calibratedContentA1: text('calibratedContentA1', { mode: 'json' }).$type<Content>(),
 	thumbnailUrl: text('thumbnailUrl'),
 	metadata: text('metadata', { mode: 'json' }),
 	publishedAt: integer('publishedAt', { mode: 'timestamp' }).notNull(),

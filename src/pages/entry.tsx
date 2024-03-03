@@ -9,6 +9,8 @@ import { ParagraphCard } from '../componnts/ParagraphCard';
 import { useEffect, useReducer, useState } from 'react';
 import useSWRImmutable from 'swr/immutable';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
+import useSWRMutation from 'swr/mutation';
+import { Content } from '../libs/content';
 
 const isPlayingSection = (offset: number | null, duration: number | null, current: number) => {
 	return offset !== null && duration !== null && offset < current && offset + duration > current;
@@ -31,6 +33,14 @@ const Page = () => {
 		if (data && !data.isTTSed) setRefreshInterval(1000);
 		else setRefreshInterval(0);
 	}, [data]);
+	const {
+		data: calibratedContent,
+		trigger,
+		isMutating,
+	} = useSWRMutation(`/calibrate/${entryId}`, async (key) => {
+		const res = await fetch(key);
+		return (await res.json()) as Content;
+	});
 
 	const [playerRef, player] = usePlayer(data);
 
@@ -71,9 +81,12 @@ const Page = () => {
 				<h1 className="text-center text-4xl font-bold">{data.title}</h1>
 				<div className="text-gray-500">{displayRelativeTime(data.publishedAt)} ago</div>
 				{data.thumbnailUrl && <img className="m-auto h-64 object-cover md:h-96" src={data.thumbnailUrl} alt={data.title} />}
+				<button onClick={() => trigger()} disabled={isMutating || !!calibratedContent}>
+					Calibrate
+				</button>
 			</div>
 			<div className="mb-32 mt-8 flex flex-col gap-6 text-2xl">
-				{data.content.map((p, i) => {
+				{(calibratedContent ?? data.content).map((p, i) => {
 					const isLoading = translatingKey === p.key && isLoadingTranslate;
 					const activeSentenceKey = p.sentences.find(({ offset, duration }) => isPlayingSection(offset, duration, player.current))?.key;
 					return (
