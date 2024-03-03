@@ -55,9 +55,11 @@ const Page = () => {
 
 	return (
 		<>
-			<h1 className="mb-4 text-4xl font-bold">{data.title}</h1>
-			<div className="mb-4 text-gray-400">{displayRelativeTime(data.publishedAt)} ago</div>
-			{data.thumbnailUrl && <img className="m-auto h-64 object-cover md:h-96" src={data.thumbnailUrl} alt={data.title} />}
+			<div className="flex flex-col gap-4 p-2">
+				<h1 className="text-center text-4xl font-bold">{data.title}</h1>
+				<div className="text-gray-500">{displayRelativeTime(data.publishedAt)} ago</div>
+				{data.thumbnailUrl && <img className="m-auto h-64 object-cover md:h-96" src={data.thumbnailUrl} alt={data.title} />}
+			</div>
 			<div className="mb-32 mt-8 flex flex-col gap-6 text-2xl">
 				{data.content.map((p, i) => {
 					const isLoading = translatingKey === p.key && isLoadingTranslate;
