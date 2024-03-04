@@ -76,18 +76,22 @@ export const getEntryById = async (d1: D1Database, id: number) => {
 };
 
 export const getNextEntry = async (d1: D1Database, id: number) => {
+	const entry = await getEntryById(d1, id);
+	if (!entry) return null;
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findFirst({
-		where: (record, { lt }) => lt(record.id, id),
-		orderBy: (record, { desc }) => [desc(record.id)],
+		where: (record, { lte, lt, and }) => and(lte(record.publishedAt, entry.publishedAt), lt(record.id, entry.id)),
+		orderBy: (record, { desc }) => [desc(record.publishedAt), desc(record.id)],
 	});
 };
 
 export const getPrevEntry = async (d1: D1Database, id: number) => {
+	const entry = await getEntryById(d1, id);
+	if (!entry) return null;
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findFirst({
-		where: (record, { gt }) => gt(record.id, id),
-		orderBy: (record, { asc }) => [asc(record.id)],
+		where: (record, { gte, gt, and }) => and(gte(record.publishedAt, entry.publishedAt), gt(record.id, entry.id)),
+		orderBy: (record, { asc }) => [asc(record.publishedAt), asc(record.id)],
 	});
 };
 
@@ -99,7 +103,7 @@ export const getEntryByUrl = async (d1: D1Database, url: string) => {
 export const paginateEntries = async (d1: D1Database, limit: number, offset: number) => {
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findMany({
-		orderBy: (record, { desc }) => [desc(record.id)],
+		orderBy: (record, { desc }) => [desc(record.publishedAt)],
 		limit,
 		offset,
 	});
