@@ -41,7 +41,7 @@ const Page = () => {
 
 	useEffect(() => {
 		if (!player.ended) return;
-		const timer = setTimeout(() => nextTrack(), 2000);
+		const timer = setTimeout(() => nextTrack(), 1000);
 		return () => clearTimeout(timer);
 	}, [player.ended, nextTrack]);
 

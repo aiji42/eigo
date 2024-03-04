@@ -14,46 +14,6 @@ export const usePlayer = (
 	const [ended, setEnded] = useState(false);
 	const ref = useRef<HTMLAudioElement>(null);
 
-	useEffect(() => {
-		if (!src || !isMounted || !ref.current) return;
-		if (Hls.isSupported()) {
-			const hls = new Hls();
-			hls.loadSource(src);
-			hls.attachMedia(ref.current);
-		} else if (ref.current.canPlayType('application/vnd.apple.mpegurl')) {
-			ref.current.src = src;
-		}
-
-		const play = () => setPlaying(true);
-		const pause = () => setPlaying(false);
-		const timeupdate = () => setCurrentTime(ref.current?.currentTime ?? 0);
-		const ratechange = () => setCurrentRate(ref.current?.playbackRate ?? 1);
-		const ended = () => setEnded(true);
-		const loadstart = () => setLoading(true);
-		const loadeddata = () => setLoading(false);
-		ref.current.addEventListener('play', play);
-		ref.current.addEventListener('pause', pause);
-		ref.current.addEventListener('timeupdate', timeupdate);
-		ref.current.addEventListener('ratechange', ratechange);
-		ref.current.addEventListener('ended', ended);
-		ref.current.addEventListener('loadstart', loadstart);
-		ref.current.addEventListener('loadeddata', loadeddata);
-
-		if (autoPlay) ref.current.play();
-
-		return () => {
-			setPlaying(false);
-			setEnded(false);
-			ref.current?.removeEventListener('play', play);
-			ref.current?.removeEventListener('pause', pause);
-			ref.current?.removeEventListener('timeupdate', timeupdate);
-			ref.current?.removeEventListener('ratechange', ratechange);
-			ref.current?.removeEventListener('ended', ended);
-			ref.current?.removeEventListener('loadstart', loadstart);
-			ref.current?.removeEventListener('loadeddata', loadeddata);
-		};
-	}, [src, autoPlay, isMounted]);
-
 	const play = useCallback(() => {
 		ref.current?.play();
 	}, []);
@@ -86,6 +46,48 @@ export const usePlayer = (
 			return () => play();
 		}
 	}, [playPauseSync?.(), getPlaying, pause, play]);
+
+	useEffect(() => {
+		if (!src || !isMounted || !ref.current) return;
+		if (Hls.isSupported()) {
+			const hls = new Hls();
+			hls.loadSource(src);
+			hls.attachMedia(ref.current);
+		} else if (ref.current.canPlayType('application/vnd.apple.mpegurl')) {
+			ref.current.src = src;
+		}
+
+		const play = () => setPlaying(true);
+		const pause = () => setPlaying(false);
+		const timeupdate = () => setCurrentTime(ref.current?.currentTime ?? 0);
+		const ratechange = () => setCurrentRate(ref.current?.playbackRate ?? 1);
+		const ended = () => setEnded(true);
+		const loadstart = () => setLoading(true);
+		const loadeddata = () => setLoading(false);
+		ref.current.addEventListener('play', play);
+		ref.current.addEventListener('pause', pause);
+		ref.current.addEventListener('timeupdate', timeupdate);
+		ref.current.addEventListener('ratechange', ratechange);
+		ref.current.addEventListener('ended', ended);
+		ref.current.addEventListener('loadstart', loadstart);
+		ref.current.addEventListener('loadeddata', loadeddata);
+
+		if (autoPlay) ref.current.play();
+
+		const _ref = ref.current;
+		return () => {
+			setEnded(false);
+			setCurrentTime(0);
+			seek(0);
+			_ref.removeEventListener('play', play);
+			_ref.removeEventListener('pause', pause);
+			_ref.removeEventListener('timeupdate', timeupdate);
+			_ref.removeEventListener('ratechange', ratechange);
+			_ref.removeEventListener('ended', ended);
+			_ref.removeEventListener('loadstart', loadstart);
+			_ref.removeEventListener('loadeddata', loadeddata);
+		};
+	}, [src, autoPlay, isMounted, seek]);
 
 	return [
 		ref,

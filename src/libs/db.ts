@@ -80,7 +80,7 @@ export const getNextEntry = async (d1: D1Database, id: number) => {
 	if (!entry) return null;
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findFirst({
-		where: (record, { lte, lt, and }) => and(lte(record.publishedAt, entry.publishedAt), lt(record.id, entry.id)),
+		where: (record, { lte, not, eq, and }) => and(lte(record.publishedAt, entry.publishedAt), not(eq(record.id, entry.id))),
 		orderBy: (record, { desc }) => [desc(record.publishedAt), desc(record.id)],
 	});
 };
@@ -90,7 +90,7 @@ export const getPrevEntry = async (d1: D1Database, id: number) => {
 	if (!entry) return null;
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findFirst({
-		where: (record, { gte, gt, and }) => and(gte(record.publishedAt, entry.publishedAt), gt(record.id, entry.id)),
+		where: (record, { gte, not, eq, and }) => and(gte(record.publishedAt, entry.publishedAt), not(eq(record.id, entry.id))),
 		orderBy: (record, { asc }) => [asc(record.publishedAt), asc(record.id)],
 	});
 };
