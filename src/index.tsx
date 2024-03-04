@@ -82,7 +82,8 @@ app.get('/calibrate/:entryId', async (c) => {
 
 app.get('/api/list', async (c) => {
 	const offset = c.req.query('offset');
-	const entries = await paginateEntries(c.env.DB, 20, offset ? Number(offset) : 0);
+	const size = c.req.query('size');
+	const entries = await paginateEntries(c.env.DB, size ? Number(size) : 10, offset ? Number(offset) : 0);
 
 	return c.json(entries);
 });
