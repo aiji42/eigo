@@ -54,6 +54,7 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 		() => ref.current && ref.current.currentTime > 0 && !ref.current.paused && !ref.current.ended && ref.current.readyState > 2,
 		[],
 	);
+	const getCurrentTime = useCallback(() => ref.current?.currentTime ?? 0, []);
 	const toggle = useCallback(() => {
 		if (getPlaying()) pause();
 		else play();
@@ -74,6 +75,7 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 			playing,
 			getPlaying,
 			currentTime,
+			getCurrentTime,
 			play,
 			pause,
 			toggle,

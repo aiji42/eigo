@@ -5,8 +5,8 @@ import { Content, getNextPlayableSentence, getPrevPlayableSentence } from '../li
 
 export type PlayerProps = {
 	playerRef: RefObject<HTMLAudioElement>;
-	currentTime: number;
 	playing: boolean;
+	getCurrentTime: () => number;
 	toggle: () => void;
 	seek: (time: number) => void;
 	playbackRate: number;
@@ -19,13 +19,13 @@ export type PlayerProps = {
 export const Player: FC<PlayerProps> = ({
 	playerRef,
 	playing,
+	getCurrentTime,
 	seek,
 	toggle,
 	setPlaybackRate,
 	playbackRate,
 	loading,
 	mount,
-	currentTime,
 	content,
 }) => {
 	useEffect(() => {
@@ -40,16 +40,16 @@ export const Player: FC<PlayerProps> = ({
 	}, [playbackRate, setPlaybackRate]);
 
 	const backPrev = useCallback(() => {
-		const prev = getPrevPlayableSentence(content, currentTime);
+		const prev = getPrevPlayableSentence(content, getCurrentTime());
 		if (!prev) seek(0);
 		else seek((prev.offset ?? 0) + 0.01);
-	}, [content, seek, currentTime]);
+	}, [content, seek, getCurrentTime]);
 
 	const skipNext = useCallback(() => {
-		const prev = getNextPlayableSentence(content, currentTime);
+		const prev = getNextPlayableSentence(content, getCurrentTime());
 		if (!prev) seek(0);
 		else seek((prev.offset ?? 0) + 0.01);
-	}, [content, seek, currentTime]);
+	}, [content, seek, getCurrentTime]);
 
 	return (
 		<div className="w-full max-w-4xl">
