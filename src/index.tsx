@@ -1,11 +1,11 @@
 import { getEntryById, paginateEntries, updateEntry } from './libs/db';
-import { ttsFromEntry } from './libs/tts';
+import { ttsContent } from './libs/tts';
 import { createM3U } from './libs/m3u';
 import { Hono } from 'hono';
 import { getAudio, putAudio } from './libs/kv';
 import { createCalibrate, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
-import { createContent, isTTSed } from './libs/content';
+import { createContent, isTTSed, joinSentences } from './libs/content';
 
 export type Bindings = {
 	CACHE: KVNamespace;
@@ -34,13 +34,13 @@ app.get('/playlist/:entryId/voice.m3u8', async (c) => {
 
 	if (!isTTSed(entry.content)) {
 		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
-		const { newContent, audios } = await ttsFromEntry(tts, entry);
+		const { newContent, audios } = await ttsContent(tts, entry.content);
 		// TODO: KVではなくR2にする
 		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
 		entry = await updateEntry(c.env.DB, entry.id, { content: newContent });
 	}
 
-	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
+	return new Response(createM3U(entry.content, `/audio/${entry.id}`), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
 
 app.get('/api/entry/:id', async (c) => {
@@ -57,7 +57,7 @@ app.get('/calibrate/:entryId', async (c) => {
 	if (!entry) return c.notFound();
 
 	const calibre = createCalibrate(serviceBindingsMock(c.env).Calibrate, c.req.raw.clone());
-	const calibrated = await calibre(entry.content.map((p) => p.sentences.map((s) => s.text).join(' ')).join('\n\n'));
+	const calibrated = await calibre(entry.content.map(joinSentences).join('\n\n'));
 
 	const paragraphs = calibrated.trim().split('\n').filter(Boolean);
 

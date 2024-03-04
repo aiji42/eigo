@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { Entry } from '../schema';
 
 // TODO: リファクタ & テスト & (各deps系が正しいか確認)
-export const usePlayer = (entry: Entry | null | undefined, autoPlay = false) => {
+export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 	const [isMounted, mount] = useReducer(() => true, false);
 	const [playing, setPlaying] = useState(false);
 	const [current, setCurrent] = useState(-1);
@@ -11,39 +10,8 @@ export const usePlayer = (entry: Entry | null | undefined, autoPlay = false) => 
 	const [loading, setLoading] = useState(false);
 	const ref = useRef<HTMLAudioElement>(null);
 
-	const src = entry ? `/playlist/${entry.id}/voice.m3u8` : '';
-
 	useEffect(() => {
-		if (!entry || !isMounted || !ref.current) return;
-		if ('mediaSession' in navigator) {
-			navigator.mediaSession.metadata = new MediaMetadata({
-				title: entry.title,
-				artist: 'eigo',
-				artwork: entry.thumbnailUrl
-					? [
-							{ src: entry.thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
-							{ src: entry.thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
-						]
-					: [],
-			});
-
-			navigator.mediaSession.setActionHandler('play', () => {
-				ref.current?.play();
-			});
-			navigator.mediaSession.setActionHandler('pause', () => {
-				ref.current?.pause();
-			});
-			navigator.mediaSession.setActionHandler('nexttrack', () => {
-				// ページを送る
-			});
-			navigator.mediaSession.setActionHandler('previoustrack', () => {
-				// ページを戻す
-			});
-		}
-	}, [entry, isMounted]);
-
-	useEffect(() => {
-		if (!isMounted || !ref.current) return;
+		if (!src || !isMounted || !ref.current) return;
 		if (Hls.isSupported()) {
 			const hls = new Hls();
 			hls.loadSource(src);

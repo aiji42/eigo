@@ -14,7 +14,6 @@ export const sha256 = async (text: string): Promise<string> => {
 	return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
 };
 
-// 相対時間表記(min, mins, hour, hours, day, days)をつけて表示する
 export const displayRelativeTime = (_date: Date | string) => {
 	const date = typeof _date === 'string' ? new Date(_date) : _date;
 	const now = new Date();
@@ -25,4 +24,18 @@ export const displayRelativeTime = (_date: Date | string) => {
 	if (hours < 24) return hours === 1 ? '1 hour' : `${hours} hours`;
 	const days = Math.floor(hours / 24);
 	return days === 1 ? '1 day' : `${days} days`;
+};
+
+export const getJson = async <T>(url: string): Promise<T> => {
+	const res = await fetch(url);
+	return await res.json();
+};
+
+export const postJson = async <T>(url: string, data: any): Promise<T> => {
+	const res = await fetch(url, {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json' },
+		body: JSON.stringify(data),
+	});
+	return await res.json();
 };

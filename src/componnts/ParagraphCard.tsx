@@ -3,6 +3,7 @@ import { clsx } from 'clsx';
 
 type ParagraphCardProps = {
 	paragraph: {
+		key: string;
 		sentences: {
 			text: string;
 			key: string;
@@ -17,13 +18,19 @@ export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenc
 	const ref = useRef<HTMLParagraphElement>(null);
 
 	useEffect(() => {
-		if (!!activeSentenceKey && scrollInActive) ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		if (!!activeSentenceKey && scrollInActive) {
+			ref.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
 	}, [!!activeSentenceKey, scrollInActive]);
 
 	return (
-		<p className={clsx('scroll-mt-24 hyphens-auto break-words p-2 text-gray-500', showTranslation && 'opacity-75')} ref={ref}>
+		<p
+			className={clsx('scroll-mt-24 hyphens-auto break-words p-2 text-gray-500', showTranslation && 'opacity-75')}
+			ref={ref}
+			data-key={paragraph.key}
+		>
 			{paragraph.sentences.map(({ text, key }) => (
-				<span key={key} className={clsx(key === activeSentenceKey && 'text-slate-100')} lang="en">
+				<span key={key} className={clsx(key === activeSentenceKey && 'text-slate-100')} lang="en" data-key={key}>
 					{text}
 				</span>
 			))}

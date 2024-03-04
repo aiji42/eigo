@@ -1,8 +1,7 @@
-import { Entry } from '../schema';
 import { Content, Paragraph, Sentence } from './content';
 
-export const ttsFromEntry = async (tts: (text: string) => Promise<{ audio: Uint8Array; duration: number }>, entry: Entry) => {
-	const sentences = entry.content.flatMap(({ sentences }) => sentences);
+export const ttsContent = async (tts: (text: string) => Promise<{ audio: Uint8Array; duration: number }>, content: Content) => {
+	const sentences = content.flatMap(({ sentences }) => sentences);
 	const audios = await Promise.all(
 		sentences.map(async (sentence) => {
 			return { key: sentence.key, ...(await tts(sentence.text)) };
@@ -11,7 +10,7 @@ export const ttsFromEntry = async (tts: (text: string) => Promise<{ audio: Uint8
 	const mapping = Object.fromEntries(audios.map((data) => [data.key, data]));
 
 	let offset = 0;
-	const newContent = entry.content.map((paragraph) => {
+	const newContent = content.map((paragraph) => {
 		const sentences = paragraph.sentences.map((sentence) => {
 			const duration = mapping[sentence.key].duration;
 			const newSentence = {
