@@ -15,10 +15,6 @@ import { useNavigate } from 'react-router-dom';
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
 	const { entry, isLoading } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
-	const navigate = useNavigate();
-	const nextTrack = useCallback(() => {
-		entry?.nextEntryId && !isLoading && navigate(`/${entry.nextEntryId}`);
-	}, [navigate, entry?.nextEntryId, isLoading]);
 
 	const { data: calibratedContent, trigger, isMutating } = useSWRMutation<Content>(`/calibrate/${entryId}`, getJson);
 
@@ -28,6 +24,10 @@ const Page = () => {
 		playPauseSync: () => !!translatingKey,
 		autoPlay: true,
 	});
+	const navigate = useNavigate();
+	const nextTrack = useCallback(() => {
+		entry?.nextEntryId && !isLoading && !player.loading && navigate(`/${entry.nextEntryId}`);
+	}, [navigate, entry?.nextEntryId, player.loading, isLoading]);
 	useMediaSession(
 		playerRef,
 		{ title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl },
