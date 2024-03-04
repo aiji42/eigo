@@ -3,7 +3,7 @@ import { displayRelativeTime, getJson } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { usePlayer } from '../hooks/usePlayer';
 import { ParagraphCard } from '../componnts/ParagraphCard';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
 import useSWRMutation from 'swr/mutation';
 import { Content, getPlaying, isTTSed } from '../libs/content';
@@ -17,27 +17,18 @@ const Page = () => {
 
 	const { data: calibratedContent, trigger, isMutating } = useSWRMutation<Content>(`/calibrate/${entryId}`, getJson);
 
-	const [playerRef, player] = usePlayer(entry ? `/playlist/${entry.id}/voice.m3u8` : null);
-	useMediaSession(playerRef, { title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl });
-
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	// 翻訳中に再生を一時停止し、翻訳が終わったら再生を再開する
-	useEffect(() => {
-		if (!!translatingKey && player.getPlaying()) {
-			player.pause();
-			return () => {
-				player.play();
-			};
-		}
-	}, [!!translatingKey, player.pause, player.play, player.getPlaying]);
+	const [playerRef, player] = usePlayer(entry ? `/playlist/${entry.id}/voice.m3u8` : null, { playPauseSync: () => !!translatingKey });
+	useMediaSession(playerRef, { title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl });
+
 	// 再生を開始したら翻訳を閉じる
 	useEffect(() => {
 		if (player.playing) translate(null);
 	}, [player.playing]);
 
+	if (isLoading) return <LoadingSpinnerIcon />;
 	if (!entry) return null;
-	if (isLoading) return null;
 
 	const playing = getPlaying(entry.content, player.currentTime);
 

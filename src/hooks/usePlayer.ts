@@ -2,7 +2,10 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import Hls from 'hls.js';
 
 // TODO: リファクタ & テスト & (各deps系が正しいか確認)
-export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
+export const usePlayer = (
+	src: string | null | undefined,
+	{ autoPlay = false, playPauseSync }: { autoPlay?: boolean; playPauseSync?: () => boolean } = {},
+) => {
 	const [isMounted, mount] = useReducer(() => true, false);
 	const [playing, setPlaying] = useState(false);
 	const [currentTime, setCurrentTime] = useState(-1);
@@ -48,10 +51,14 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 		};
 	}, [src, autoPlay, isMounted]);
 
-	const play = useCallback(() => ref.current?.play(), []);
-	const pause = useCallback(() => ref.current?.pause(), []);
+	const play = useCallback(() => {
+		ref.current?.play();
+	}, []);
+	const pause = useCallback(() => {
+		ref.current?.pause();
+	}, []);
 	const getPlaying = useCallback(
-		() => ref.current && ref.current.currentTime > 0 && !ref.current.paused && !ref.current.ended && ref.current.readyState > 2,
+		() => !!ref.current && ref.current.currentTime > 0 && !ref.current.paused && !ref.current.ended && ref.current.readyState > 2,
 		[],
 	);
 	const getCurrentTime = useCallback(() => ref.current?.currentTime ?? 0, []);
@@ -69,11 +76,20 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 		if (ref.current) ref.current.playbackRate = rate;
 	}, []);
 
+	// 状態Aから状態Bに遷移する時にプレイヤーが再生中であれば一時停止し、さにまたAに戻る時に再生する
+	useEffect(() => {
+		if (!!playPauseSync?.() && getPlaying()) {
+			pause();
+			return () => play();
+		}
+	}, [playPauseSync?.(), getPlaying, pause, play]);
+
 	return [
 		ref,
 		{
 			playing,
 			getPlaying,
+			// currentTimeを監視するとコストが高いので、同期的に処理する必要がないならgetCurrentTimeを使うよ良い
 			currentTime,
 			getCurrentTime,
 			play,
