@@ -1,0 +1,1 @@
+ALTER TABLE `Entries` DROP COLUMN `isTTSed`;

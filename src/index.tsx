@@ -5,7 +5,7 @@ import { Hono } from 'hono';
 import { getAudio, putAudio } from './libs/kv';
 import { createCalibrate, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
-import { createContent } from './libs/content';
+import { createContent, isTTSed } from './libs/content';
 
 export type Bindings = {
 	CACHE: KVNamespace;
@@ -32,12 +32,12 @@ app.get('/playlist/:entryId/voice.m3u8', async (c) => {
 	let entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
 
-	if (!entry.isTTSed) {
+	if (!isTTSed(entry.content)) {
 		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
 		const { newContent, audios } = await ttsFromEntry(tts, entry);
 		// TODO: KVではなくR2にする
 		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
-		entry = await updateEntry(c.env.DB, entry.id, { content: newContent, isTTSed: true });
+		entry = await updateEntry(c.env.DB, entry.id, { content: newContent });
 	}
 
 	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });

@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import Hls from 'hls.js';
-import { InferSelectModel } from 'drizzle-orm';
-import { entries } from '../schema';
+import { Entry } from '../schema';
 
 // TODO: リファクタ & テスト & (各deps系が正しいか確認)
-export const usePlayer = (entry: InferSelectModel<typeof entries> | null | undefined, autoPlay = false) => {
+export const usePlayer = (entry: Entry | null | undefined, autoPlay = false) => {
 	const [isMounted, mount] = useReducer(() => true, false);
 	const [playing, setPlaying] = useState(false);
 	const [current, setCurrent] = useState(-1);

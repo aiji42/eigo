@@ -41,3 +41,7 @@ export const createContent = async (paragraphs: string[]): Promise<Content> => {
 		})),
 	);
 };
+
+export const isTTSed = (content: Content) => {
+	return content.flatMap(({ sentences }) => sentences).every(({ duration, offset }) => duration !== null && offset !== null);
+};

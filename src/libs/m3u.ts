@@ -1,7 +1,6 @@
-import { entries } from '../schema';
-import { InferSelectModel } from 'drizzle-orm';
+import { Entry } from '../schema';
 
-export const createM3U = (entry: InferSelectModel<typeof entries>) => {
+export const createM3U = (entry: Entry) => {
 	const sentences = entry.content.flatMap(({ sentences }) => sentences);
 
 	const targetDuration = Math.ceil(Math.max(...sentences.map(({ duration }) => duration ?? 0)));

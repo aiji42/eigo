@@ -1,5 +1,5 @@
 import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
-import { relations } from 'drizzle-orm';
+import { InferSelectModel, relations } from 'drizzle-orm';
 import { Content } from './libs/content';
 
 export const absorbRules = sqliteTable('AbsorbRules', {
@@ -43,5 +43,6 @@ export const entries = sqliteTable('Entries', {
 	thumbnailUrl: text('thumbnailUrl'),
 	metadata: text('metadata', { mode: 'json' }),
 	publishedAt: integer('publishedAt', { mode: 'timestamp' }).notNull(),
-	isTTSed: integer('isTTSed', { mode: 'boolean' }).notNull().default(false),
 });
+
+export type Entry = InferSelectModel<typeof entries>;

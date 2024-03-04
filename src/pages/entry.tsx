@@ -1,7 +1,6 @@
 import useSWR from 'swr';
 import { useParams } from 'react-router-dom';
-import { InferSelectModel } from 'drizzle-orm';
-import { entries } from '../schema';
+import { Entry } from '../schema';
 import { displayRelativeTime } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { usePlayer } from '../hooks/usePlayer';
@@ -10,7 +9,7 @@ import { useEffect, useReducer, useState } from 'react';
 import useSWRImmutable from 'swr/immutable';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
 import useSWRMutation from 'swr/mutation';
-import { Content } from '../libs/content';
+import { Content, isTTSed } from '../libs/content';
 
 const isPlayingSection = (offset: number | null, duration: number | null, current: number) => {
 	return offset !== null && duration !== null && offset < current && offset + duration > current;
@@ -23,14 +22,14 @@ const Page = () => {
 		`/api/entry/${entryId}`,
 		async (key) => {
 			const res = await fetch(key);
-			return (await res.json()) as InferSelectModel<typeof entries>;
+			return (await res.json()) as Entry;
 		},
 		{
 			refreshInterval,
 		},
 	);
 	useEffect(() => {
-		if (data && !data.isTTSed) setRefreshInterval(1000);
+		if (data && !isTTSed(data.content)) setRefreshInterval(1000);
 		else setRefreshInterval(0);
 	}, [data]);
 	const {
@@ -104,7 +103,7 @@ const Page = () => {
 				})}
 			</div>
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center md:p-1">
-				<Player playerRef={playerRef} {...player} loading={player.loading || !data.isTTSed} />
+				<Player playerRef={playerRef} {...player} loading={player.loading || !isTTSed(data.content)} />
 			</div>
 		</>
 	);

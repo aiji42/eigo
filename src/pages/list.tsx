@@ -1,6 +1,5 @@
 import useSWR from 'swr';
-import { InferSelectModel } from 'drizzle-orm';
-import { entries } from '../schema';
+import { Entry } from '../schema';
 import { displayRelativeTime } from '../libs/utils';
 import { Link } from 'react-router-dom';
 
@@ -9,7 +8,7 @@ const Page = () => {
 		'/api/list',
 		async (key) => {
 			const res = await fetch(key);
-			return (await res.json()) as InferSelectModel<typeof entries>[];
+			return (await res.json()) as Entry[];
 		},
 		{
 			fallbackData: [],

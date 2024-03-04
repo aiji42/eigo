@@ -1,9 +1,9 @@
 import { drizzle } from 'drizzle-orm/d1';
-import { eq, InferSelectModel } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import * as schema from '../schema';
 import { RSSFeed, RSSItem } from './rss-parser';
 import { Content } from './content';
-import { entries } from '../schema';
+import { entries, Entry } from '../schema';
 
 export const getAllRules = async (d1: D1Database) => {
 	const db = drizzle(d1, { schema });
@@ -64,7 +64,7 @@ export const insertEntry = async (d1: D1Database, channel: Awaited<ReturnType<ty
 	return result[0];
 };
 
-export const updateEntry = async (d1: D1Database, id: number, entry: Partial<InferSelectModel<typeof entries>>) => {
+export const updateEntry = async (d1: D1Database, id: number, entry: Partial<Entry>) => {
 	const db = drizzle(d1, { schema });
 	const [result] = await db.update(entries).set(entry).where(eq(entries.id, id)).returning();
 	return result;

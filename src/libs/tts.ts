@@ -1,11 +1,7 @@
-import { InferSelectModel } from 'drizzle-orm';
-import { entries } from '../schema';
+import { Entry } from '../schema';
 import { Content, Paragraph, Sentence } from './content';
 
-export const ttsFromEntry = async (
-	tts: (text: string) => Promise<{ audio: Uint8Array; duration: number }>,
-	entry: InferSelectModel<typeof entries>,
-) => {
+export const ttsFromEntry = async (tts: (text: string) => Promise<{ audio: Uint8Array; duration: number }>, entry: Entry) => {
 	const sentences = entry.content.flatMap(({ sentences }) => sentences);
 	const audios = await Promise.all(
 		sentences.map(async (sentence) => {
