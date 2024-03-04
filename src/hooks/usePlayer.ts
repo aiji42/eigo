@@ -39,12 +39,9 @@ export const usePlayer = (
 		ref.current.addEventListener('loadstart', loadstart);
 		ref.current.addEventListener('loadeddata', loadeddata);
 
-		const serial = setTimeout(() => {
-			autoPlay && ref.current?.play();
-		}, 3000);
+		if (autoPlay) ref.current.play();
 
 		return () => {
-			clearTimeout(serial);
 			setPlaying(false);
 			setEnded(false);
 			ref.current?.removeEventListener('play', play);

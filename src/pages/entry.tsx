@@ -40,7 +40,9 @@ const Page = () => {
 	}, [player.playing]);
 
 	useEffect(() => {
-		player.ended && nextTrack();
+		if (!player.ended) return;
+		const timer = setTimeout(() => nextTrack(), 2000);
+		return () => clearTimeout(timer);
 	}, [player.ended, nextTrack]);
 
 	if (isLoading) return <LoadingSpinnerIcon />;
