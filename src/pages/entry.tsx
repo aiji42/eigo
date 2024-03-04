@@ -17,8 +17,8 @@ const Page = () => {
 	const { entry, isLoading } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
 	const navigate = useNavigate();
 	const nextTrack = useCallback(() => {
-		entry?.nextEntryId && navigate(`/${entry.nextEntryId}`);
-	}, [navigate, entry?.nextEntryId]);
+		entry?.nextEntryId && !isLoading && navigate(`/${entry.nextEntryId}`);
+	}, [navigate, entry?.nextEntryId, isLoading]);
 
 	const { data: calibratedContent, trigger, isMutating } = useSWRMutation<Content>(`/calibrate/${entryId}`, getJson);
 
