@@ -22,20 +22,18 @@ const Page = () => {
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const pausedByTranslate = useRef(false);
+	// 翻訳中に再生を一時停止し、翻訳が終わったら再生を再開する
 	useEffect(() => {
-		if (translatingKey && player.playing) {
+		if (!!translatingKey && player.getPlaying()) {
 			player.pause();
-			pausedByTranslate.current = true;
-		} else if (!translatingKey && pausedByTranslate.current) {
-			player.play();
+			return () => {
+				player.play();
+			};
 		}
-	}, [translatingKey, player.pause, player.play, player.playing]);
+	}, [!!translatingKey, player.pause, player.play, player.getPlaying]);
+	// 再生を開始したら翻訳を閉じる
 	useEffect(() => {
-		if (player.playing) {
-			translate(null);
-			pausedByTranslate.current = false;
-		}
+		if (player.playing) translate(null);
 	}, [player.playing]);
 
 	if (!entry) return null;

@@ -50,12 +50,14 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 
 	const play = useCallback(() => ref.current?.play(), []);
 	const pause = useCallback(() => ref.current?.pause(), []);
+	const getPlaying = useCallback(
+		() => ref.current && ref.current.currentTime > 0 && !ref.current.paused && !ref.current.ended && ref.current.readyState > 2,
+		[],
+	);
 	const toggle = useCallback(() => {
-		if (!ref.current) return;
-		const isPlaying = ref.current.currentTime > 0 && !ref.current.paused && !ref.current.ended && ref.current.readyState > 2;
-		if (isPlaying) pause();
+		if (getPlaying()) pause();
 		else play();
-	}, [pause, play]);
+	}, [pause, play, getPlaying]);
 	const seek = useCallback((time: number) => {
 		if (ref.current) ref.current.currentTime = time;
 	}, []);
@@ -70,6 +72,7 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 		ref,
 		{
 			playing,
+			getPlaying,
 			currentTime,
 			play,
 			pause,
