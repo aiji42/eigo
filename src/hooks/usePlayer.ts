@@ -5,7 +5,7 @@ import Hls from 'hls.js';
 export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 	const [isMounted, mount] = useReducer(() => true, false);
 	const [playing, setPlaying] = useState(false);
-	const [current, setCurrent] = useState(-1);
+	const [currentTime, setCurrentTime] = useState(-1);
 	const [currentRate, setCurrentRate] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const ref = useRef<HTMLAudioElement>(null);
@@ -20,15 +20,9 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 			ref.current.src = src;
 		}
 
-		const play = () => {
-			setPlaying(true);
-			navigator.mediaSession.playbackState = 'playing';
-		};
-		const pause = () => {
-			setPlaying(false);
-			navigator.mediaSession.playbackState = 'paused';
-		};
-		const timeupdate = () => setCurrent(ref.current?.currentTime ?? 0);
+		const play = () => setPlaying(true);
+		const pause = () => setPlaying(false);
+		const timeupdate = () => setCurrentTime(ref.current?.currentTime ?? 0);
 		const ratechange = () => setCurrentRate(ref.current?.playbackRate ?? 1);
 		const ended = () => (navigator.mediaSession.playbackState = 'none');
 		const loadstart = () => setLoading(true);
@@ -56,42 +50,34 @@ export const usePlayer = (src: string | null | undefined, autoPlay = false) => {
 
 	const play = useCallback(() => ref.current?.play(), []);
 	const pause = useCallback(() => ref.current?.pause(), []);
-	// FIXME: playingに依存しないようにする
-	const toggle = useCallback(() => (playing ? pause() : play()), [playing, pause, play]);
+	const toggle = useCallback(() => {
+		if (!ref.current) return;
+		const isPlaying = ref.current.currentTime > 0 && !ref.current.paused && !ref.current.ended && ref.current.readyState > 2;
+		if (isPlaying) pause();
+		else play();
+	}, [pause, play]);
 	const seek = useCallback((time: number) => {
 		if (ref.current) ref.current.currentTime = time;
 	}, []);
 	const setVolume = useCallback((volume: number) => {
 		if (ref.current) ref.current.volume = volume;
 	}, []);
-	const rewind = useCallback(() => seek(0), [seek]);
-	const back10 = useCallback(() => seek((ref.current?.currentTime ?? 0) - 10), [seek]);
-	const forward10 = useCallback(() => seek((ref.current?.currentTime ?? 0) + 10), [seek]);
 	const setPlaybackRate = useCallback((rate: number) => {
 		if (ref.current) ref.current.playbackRate = rate;
 	}, []);
-	const switchRate = useCallback(() => {
-		const selectable = [0.5, 0.75, 1, 1.25, 1.5, 2];
-		const index = selectable.indexOf(ref.current?.playbackRate ?? 1);
-		const nextIndex = index === selectable.length - 1 ? 0 : index + 1;
-		setPlaybackRate(selectable[nextIndex]);
-	}, [setPlaybackRate]);
 
 	return [
 		ref,
 		{
 			playing,
-			current,
+			currentTime,
 			play,
 			pause,
 			toggle,
 			setVolume,
-			rewind,
-			back10,
-			forward10,
+			seek,
 			setPlaybackRate,
-			switchRate,
-			currentRate,
+			playbackRate: currentRate,
 			mount,
 			loading,
 		},

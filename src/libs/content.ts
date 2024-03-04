@@ -59,24 +59,28 @@ export const getPlaying = (content: Content, currentTime: number) => {
 	return { paragraph, sentence };
 };
 
-export const getNextPlayable = (content: Content, currentTime: number) => {
-	const playing = getPlaying(content, currentTime).sentence?.key;
+export const getNextPlayableSentence = (content: Content, currentTime: number) => {
+	const playingKey = getPlaying(content, currentTime).sentence?.key;
 	const sentences = content.flatMap(({ sentences }) => sentences);
 
-	if (!playing) return null;
+	if (!playingKey) return null;
 
-	const index = sentences.findIndex(({ key }) => playing === key);
+	const index = sentences.findIndex(({ key }) => playingKey === key);
 	if (index < 0) return null;
-	return sentences[index] ?? null;
+	return sentences[index + 1] ?? null;
 };
 
-export const getPrevPlayable = (content: Content, currentTime: number) => {
-	const playing = getPlaying(content, currentTime).sentence?.key;
+export const getPrevPlayableSentence = (content: Content, currentTime: number, threshold = 2) => {
+	const playing = getPlaying(content, currentTime);
+	// 現在再生中のセンテンスが開始位置からthreshold秒以内なら、それを返す
+	if (playing && (playing.sentence?.offset ?? 0) + threshold < currentTime) return playing.sentence;
+
 	const sentences = content.flatMap(({ sentences }) => sentences);
 
-	if (!playing) return null;
+	const playingKey = playing.sentence?.key;
+	if (!playingKey) return null;
 
-	const index = sentences.findIndex(({ key }) => playing === key);
+	const index = sentences.findIndex(({ key }) => playingKey === key);
 	if (index <= 0) return null;
 	return sentences[index - 1] ?? null;
 };

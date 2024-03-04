@@ -41,7 +41,7 @@ const Page = () => {
 	if (!entry) return null;
 	if (isLoading) return null;
 
-	const playing = getPlaying(entry.content, player.current);
+	const playing = getPlaying(entry.content, player.currentTime);
 
 	return (
 		<>
@@ -76,7 +76,7 @@ const Page = () => {
 				})}
 			</div>
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center md:p-1">
-				<Player playerRef={playerRef} {...player} loading={player.loading || !isTTSed(entry.content)} />
+				<Player playerRef={playerRef} {...player} loading={player.loading || !isTTSed(entry.content)} content={entry.content} />
 			</div>
 		</>
 	);
