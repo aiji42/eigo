@@ -1,4 +1,4 @@
-import { getEntryById, paginateEntries, updateEntry } from './libs/db';
+import { getEntryById, getNextEntry, getPrevEntry, paginateEntries, updateEntry } from './libs/db';
 import { ttsContent } from './libs/tts';
 import { createM3U } from './libs/m3u';
 import { Hono } from 'hono';
@@ -46,6 +46,22 @@ app.get('/playlist/:entryId/voice.m3u8', async (c) => {
 app.get('/api/entry/:id', async (c) => {
 	const id = c.req.param('id');
 	let entry = await getEntryById(c.env.DB, Number(id));
+	if (!entry) return c.notFound();
+
+	return c.json(entry);
+});
+
+app.get('/api/next-entry/:id', async (c) => {
+	const id = c.req.param('id');
+	let entry = await getNextEntry(c.env.DB, Number(id));
+	if (!entry) return c.notFound();
+
+	return c.json(entry);
+});
+
+app.get('/api/prev-entry/:id', async (c) => {
+	const id = c.req.param('id');
+	let entry = await getPrevEntry(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
 
 	return c.json(entry);

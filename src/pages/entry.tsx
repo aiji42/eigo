@@ -3,29 +3,45 @@ import { displayRelativeTime, getJson } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { usePlayer } from '../hooks/usePlayer';
 import { ParagraphCard } from '../componnts/ParagraphCard';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
 import useSWRMutation from 'swr/mutation';
 import { Content, getPlaying, isTTSed } from '../libs/content';
 import { useMediaSession } from '../hooks/useMediaSession';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
+import { useNavigate } from 'react-router-dom';
 
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
 	const { entry, isLoading } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
+	const navigate = useNavigate();
+	const nextTrack = useCallback(() => {
+		entry?.nextEntryId && navigate(`/${entry.nextEntryId}`);
+	}, [navigate, entry?.nextEntryId]);
 
 	const { data: calibratedContent, trigger, isMutating } = useSWRMutation<Content>(`/calibrate/${entryId}`, getJson);
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const [playerRef, player] = usePlayer(entry ? `/playlist/${entry.id}/voice.m3u8` : null, { playPauseSync: () => !!translatingKey });
-	useMediaSession(playerRef, { title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl });
+	const [playerRef, player] = usePlayer(entry ? `/playlist/${entry.id}/voice.m3u8` : null, {
+		playPauseSync: () => !!translatingKey,
+		autoPlay: true,
+	});
+	useMediaSession(
+		playerRef,
+		{ title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl },
+		{ onNextTrack: nextTrack },
+	);
 
 	// 再生を開始したら翻訳を閉じる
 	useEffect(() => {
 		if (player.playing) translate(null);
 	}, [player.playing]);
+
+	useEffect(() => {
+		player.ended && nextTrack();
+	}, [player.ended, nextTrack]);
 
 	if (isLoading) return <LoadingSpinnerIcon />;
 	if (!entry) return null;

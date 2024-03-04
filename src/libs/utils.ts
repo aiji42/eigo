@@ -28,6 +28,7 @@ export const displayRelativeTime = (_date: Date | string) => {
 
 export const getJson = async <T>(url: string): Promise<T> => {
 	const res = await fetch(url);
+	if (!res.ok) throw new Error(`fetch failed: ${res.status} ${res.statusText}`);
 	return await res.json();
 };
 
@@ -37,5 +38,6 @@ export const postJson = async <T>(url: string, data: any): Promise<T> => {
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify(data),
 	});
+	if (!res.ok) throw new Error(`fetch failed: ${res.status} ${res.statusText}`);
 	return await res.json();
 };

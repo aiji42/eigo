@@ -1,16 +1,31 @@
 import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from 'react-router-dom';
 import List from './pages/list';
 import Entry from './pages/entry';
+
+const Root = () => {
+	return (
+		<>
+			<ScrollRestoration />
+			<Outlet />
+		</>
+	);
+};
 
 const router = createBrowserRouter([
 	{
 		path: '/',
-		element: <List />,
-	},
-	{
-		path: '/:entryId',
-		element: <Entry />,
+		element: <Root />,
+		children: [
+			{
+				path: '/',
+				element: <List />,
+			},
+			{
+				path: '/:entryId',
+				element: <Entry />,
+			},
+		],
 	},
 ]);
 

@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
 
 const Page = () => {
+	// FIXME: infinite scroll
 	const { data = [], isLoading } = useSWR<Entry[]>('/api/list', getJson);
 
 	return (

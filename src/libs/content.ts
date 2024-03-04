@@ -66,8 +66,7 @@ export const getNextPlayableSentence = (content: Content, currentTime: number) =
 	if (!playingKey) return null;
 
 	const index = sentences.findIndex(({ key }) => playingKey === key);
-	if (index < 0) return null;
-	return sentences[index + 1] ?? null;
+	return sentences[Math.min(sentences.length - 1, index + 1)] ?? null;
 };
 
 export const getPrevPlayableSentence = (content: Content, currentTime: number, threshold = 2) => {
@@ -81,6 +80,5 @@ export const getPrevPlayableSentence = (content: Content, currentTime: number, t
 	if (!playingKey) return null;
 
 	const index = sentences.findIndex(({ key }) => playingKey === key);
-	if (index <= 0) return null;
-	return sentences[index - 1] ?? null;
+	return sentences[Math.max(0, index - 1)] ?? null;
 };

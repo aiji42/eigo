@@ -7,6 +7,11 @@ export const useMediaSession = (
 		lgArtwork,
 		smArtwork,
 	}: { title: string | undefined; lgArtwork: string | undefined | null; smArtwork: string | undefined | null },
+	{
+		onNextTrack,
+	}: {
+		onNextTrack?: VoidFunction;
+	} = {},
 ) => {
 	useEffect(() => {
 		if (!('mediaSession' in navigator) || !playerRef.current || !title) return;
@@ -28,10 +33,10 @@ export const useMediaSession = (
 			playerRef.current?.pause();
 		});
 		navigator.mediaSession.setActionHandler('nexttrack', () => {
-			// ページを送る
+			onNextTrack?.();
 		});
 		navigator.mediaSession.setActionHandler('previoustrack', () => {
-			// ページを戻す
+			// FIXME: ページを戻す
 		});
 
 		return () => {
@@ -41,5 +46,5 @@ export const useMediaSession = (
 			navigator.mediaSession.setActionHandler('nexttrack', null);
 			navigator.mediaSession.setActionHandler('previoustrack', null);
 		};
-	}, [title, smArtwork, lgArtwork, playerRef]);
+	}, [title, smArtwork, lgArtwork, playerRef, onNextTrack]);
 };

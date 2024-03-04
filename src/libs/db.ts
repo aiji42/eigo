@@ -75,6 +75,22 @@ export const getEntryById = async (d1: D1Database, id: number) => {
 	return db.query.entries.findFirst({ where: eq(schema.entries.id, id) });
 };
 
+export const getNextEntry = async (d1: D1Database, id: number) => {
+	const db = drizzle(d1, { schema });
+	return db.query.entries.findFirst({
+		where: (record, { lt }) => lt(record.id, id),
+		orderBy: (record, { desc }) => [desc(record.id)],
+	});
+};
+
+export const getPrevEntry = async (d1: D1Database, id: number) => {
+	const db = drizzle(d1, { schema });
+	return db.query.entries.findFirst({
+		where: (record, { gt }) => gt(record.id, id),
+		orderBy: (record, { asc }) => [asc(record.id)],
+	});
+};
+
 export const getEntryByUrl = async (d1: D1Database, url: string) => {
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findFirst({ where: eq(schema.entries.url, url) });
@@ -83,7 +99,7 @@ export const getEntryByUrl = async (d1: D1Database, url: string) => {
 export const paginateEntries = async (d1: D1Database, limit: number, offset: number) => {
 	const db = drizzle(d1, { schema });
 	return db.query.entries.findMany({
-		orderBy: (record, { desc }) => [desc(record.publishedAt)],
+		orderBy: (record, { desc }) => [desc(record.id)],
 		limit,
 		offset,
 	});

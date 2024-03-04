@@ -11,6 +11,7 @@ export const usePlayer = (
 	const [currentTime, setCurrentTime] = useState(-1);
 	const [currentRate, setCurrentRate] = useState(1);
 	const [loading, setLoading] = useState(false);
+	const [ended, setEnded] = useState(false);
 	const ref = useRef<HTMLAudioElement>(null);
 
 	useEffect(() => {
@@ -27,7 +28,7 @@ export const usePlayer = (
 		const pause = () => setPlaying(false);
 		const timeupdate = () => setCurrentTime(ref.current?.currentTime ?? 0);
 		const ratechange = () => setCurrentRate(ref.current?.playbackRate ?? 1);
-		const ended = () => (navigator.mediaSession.playbackState = 'none');
+		const ended = () => setEnded(true);
 		const loadstart = () => setLoading(true);
 		const loadeddata = () => setLoading(false);
 		ref.current.addEventListener('play', play);
@@ -101,6 +102,7 @@ export const usePlayer = (
 			playbackRate: currentRate,
 			mount,
 			loading,
+			ended,
 		},
 	] as const;
 };
