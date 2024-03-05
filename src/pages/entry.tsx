@@ -36,7 +36,7 @@ const Page = () => {
 	useMediaSession(
 		playerRef,
 		{ title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl },
-		{ onNextTrack: nextTrack },
+		{ onNextTrack: nextTrack, onPrevTrack: prevTrack },
 	);
 
 	// 再生を開始したら翻訳を閉じる

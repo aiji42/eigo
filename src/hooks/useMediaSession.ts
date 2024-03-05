@@ -9,8 +9,10 @@ export const useMediaSession = (
 	}: { title: string | undefined; lgArtwork: string | undefined | null; smArtwork: string | undefined | null },
 	{
 		onNextTrack,
+		onPrevTrack,
 	}: {
 		onNextTrack?: VoidFunction;
+		onPrevTrack?: VoidFunction;
 	} = {},
 ) => {
 	useEffect(() => {
@@ -36,10 +38,12 @@ export const useMediaSession = (
 			navigator.mediaSession.playbackState = 'paused';
 		});
 		navigator.mediaSession.setActionHandler('nexttrack', () => {
+			navigator.mediaSession.playbackState = 'paused';
 			onNextTrack?.();
 		});
 		navigator.mediaSession.setActionHandler('previoustrack', () => {
-			// FIXME: ページを戻す
+			navigator.mediaSession.playbackState = 'paused';
+			onPrevTrack?.();
 		});
 
 		return () => {
