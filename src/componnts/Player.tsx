@@ -4,36 +4,19 @@ import { LoadingSpinnerIcon, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon
 import { Content, getNextPlayableSentence, getPrevPlayableSentence } from '../libs/content';
 
 export type PlayerProps = {
-	playerRef: RefObject<HTMLAudioElement>;
 	playing: boolean;
 	getCurrentTime: () => number;
 	toggle: () => void;
 	seek: (time: number) => void;
 	playbackRate: number;
 	setPlaybackRate: (rate: number) => void;
-	mount: () => void;
 	loading?: boolean;
 	content: Content;
 };
 
-export const Player: FC<PlayerProps> = ({
-	playerRef,
-	playing,
-	getCurrentTime,
-	seek,
-	toggle,
-	setPlaybackRate,
-	playbackRate,
-	loading,
-	mount,
-	content,
-}) => {
-	useEffect(() => {
-		mount();
-	}, [mount]);
-
+export const Player: FC<PlayerProps> = ({ playing, getCurrentTime, seek, toggle, setPlaybackRate, playbackRate, loading, content }) => {
 	const switchPlaybackRate = useCallback(() => {
-		const rates = [0.5, 7.5, 1, 1.25, 1.5, 2];
+		const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
 		const current = rates.indexOf(playbackRate);
 		const next = current < 0 ? 2 : (current + 1) % rates.length;
 		setPlaybackRate(rates[next]);
@@ -53,7 +36,6 @@ export const Player: FC<PlayerProps> = ({
 
 	return (
 		<div className="w-full max-w-4xl">
-			<audio ref={playerRef} />
 			<div className="flex items-center rounded-md bg-neutral-900 p-2 text-slate-400 md:p-4">
 				<div className="flex flex-auto items-center justify-evenly">
 					<button

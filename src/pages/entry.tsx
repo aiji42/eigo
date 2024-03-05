@@ -17,14 +17,14 @@ const Page = () => {
 	const { entry, isLoading } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
 	const navigate = useNavigate();
 	const nextTrack = useCallback(() => {
-		entry?.nextEntryId && navigate(`/${entry.nextEntryId}`);
+		entry?.nextEntryId && navigate(`/${entry.nextEntryId}`, { replace: true });
 	}, [navigate, entry?.nextEntryId]);
 
 	const { data: calibratedContent, trigger, isMutating } = useSWRMutation<Content>(`/calibrate/${entryId}`, getJson);
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const [playerRef, player] = usePlayer(entry ? `/playlist/${entry.id}/voice.m3u8` : null, {
+	const [playerRef, player] = usePlayer(`/playlist/${entryId}/voice.m3u8`, {
 		playPauseSync: () => !!translatingKey,
 		autoPlay: true,
 	});
@@ -83,7 +83,7 @@ const Page = () => {
 				})}
 			</div>
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center md:p-1">
-				<Player playerRef={playerRef} {...player} loading={player.loading || !isTTSed(entry.content)} content={entry.content} />
+				<Player {...player} loading={player.loading || !isTTSed(entry.content)} content={entry.content} />
 			</div>
 		</>
 	);

@@ -2,41 +2,44 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import Hls from 'hls.js';
 
 // TODO: リファクタ & テスト & (各deps系が正しいか確認)
-export const usePlayer = (
-	src: string | null | undefined,
-	{ autoPlay = false, playPauseSync }: { autoPlay?: boolean; playPauseSync?: () => boolean } = {},
-) => {
-	const [isMounted, mount] = useReducer(() => true, false);
+export const usePlayer = (src: string, { autoPlay = false, playPauseSync }: { autoPlay?: boolean; playPauseSync?: () => boolean } = {}) => {
 	const [playing, setPlaying] = useState(false);
 	const [currentTime, setCurrentTime] = useState(-1);
 	const [currentRate, setCurrentRate] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const [ended, setEnded] = useState(false);
-	const ref = useRef<HTMLAudioElement>(null);
+	const audio = useRef<HTMLAudioElement | null>(new Audio());
+	const config = useRef({
+		playbackRate: audio.current?.playbackRate,
+		volume: audio.current?.volume,
+	});
 
 	const play = useCallback(() => {
-		ref.current?.play();
+		audio.current?.play().then(() => {
+			if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+		});
 	}, []);
 	const pause = useCallback(() => {
-		ref.current?.pause();
+		audio.current?.pause();
+		if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
 	}, []);
 	const getPlaying = useCallback(
-		() => !!ref.current && ref.current.currentTime > 0 && !ref.current.paused && !ref.current.ended && ref.current.readyState > 2,
+		() => !!audio.current && audio.current.currentTime > 0 && !audio.current.paused && !audio.current.ended && audio.current.readyState > 2,
 		[],
 	);
-	const getCurrentTime = useCallback(() => ref.current?.currentTime ?? 0, []);
+	const getCurrentTime = useCallback(() => audio.current?.currentTime ?? 0, []);
 	const toggle = useCallback(() => {
 		if (getPlaying()) pause();
 		else play();
 	}, [pause, play, getPlaying]);
 	const seek = useCallback((time: number) => {
-		if (ref.current) ref.current.currentTime = time;
+		if (audio.current) audio.current.currentTime = time;
 	}, []);
 	const setVolume = useCallback((volume: number) => {
-		if (ref.current) ref.current.volume = volume;
+		if (audio.current) audio.current.volume = volume;
 	}, []);
 	const setPlaybackRate = useCallback((rate: number) => {
-		if (ref.current) ref.current.playbackRate = rate;
+		if (audio.current) audio.current.playbackRate = rate;
 	}, []);
 
 	// 状態Aから状態Bに遷移する時にプレイヤーが再生中であれば一時停止し、さにまたAに戻る時に再生する
@@ -48,49 +51,53 @@ export const usePlayer = (
 	}, [playPauseSync?.(), getPlaying, pause, play]);
 
 	useEffect(() => {
-		if (!src || !isMounted || !ref.current) return;
+		audio.current = new Audio();
 		if (Hls.isSupported()) {
 			const hls = new Hls();
 			hls.loadSource(src);
-			hls.attachMedia(ref.current);
-		} else if (ref.current.canPlayType('application/vnd.apple.mpegurl')) {
-			ref.current.src = src;
+			hls.attachMedia(audio.current);
+		} else if (audio.current.canPlayType('application/vnd.apple.mpegurl')) {
+			audio.current.src = src;
 		}
 
 		const play = () => setPlaying(true);
 		const pause = () => setPlaying(false);
-		const timeupdate = () => setCurrentTime(ref.current?.currentTime ?? 0);
-		const ratechange = () => setCurrentRate(ref.current?.playbackRate ?? 1);
+		const timeupdate = () => setCurrentTime(audio.current?.currentTime ?? 0);
+		const ratechange = () => setCurrentRate(audio.current?.playbackRate ?? 1);
 		const ended = () => setEnded(true);
 		const loadstart = () => setLoading(true);
 		const loadeddata = () => setLoading(false);
-		ref.current.addEventListener('play', play);
-		ref.current.addEventListener('pause', pause);
-		ref.current.addEventListener('timeupdate', timeupdate);
-		ref.current.addEventListener('ratechange', ratechange);
-		ref.current.addEventListener('ended', ended);
-		ref.current.addEventListener('loadstart', loadstart);
-		ref.current.addEventListener('loadeddata', loadeddata);
+		audio.current.addEventListener('play', play);
+		audio.current.addEventListener('pause', pause);
+		audio.current.addEventListener('timeupdate', timeupdate);
+		audio.current.addEventListener('ratechange', ratechange);
+		audio.current.addEventListener('ended', ended);
+		audio.current.addEventListener('loadstart', loadstart);
+		audio.current.addEventListener('loadeddata', loadeddata);
 
-		if (autoPlay) ref.current.play();
+		if (autoPlay) {
+			audio.current.play().then(() => {
+				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
+			});
+			audio.current.playbackRate = config.current?.playbackRate ?? 1;
+		}
 
-		const _ref = ref.current;
 		return () => {
-			setEnded(false);
+			setPlaying(false);
 			setCurrentTime(0);
-			seek(0);
-			_ref.removeEventListener('play', play);
-			_ref.removeEventListener('pause', pause);
-			_ref.removeEventListener('timeupdate', timeupdate);
-			_ref.removeEventListener('ratechange', ratechange);
-			_ref.removeEventListener('ended', ended);
-			_ref.removeEventListener('loadstart', loadstart);
-			_ref.removeEventListener('loadeddata', loadeddata);
+			setEnded(false);
+			config.current.playbackRate = audio.current?.playbackRate;
+			if (audio.current) {
+				audio.current.pause();
+				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
+				audio.current.currentTime = 0;
+				audio.current = null;
+			}
 		};
-	}, [src, autoPlay, isMounted, seek]);
+	}, [src, autoPlay]);
 
 	return [
-		ref,
+		audio,
 		{
 			playing,
 			getPlaying,
@@ -104,7 +111,6 @@ export const usePlayer = (
 			seek,
 			setPlaybackRate,
 			playbackRate: currentRate,
-			mount,
 			loading,
 			ended,
 		},

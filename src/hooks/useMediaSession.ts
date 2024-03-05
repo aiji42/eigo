@@ -27,10 +27,13 @@ export const useMediaSession = (
 		});
 
 		navigator.mediaSession.setActionHandler('play', () => {
-			playerRef.current?.play();
+			playerRef.current?.play().then(() => {
+				navigator.mediaSession.playbackState = 'playing';
+			});
 		});
 		navigator.mediaSession.setActionHandler('pause', () => {
 			playerRef.current?.pause();
+			navigator.mediaSession.playbackState = 'paused';
 		});
 		navigator.mediaSession.setActionHandler('nexttrack', () => {
 			onNextTrack?.();
@@ -46,5 +49,5 @@ export const useMediaSession = (
 			navigator.mediaSession.setActionHandler('nexttrack', null);
 			navigator.mediaSession.setActionHandler('previoustrack', null);
 		};
-	}, [title, smArtwork, lgArtwork, playerRef, onNextTrack]);
+	}, [title, smArtwork, lgArtwork, onNextTrack]);
 };
