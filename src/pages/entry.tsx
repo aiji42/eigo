@@ -6,7 +6,7 @@ import { ParagraphCard } from '../componnts/ParagraphCard';
 import { useCallback, useEffect } from 'react';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
 import useSWRMutation from 'swr/mutation';
-import { Content, getPlaying, isTTSed } from '../libs/content';
+import { Content, getNextPlaybackTime, getPlaying, getPrevPlaybackTime, isTTSed } from '../libs/content';
 import { useMediaSession } from '../hooks/useMediaSession';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
@@ -17,8 +17,13 @@ const Page = () => {
 	const { entry, isLoading } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
 	const navigate = useNavigate();
 	const nextTrack = useCallback(() => {
-		entry?.nextEntryId && navigate(`/${entry.nextEntryId}`, { replace: true });
+		if (entry?.nextEntryId) navigate(`/${entry.nextEntryId}`, { replace: true });
+		else navigate(`/`);
 	}, [navigate, entry?.nextEntryId]);
+	const prevTrack = useCallback(() => {
+		if (entry?.prevEntryId) navigate(`/${entry.prevEntryId}`, { replace: true });
+		else navigate(`/`);
+	}, [navigate, entry?.prevEntryId]);
 
 	const { data: calibratedContent, trigger, isMutating } = useSWRMutation<Content>(`/calibrate/${entryId}`, getJson);
 
@@ -44,6 +49,20 @@ const Page = () => {
 		const timer = setTimeout(() => nextTrack(), 1000);
 		return () => clearTimeout(timer);
 	}, [player.ended, nextTrack]);
+
+	const backToPrev = useCallback(() => {
+		if (!entry) return;
+		const time = getPrevPlaybackTime(entry.content, player.getCurrentTime());
+		if (time < 0) return prevTrack();
+		else player.seek(time + 0.01);
+	}, [entry, player.seek, player.getCurrentTime, prevTrack]);
+
+	const skipToNext = useCallback(() => {
+		if (!entry) return;
+		const time = getNextPlaybackTime(entry.content, player.getCurrentTime());
+		if (time < 0) nextTrack();
+		else player.seek(time + 0.01);
+	}, [entry, player.seek, player.getCurrentTime, nextTrack]);
 
 	if (isLoading) return <LoadingSpinnerIcon />;
 	if (!entry) return null;
@@ -83,7 +102,7 @@ const Page = () => {
 				})}
 			</div>
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center md:p-1">
-				<Player {...player} loading={player.loading || !isTTSed(entry.content)} content={entry.content} />
+				<Player {...player} loading={player.loading || !isTTSed(entry.content)} backToPrev={backToPrev} skipToNext={skipToNext} />
 			</div>
 		</>
 	);

@@ -1,38 +1,26 @@
 import { FC, RefObject, useCallback, useEffect } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon } from './Icons';
-import { Content, getNextPlayableSentence, getPrevPlayableSentence } from '../libs/content';
 
+// TODO: onClickXXX系にする
 export type PlayerProps = {
 	playing: boolean;
-	getCurrentTime: () => number;
 	toggle: () => void;
 	seek: (time: number) => void;
 	playbackRate: number;
 	setPlaybackRate: (rate: number) => void;
 	loading?: boolean;
-	content: Content;
+	backToPrev: VoidFunction;
+	skipToNext: VoidFunction;
 };
 
-export const Player: FC<PlayerProps> = ({ playing, getCurrentTime, seek, toggle, setPlaybackRate, playbackRate, loading, content }) => {
+export const Player: FC<PlayerProps> = ({ playing, seek, toggle, setPlaybackRate, playbackRate, loading, backToPrev, skipToNext }) => {
 	const switchPlaybackRate = useCallback(() => {
 		const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
 		const current = rates.indexOf(playbackRate);
 		const next = current < 0 ? 2 : (current + 1) % rates.length;
 		setPlaybackRate(rates[next]);
 	}, [playbackRate, setPlaybackRate]);
-
-	const backPrev = useCallback(() => {
-		const prev = getPrevPlayableSentence(content, getCurrentTime());
-		if (!prev) seek(0);
-		else seek((prev.offset ?? 0) + 0.01);
-	}, [content, seek, getCurrentTime]);
-
-	const skipNext = useCallback(() => {
-		const prev = getNextPlayableSentence(content, getCurrentTime());
-		if (!prev) seek(0);
-		else seek((prev.offset ?? 0) + 0.01);
-	}, [content, seek, getCurrentTime]);
 
 	return (
 		<div className="w-full max-w-4xl">
@@ -50,7 +38,7 @@ export const Player: FC<PlayerProps> = ({ playing, getCurrentTime, seek, toggle,
 					<button
 						type="button"
 						className="flex size-12 items-center justify-center rounded-full active:text-slate-100"
-						onClick={backPrev}
+						onClick={backToPrev}
 						aria-label="Rewind to previous sentence"
 						disabled={loading}
 					>
@@ -73,7 +61,7 @@ export const Player: FC<PlayerProps> = ({ playing, getCurrentTime, seek, toggle,
 					<button
 						type="button"
 						className="flex size-12 items-center justify-center rounded-full active:text-slate-100"
-						onClick={skipNext}
+						onClick={skipToNext}
 						aria-label="Skoip to next sentence"
 						disabled={loading}
 					>

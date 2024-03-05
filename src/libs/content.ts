@@ -51,34 +51,47 @@ export const joinSentences = (paragraph: Paragraph) => {
 };
 
 export const getPlaying = (content: Content, currentTime: number) => {
-	const paragraph = content.find(({ offset, duration }) => (offset ?? -1) <= currentTime && currentTime < (offset ?? -1) + (duration ?? 0));
+	const paragraph = content.find(
+		({ offset, duration }) => (offset ?? -1) <= currentTime && currentTime <= (offset ?? -1) + (duration ?? 0),
+	);
 	const sentence = paragraph?.sentences.find(
-		({ offset, duration }) => (offset ?? -1) <= currentTime && currentTime < (offset ?? -1) + (duration ?? 0),
+		({ offset, duration }) => (offset ?? -1) <= currentTime && currentTime <= (offset ?? -1) + (duration ?? 0),
 	);
 
 	return { paragraph, sentence };
 };
 
-export const getNextPlayableSentence = (content: Content, currentTime: number) => {
-	const playingKey = getPlaying(content, currentTime).sentence?.key;
+export const getNextPlaybackTime = (content: Content, currentTime: number, segment: 'sentence' | 'paragraph' = 'paragraph') => {
+	const { paragraph, sentence } = getPlaying(content, currentTime);
+	if (!sentence || !paragraph) return -1;
+	if (sentence.offset === null || paragraph.offset === null) return 0;
+
 	const sentences = content.flatMap(({ sentences }) => sentences);
+	const index =
+		segment === 'sentence' ? sentences.findIndex(({ key }) => sentence.key === key) : content.findIndex(({ key }) => paragraph.key === key);
+	const next = segment === 'sentence' ? sentences[index + 1] : content[index + 1];
 
-	if (!playingKey) return null;
-
-	const index = sentences.findIndex(({ key }) => playingKey === key);
-	return sentences[Math.min(sentences.length - 1, index + 1)] ?? null;
+	return next?.offset ?? -1;
 };
 
-export const getPrevPlayableSentence = (content: Content, currentTime: number, threshold = 2) => {
-	const playing = getPlaying(content, currentTime);
-	// 現在再生中のセンテンスが開始位置からthreshold秒以内なら、それを返す
-	if (playing && (playing.sentence?.offset ?? 0) + threshold < currentTime) return playing.sentence;
+export const getPrevPlaybackTime = (
+	content: Content,
+	currentTime: number,
+	segment: 'sentence' | 'paragraph' = 'sentence',
+	threshold = 2,
+) => {
+	const { sentence, paragraph } = getPlaying(content, currentTime);
+	if (!sentence || !paragraph || sentence.offset === null || paragraph.offset === null) return 0;
+
+	// 現在再生中のセグメントが開始位置からthreshold秒以内なら、それを返す
+	if (segment === 'sentence' && sentence.offset + threshold < currentTime) return sentence.offset;
+	if (segment === 'paragraph' && paragraph.offset + threshold < currentTime) return paragraph.offset;
 
 	const sentences = content.flatMap(({ sentences }) => sentences);
 
-	const playingKey = playing.sentence?.key;
-	if (!playingKey) return null;
+	const index =
+		segment === 'sentence' ? sentences.findIndex(({ key }) => sentence.key === key) : content.findIndex(({ key }) => paragraph.key === key);
+	const prev = segment === 'sentence' ? sentences[index - 1] : content[index - 1];
 
-	const index = sentences.findIndex(({ key }) => playingKey === key);
-	return sentences[Math.max(0, index - 1)] ?? null;
+	return prev?.offset ?? -1;
 };
