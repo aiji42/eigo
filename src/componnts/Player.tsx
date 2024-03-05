@@ -1,4 +1,4 @@
-import { FC, RefObject, useCallback, useEffect } from 'react';
+import { FC, useCallback } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon } from './Icons';
 

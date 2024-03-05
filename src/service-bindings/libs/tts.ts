@@ -20,7 +20,7 @@ export type TTSResponseData = {
 export const ttsByGoogle = async (token: string, text: string) => {
 	const body = {
 		audioConfig: {
-			audioEncoding: 'MP3',
+			audioEncoding: 'MP3_64_KBPS',
 			effectsProfileId: ['headphone-class-device'],
 			pitch: 1,
 			speakingRate: 0.65,
