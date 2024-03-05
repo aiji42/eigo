@@ -1,12 +1,11 @@
 import { useParams } from 'react-router-dom';
-import { displayRelativeTime, getJson } from '../libs/utils';
+import { displayRelativeTime } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { usePlayer } from '../hooks/usePlayer';
 import { ParagraphCard } from '../componnts/ParagraphCard';
 import { useCallback, useEffect } from 'react';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
-import useSWRMutation from 'swr/mutation';
-import { Content, getNextPlaybackTime, getPlaying, getPrevPlaybackTime, isTTSed } from '../libs/content';
+import { getNextPlaybackTime, getPlaying, getPrevPlaybackTime, isTTSed } from '../libs/content';
 import { useMediaSession } from '../hooks/useMediaSession';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
@@ -25,12 +24,11 @@ const Page = () => {
 		else navigate(`/`);
 	}, [navigate, entry?.prevEntryId]);
 
-	const { data: calibratedContent, trigger, isMutating } = useSWRMutation<Content>(`/calibrate/${entryId}`, getJson);
-
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
 	const [playerRef, player] = usePlayer(`/playlist/${entryId}/voice.m3u8`, {
 		playPauseSync: () => !!translatingKey,
+		// TODO: autoPlayはローカルストレージで管理。そもそも、再生開始自体をusePlayerの外で制御したほうが良さそう
 		autoPlay: true,
 	});
 	useMediaSession(
@@ -44,12 +42,15 @@ const Page = () => {
 		if (player.playing) translate(null);
 	}, [player.playing]);
 
+	// TODO: iosだと意図的にアクションを起こさせないと、次のトラックに遷移しない
+	// なので、ページ遷移させるためのボタン等を出現させる等に留めると良さそう
 	useEffect(() => {
 		if (!player.ended) return;
 		const timer = setTimeout(() => nextTrack(), 1000);
 		return () => clearTimeout(timer);
 	}, [player.ended, nextTrack]);
 
+	// TODO: usePlayerを原始的なuseAudioとし、Player用のpropsを作るためのusePlayerを作ってあげる(useAudioをusePlayerの中でコール)
 	const backToPrev = useCallback(() => {
 		if (!entry) return;
 		const time = getPrevPlaybackTime(entry.content, player.getCurrentTime());
@@ -73,14 +74,11 @@ const Page = () => {
 		<>
 			<div className="flex flex-col gap-4 p-2">
 				<h1 className="text-center text-4xl font-bold">{entry.title}</h1>
-				<div className="text-gray-500">{displayRelativeTime(entry.publishedAt)} ago</div>
+				<p className="text-center text-gray-500">{displayRelativeTime(entry.publishedAt)} ago</p>
 				{entry.thumbnailUrl && <img className="m-auto h-64 object-cover md:h-96" src={entry.thumbnailUrl} alt={entry.title} />}
-				<button onClick={() => trigger()} disabled={isMutating || !!calibratedContent}>
-					Calibrate
-				</button>
 			</div>
 			<div className="mb-32 mt-8 flex flex-col gap-6 text-2xl">
-				{(calibratedContent ?? entry.content).map((p, i) => {
+				{entry.content.map((p, i) => {
 					const isLoading = translatingKey === p.key && isLoadingTranslate;
 					return (
 						<div className="relative" onClick={() => translate(p.key)} key={i}>
@@ -102,6 +100,8 @@ const Page = () => {
 				})}
 			</div>
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center md:p-1">
+				{/* TODO: player.loadingがfalseになるタイミングと、!isTTSed(entry.content)がfalseになるタイミングがずれるので */}
+				{/* 一瞬、ローディング中に再生が始まっているように見える。=> 再生開始をusePlayerの外で制御したほうが良さそう */}
 				<Player {...player} loading={player.loading || !isTTSed(entry.content)} backToPrev={backToPrev} skipToNext={skipToNext} />
 			</div>
 		</>

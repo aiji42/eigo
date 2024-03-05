@@ -14,6 +14,7 @@ export type PlayerProps = {
 	skipToNext: VoidFunction;
 };
 
+// TODO: Playerの中はテキスト選択できないようにする
 export const Player: FC<PlayerProps> = ({ playing, seek, toggle, setPlaybackRate, playbackRate, loading, backToPrev, skipToNext }) => {
 	const switchPlaybackRate = useCallback(() => {
 		const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];

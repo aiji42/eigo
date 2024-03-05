@@ -46,6 +46,10 @@ export const isTTSed = (content: Content) => {
 	return content.flatMap(({ sentences }) => sentences).every(({ duration, offset }) => duration !== null && offset !== null);
 };
 
+export const getTotalDuration = (content: Content) => {
+	return content.reduce((acc, { duration }) => (duration ?? 0) + acc, 0);
+};
+
 export const joinSentences = (paragraph: Paragraph) => {
 	return paragraph.sentences.map(({ text }) => text).join(' ');
 };
