@@ -8,11 +8,11 @@ export const useEntry = (entryId: string | undefined, refreshUntil: (entry: Entr
 	const { data, isLoading, isValidating } = useSWRImmutable<Entry & { nextEntryId: number | null }>(
 		entryId,
 		async (key) => {
-			const entry = await getJson<Entry>(`/api/entry/${key}`);
-			const nextEntry = await getJson<Entry>(`/api/next-entry/${key}`)
+			const entryPromise = getJson<Entry>(`/api/entry/${key}`);
+			const nextEntryPromise = getJson<Entry>(`/api/next-entry/${key}`)
 				.then((nextEntry) => nextEntry)
 				.catch(() => null);
-			return { ...entry, nextEntryId: nextEntry?.id ?? null };
+			return { ...(await entryPromise), nextEntryId: (await nextEntryPromise)?.id ?? null };
 		},
 		{ refreshInterval },
 	);
