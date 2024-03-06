@@ -107,11 +107,6 @@ app.get('*', (c) => {
 					<meta name="apple-mobile-web-app-capable" content="yes" />
 					<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 					<link rel="manifest" href="/static/manifest.json" />
-					<script
-						dangerouslySetInnerHTML={{
-							__html: `if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/static/service-worker.js')}`,
-						}}
-					/>
 					<link rel="apple-touch-icon" type="image/png" href="/static/apple-touch-icon-180x180.png" />
 					<link rel="icon" type="image/png" href="/static/icon-192x192.png" />
 					<title>eigo</title>
