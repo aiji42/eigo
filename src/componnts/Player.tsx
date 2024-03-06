@@ -1,10 +1,11 @@
 import { FC, useCallback } from 'react';
 import { clsx } from 'clsx';
-import { LoadingSpinnerIcon, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon } from './Icons';
+import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon } from './Icons';
 
 // TODO: onClickXXX系にする
 export type PlayerProps = {
 	playing: boolean;
+	ended: boolean;
 	toggle: () => void;
 	seek: (time: number) => void;
 	playbackRate: number;
@@ -15,7 +16,17 @@ export type PlayerProps = {
 };
 
 // TODO: Playerの中はテキスト選択できないようにする
-export const Player: FC<PlayerProps> = ({ playing, seek, toggle, setPlaybackRate, playbackRate, loading, backToPrev, skipToNext }) => {
+export const Player: FC<PlayerProps> = ({
+	playing,
+	seek,
+	toggle,
+	setPlaybackRate,
+	playbackRate,
+	loading,
+	backToPrev,
+	skipToNext,
+	ended,
+}) => {
 	const switchPlaybackRate = useCallback(() => {
 		const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
 		const current = rates.indexOf(playbackRate);
@@ -52,11 +63,11 @@ export const Player: FC<PlayerProps> = ({ playing, seek, toggle, setPlaybackRate
 						'relative mx-auto flex size-14 flex-none items-center justify-center rounded-full bg-slate-100 shadow-md ring-1 ring-slate-900/5 active:bg-slate-50',
 						playing ? 'text-slate-600' : 'text-green-600',
 					)}
-					onClick={toggle}
-					aria-label={playing ? 'Pause' : 'Play'}
+					onClick={ended ? skipToNext : toggle}
+					aria-label={playing ? 'Pause' : ended ? 'Next track' : 'Play'}
 					disabled={loading}
 				>
-					{loading ? <LoadingSpinnerIcon /> : playing ? <PauseIcon /> : <PlayIcon />}
+					{loading ? <LoadingSpinnerIcon /> : playing ? <PauseIcon /> : ended ? <NextTrack /> : <PlayIcon />}
 				</button>
 				<div className="flex flex-auto items-center justify-evenly">
 					<button

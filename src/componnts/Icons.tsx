@@ -67,6 +67,15 @@ export const PauseIcon = () => {
 	);
 };
 
+export const NextTrack = () => {
+	return (
+		<svg width="30" height="32" fill="currentColor" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+			<path d="M 6,5 L 16,16 L 6,27 Z" />
+			<path d="M 17,5 L 27,16 L 17,27 Z" />
+		</svg>
+	);
+};
+
 export const LoadingSpinnerIcon = () => {
 	return (
 		<div className="absolute inset-0 flex items-center justify-center">
