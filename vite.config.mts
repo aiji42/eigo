@@ -8,8 +8,8 @@ import { execSync } from 'node:child_process';
 
 export default defineConfig(async ({ mode, command }) => {
 	if (mode === 'client') {
-		// public/staticディレクトリを空にする(tailwindcssのコンパイルとviteのビルドが競合するので)
-		execSync('rm -rf public/static');
+		// public/static/style.*を消す(tailwindcssのコンパイルとviteのビルドが競合するので)
+		execSync('rm -rf public/static/style.*');
 		const digest = new Date().getTime().toString();
 
 		return {

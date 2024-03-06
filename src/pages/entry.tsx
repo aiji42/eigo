@@ -101,7 +101,7 @@ const Page = () => {
 					);
 				})}
 			</div>
-			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center md:p-1">
+			<div className="pb-safe fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-900">
 				{/* TODO: player.loadingがfalseになるタイミングと、!isTTSed(entry.content)がfalseになるタイミングがずれるので */}
 				{/* 一瞬、ローディング中に再生が始まっているように見える。=> 再生開始をusePlayerの外で制御したほうが良さそう */}
 				<Player {...player} loading={player.loading || !isTTSed(entry.content)} backToPrev={backToPrev} skipToNext={skipToNext} />

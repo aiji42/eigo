@@ -103,8 +103,17 @@ app.get('*', (c) => {
 			<html>
 				<head>
 					<meta charSet="utf-8" />
-					<meta content="width=device-width, initial-scale=1" name="viewport" />
+					<meta content="width=device-width, initial-scale=1 viewport-fit=cover" name="viewport" />
 					<meta name="apple-mobile-web-app-capable" content="yes" />
+					<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+					<link rel="manifest" href="/static/manifest.json" />
+					<script
+						dangerouslySetInnerHTML={{
+							__html: `if ('serviceWorker' in navigator) { navigator.serviceWorker.register('/static/service-worker.js')}`,
+						}}
+					/>
+					<link rel="apple-touch-icon" type="image/png" href="/static/apple-touch-icon-180x180.png" />
+					<link rel="icon" type="image/png" href="/static/icon-192x192.png" />
 					<title>eigo</title>
 					{import.meta.env.PROD ? (
 						<>
@@ -118,7 +127,7 @@ app.get('*', (c) => {
 						</>
 					)}
 				</head>
-				<body className="m-auto max-w-4xl bg-neutral-950 p-2 text-slate-100">
+				<body className="p-safe m-auto max-w-4xl bg-neutral-950 p-2 text-slate-100">
 					<div id="root"></div>
 				</body>
 			</html>,
