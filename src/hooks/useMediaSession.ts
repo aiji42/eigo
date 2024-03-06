@@ -16,7 +16,7 @@ export const useMediaSession = (
 	} = {},
 ) => {
 	useEffect(() => {
-		if (!('mediaSession' in navigator) || !playerRef.current || !title) return;
+		if (!('mediaSession' in navigator)) return;
 
 		const artwork: MediaMetadata['artwork'][number][] = [];
 		if (smArtwork) artwork.push({ src: smArtwork, sizes: '96x96', type: 'image/jpeg' });
@@ -29,30 +29,43 @@ export const useMediaSession = (
 		});
 
 		navigator.mediaSession.setActionHandler('play', () => {
-			playerRef.current?.play().then(() => {
-				navigator.mediaSession.playbackState = 'playing';
-			});
+			playerRef.current?.play();
 		});
 		navigator.mediaSession.setActionHandler('pause', () => {
 			playerRef.current?.pause();
-			navigator.mediaSession.playbackState = 'paused';
 		});
 		navigator.mediaSession.setActionHandler('nexttrack', () => {
-			navigator.mediaSession.playbackState = 'paused';
 			onNextTrack?.();
 		});
 		navigator.mediaSession.setActionHandler('previoustrack', () => {
-			navigator.mediaSession.playbackState = 'paused';
 			onPrevTrack?.();
 		});
 
+		const play = () => (navigator.mediaSession.playbackState = 'playing');
+		const pause = () => (navigator.mediaSession.playbackState = 'paused');
+		const setPositionState = () =>
+			navigator.mediaSession.setPositionState({
+				// durationはNaNになりえる
+				duration: playerRef.current?.duration || 0,
+				playbackRate: playerRef.current?.playbackRate ?? 1,
+				position: playerRef.current?.currentTime ?? 0,
+			});
+		playerRef.current?.addEventListener('play', play);
+		playerRef.current?.addEventListener('pause', pause);
+		playerRef.current?.addEventListener('timeupdate', setPositionState);
+		playerRef.current?.addEventListener('ratechange', setPositionState);
+		setPositionState();
+
 		return () => {
-			navigator.mediaSession.playbackState = 'paused';
 			navigator.mediaSession.metadata = null;
 			navigator.mediaSession.setActionHandler('play', null);
 			navigator.mediaSession.setActionHandler('pause', null);
 			navigator.mediaSession.setActionHandler('nexttrack', null);
 			navigator.mediaSession.setActionHandler('previoustrack', null);
+			playerRef.current?.removeEventListener('play', play);
+			playerRef.current?.removeEventListener('pause', pause);
+			playerRef.current?.removeEventListener('timeupdate', setPositionState);
+			playerRef.current?.removeEventListener('ratechange', setPositionState);
 		};
-	}, [title, smArtwork, lgArtwork, onNextTrack]);
+	}, [title, smArtwork, lgArtwork, onNextTrack, playerRef.current]);
 };

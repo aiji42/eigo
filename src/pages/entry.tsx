@@ -40,14 +40,6 @@ const Page = () => {
 		if (player.playing) translate(null);
 	}, [player.playing]);
 
-	// TODO: iosだと意図的にアクションを起こさせないと、次のトラックに遷移しない
-	// なので、ページ遷移させるためのボタン等を出現させる等に留めると良さそう
-	useEffect(() => {
-		if (!player.ended) return;
-		const timer = setTimeout(() => nextTrack(), 500);
-		return () => clearTimeout(timer);
-	}, [player.ended, nextTrack]);
-
 	// TODO: usePlayerを原始的なuseAudioとし、Player用のpropsを作るためのusePlayerを作ってあげる(useAudioをusePlayerの中でコール)
 	const backToPrev = useCallback(() => {
 		if (!entry) return;

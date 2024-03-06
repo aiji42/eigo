@@ -48,6 +48,8 @@ export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () =
 		volume: audio.current?.volume,
 		wasPlaying: getPlaying(),
 	});
+	config.current.wasPlaying = playing || ended;
+	config.current.playbackRate = audio.current?.playbackRate;
 
 	// 状態Aから状態Bに遷移する時にプレイヤーが再生中であれば一時停止し、さにまたAに戻る時に再生する
 	useEffect(() => {
@@ -67,7 +69,10 @@ export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () =
 			audio.current.src = src;
 		}
 
-		const play = () => setPlaying(true);
+		const play = () => {
+			setPlaying(true);
+			setEnded(false);
+		};
 		const pause = () => setPlaying(false);
 		const timeupdate = () => setCurrentTime(audio.current?.currentTime ?? 0);
 		const ratechange = () => setCurrentRate(audio.current?.playbackRate ?? 1);
@@ -82,27 +87,17 @@ export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () =
 		audio.current.addEventListener('loadstart', loadstart);
 		audio.current.addEventListener('loadeddata', loadeddata);
 
-		if (config.current.wasPlaying) {
-			audio.current.play().then(() => {
-				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-			});
-		}
+		if (config.current.wasPlaying) audio.current.play();
 		audio.current.playbackRate = config.current?.playbackRate ?? 1;
 
 		return () => {
-			config.current.playbackRate = audio.current?.playbackRate;
-			config.current.wasPlaying = getPlaying(false) || !!audio.current?.ended;
-			setPlaying(false);
-			setCurrentTime(0);
-			setEnded(false);
-			if (audio.current) {
-				audio.current.pause();
-				audio.current.currentTime = 0;
-				audio.current.remove();
-				audio.current = null;
-			}
+			if (!audio.current) return;
+			audio.current.pause();
+			audio.current.currentTime = 0;
+			audio.current.remove();
+			audio.current = null;
 		};
-	}, [src, getPlaying]);
+	}, [src]);
 
 	return [
 		audio,
