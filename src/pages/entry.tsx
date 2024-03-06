@@ -44,7 +44,7 @@ const Page = () => {
 	// なので、ページ遷移させるためのボタン等を出現させる等に留めると良さそう
 	useEffect(() => {
 		if (!player.ended) return;
-		const timer = setTimeout(() => nextTrack(), 1000);
+		const timer = setTimeout(() => nextTrack(), 500);
 		return () => clearTimeout(timer);
 	}, [player.ended, nextTrack]);
 

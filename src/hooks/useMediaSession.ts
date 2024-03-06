@@ -47,6 +47,7 @@ export const useMediaSession = (
 		});
 
 		return () => {
+			navigator.mediaSession.playbackState = 'paused';
 			navigator.mediaSession.metadata = null;
 			navigator.mediaSession.setActionHandler('play', null);
 			navigator.mediaSession.setActionHandler('pause', null);

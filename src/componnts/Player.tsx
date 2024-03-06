@@ -49,7 +49,7 @@ export const Player: FC<PlayerProps> = ({ playing, seek, toggle, setPlaybackRate
 				<button
 					type="button"
 					className={clsx(
-						'mx-auto flex size-14 flex-none items-center justify-center rounded-full bg-slate-100 shadow-md ring-1 ring-slate-900/5 active:bg-slate-50',
+						'relative mx-auto flex size-14 flex-none items-center justify-center rounded-full bg-slate-100 shadow-md ring-1 ring-slate-900/5 active:bg-slate-50',
 						playing ? 'text-slate-600' : 'text-green-600',
 					)}
 					onClick={toggle}

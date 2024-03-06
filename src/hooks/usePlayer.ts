@@ -20,7 +20,12 @@ export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () =
 		if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
 	}, []);
 	const getPlaying = useCallback(
-		() => !!audio.current && audio.current.currentTime > 0 && !audio.current.paused && !audio.current.ended && audio.current.readyState > 2,
+		(showReadyState = true) =>
+			!!audio.current &&
+			audio.current.currentTime > 0 &&
+			!audio.current.paused &&
+			!audio.current.ended &&
+			(showReadyState ? audio.current.readyState > 2 : true),
 		[],
 	);
 	const getCurrentTime = useCallback(() => audio.current?.currentTime ?? 0, []);
@@ -86,14 +91,14 @@ export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () =
 
 		return () => {
 			config.current.playbackRate = audio.current?.playbackRate;
-			config.current.wasPlaying = getPlaying() || !!audio.current?.ended;
+			config.current.wasPlaying = getPlaying(false) || !!audio.current?.ended;
 			setPlaying(false);
 			setCurrentTime(0);
 			setEnded(false);
 			if (audio.current) {
 				audio.current.pause();
-				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
 				audio.current.currentTime = 0;
+				audio.current.remove();
 				audio.current = null;
 			}
 		};
