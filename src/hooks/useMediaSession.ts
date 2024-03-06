@@ -28,6 +28,7 @@ export const useMediaSession = (
 			artwork,
 		});
 
+		// MEMO: ステータスがpausedなときは、イヤホンを2回タップしてもnexttrackは発火せず、代わりにplayが発火する
 		navigator.mediaSession.setActionHandler('play', () => {
 			playerRef.current?.play();
 		});

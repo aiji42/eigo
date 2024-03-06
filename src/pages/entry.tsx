@@ -10,6 +10,7 @@ import { useMediaSession } from '../hooks/useMediaSession';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
 import { useNavigate } from 'react-router-dom';
+import { useAwakeScreen } from '../hooks/useAwakeScreen';
 
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
@@ -54,6 +55,8 @@ const Page = () => {
 		if (time < 0) nextTrack();
 		else player.seek(time + 0.01);
 	}, [entry, player.seek, player.getCurrentTime, nextTrack]);
+
+	useAwakeScreen(player.playing);
 
 	if (isLoading) return <LoadingSpinnerIcon />;
 	if (!entry) return null;
