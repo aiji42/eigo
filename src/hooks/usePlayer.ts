@@ -2,17 +2,13 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
 import Hls from 'hls.js';
 
 // TODO: リファクタ & テスト & (各deps系が正しいか確認)
-export const usePlayer = (src: string, { autoPlay = false, playPauseSync }: { autoPlay?: boolean; playPauseSync?: () => boolean } = {}) => {
+export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () => boolean } = {}) => {
 	const [playing, setPlaying] = useState(false);
 	const [currentTime, setCurrentTime] = useState(-1);
 	const [currentRate, setCurrentRate] = useState(1);
 	const [loading, setLoading] = useState(false);
 	const [ended, setEnded] = useState(false);
 	const audio = useRef<HTMLAudioElement | null>(new Audio());
-	const config = useRef({
-		playbackRate: audio.current?.playbackRate,
-		volume: audio.current?.volume,
-	});
 
 	const play = useCallback(() => {
 		audio.current?.play().then(() => {
@@ -41,6 +37,12 @@ export const usePlayer = (src: string, { autoPlay = false, playPauseSync }: { au
 	const setPlaybackRate = useCallback((rate: number) => {
 		if (audio.current) audio.current.playbackRate = rate;
 	}, []);
+
+	const config = useRef({
+		playbackRate: audio.current?.playbackRate,
+		volume: audio.current?.volume,
+		wasPlaying: getPlaying(),
+	});
 
 	// 状態Aから状態Bに遷移する時にプレイヤーが再生中であれば一時停止し、さにまたAに戻る時に再生する
 	useEffect(() => {
@@ -75,18 +77,19 @@ export const usePlayer = (src: string, { autoPlay = false, playPauseSync }: { au
 		audio.current.addEventListener('loadstart', loadstart);
 		audio.current.addEventListener('loadeddata', loadeddata);
 
-		if (autoPlay) {
+		if (config.current.wasPlaying) {
 			audio.current.play().then(() => {
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
 			});
-			audio.current.playbackRate = config.current?.playbackRate ?? 1;
 		}
+		audio.current.playbackRate = config.current?.playbackRate ?? 1;
 
 		return () => {
+			config.current.playbackRate = audio.current?.playbackRate;
+			config.current.wasPlaying = getPlaying() || !!audio.current?.ended;
 			setPlaying(false);
 			setCurrentTime(0);
 			setEnded(false);
-			config.current.playbackRate = audio.current?.playbackRate;
 			if (audio.current) {
 				audio.current.pause();
 				if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
@@ -94,7 +97,7 @@ export const usePlayer = (src: string, { autoPlay = false, playPauseSync }: { au
 				audio.current = null;
 			}
 		};
-	}, [src, autoPlay]);
+	}, [src, getPlaying]);
 
 	return [
 		audio,

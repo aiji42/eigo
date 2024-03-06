@@ -28,10 +28,6 @@ const Page = () => {
 
 	const [playerRef, player] = usePlayer(`/playlist/${entryId}/voice.m3u8`, {
 		playPauseSync: () => !!translatingKey,
-		// TODO: autoPlayはローカルストレージで管理。そもそも、再生開始自体をusePlayerの外で制御したほうが良さそう
-		// これはもう少し検証が必要だが、iOSではautoPlayで再生を開始すると、インタラクションするまでMediaSessionが有効にならない
-		// なので、autoPlayは再生を開始したらtrueに(トラック移動での自動再生のため)とした方が良いも。
-		autoPlay: true,
 	});
 	useMediaSession(
 		playerRef,
