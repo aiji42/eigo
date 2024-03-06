@@ -11,14 +11,9 @@ export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () =
 	const audio = useRef<HTMLAudioElement | null>(new Audio());
 
 	const play = useCallback(() => {
-		audio.current?.play().then(() => {
-			if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'playing';
-		});
+		audio.current?.play().catch(console.log);
 	}, []);
-	const pause = useCallback(() => {
-		audio.current?.pause();
-		if ('mediaSession' in navigator) navigator.mediaSession.playbackState = 'paused';
-	}, []);
+	const pause = useCallback(() => audio.current?.pause(), []);
 	const getPlaying = useCallback(
 		(showReadyState = true) =>
 			!!audio.current &&
@@ -74,7 +69,10 @@ export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () =
 			setEnded(false);
 		};
 		const pause = () => setPlaying(false);
-		const timeupdate = () => setCurrentTime(audio.current?.currentTime ?? 0);
+		const timeupdate = () => {
+			setCurrentTime(audio.current?.currentTime ?? 0);
+			setEnded(false);
+		};
 		const ratechange = () => setCurrentRate(audio.current?.playbackRate ?? 1);
 		const ended = () => setEnded(true);
 		const loadstart = () => setLoading(true);
