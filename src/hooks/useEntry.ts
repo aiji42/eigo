@@ -9,6 +9,7 @@ export const useEntry = (entryId: string | undefined, refreshUntil: (entry: Entr
 		entryId,
 		async (key) => {
 			const entryPromise = getJson<Entry>(`/api/entry/${key}`);
+			// TODO: 本体の取得と分ける (本体のrefreshが数回行われる可能性があるので)
 			const nextEntryPromise = getJson<Entry>(`/api/next-entry/${key}`).catch(() => null);
 			const prevEntryPromise = getJson<Entry>(`/api/prev-entry/${key}`).catch(() => null);
 			return {

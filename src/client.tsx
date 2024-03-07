@@ -3,8 +3,6 @@ import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from '
 import { Suspense } from 'react';
 import { LoadingSpinnerIcon } from './componnts/Icons';
 import { ErrorBoundary } from 'react-error-boundary';
-import List from './pages/list';
-import Entry from './pages/entry';
 
 const Root = () => {
 	return (
@@ -26,11 +24,19 @@ const router = createBrowserRouter([
 		children: [
 			{
 				path: '/',
-				element: <List />,
+				lazy: () => import('./pages/list'),
 			},
 			{
 				path: '/:entryId',
-				element: <Entry />,
+				lazy: async () => {
+					const { Component } = await import('./pages/entry');
+					return {
+						Component,
+						loader: () => {
+							return null;
+						},
+					};
+				},
 			},
 		],
 	},

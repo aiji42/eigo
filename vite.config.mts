@@ -27,6 +27,7 @@ export default defineConfig(async ({ mode, command }) => {
 					input: './src/client.tsx',
 					output: {
 						entryFileNames: `static/client.${digest}.js`,
+						chunkFileNames: 'static/[name]-[hash].js',
 					},
 				},
 			},
