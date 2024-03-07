@@ -24,19 +24,17 @@ const router = createBrowserRouter([
 		children: [
 			{
 				path: '/',
-				lazy: () => import('./pages/list'),
+				lazy: async () => ({
+					Component: (await import('./pages/list')).default,
+					loader: () => null,
+				}),
 			},
 			{
 				path: '/:entryId',
-				lazy: async () => {
-					const { Component } = await import('./pages/entry');
-					return {
-						Component,
-						loader: () => {
-							return null;
-						},
-					};
-				},
+				lazy: async () => ({
+					Component: (await import('./pages/entry')).default,
+					loader: () => null,
+				}),
 			},
 		],
 	},

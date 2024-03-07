@@ -4,7 +4,6 @@ import { getAllRules, getEntryByUrl, insertEntry, upsertChannel } from './libs/d
 
 interface Env {
 	DB: D1Database;
-	AI: any;
 }
 
 export default {
@@ -21,6 +20,7 @@ export default {
 				const persistedEntry = await getEntryByUrl(env.DB, item.link);
 				if (persistedEntry) continue;
 				const content = await scrapeContent(item.link, rule.rule.contentSelector);
+				// TODO: パラグラフが少ない場合は保存しない
 				if (!content.length) continue;
 				const entry = await insertEntry(env.DB, channel, item, content);
 				console.log(entry);

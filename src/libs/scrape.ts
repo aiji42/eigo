@@ -20,6 +20,7 @@ export const scrapeContent = async (url: string, selector: string): Promise<Cont
 	return createContent(paragraphs);
 };
 
+// TODO: VOAの定型文を除外する
 const ignorableParagraph = (text: string) => {
 	return text.split(' ').length <= 5 || !text.endsWith('.');
 };

@@ -10,6 +10,8 @@ import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
 import { usePlayer } from '../hooks/usePlayer';
 
+// TODO: オリジナルページのURLをソースとして表示する
+// TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
 	const { entry } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
@@ -69,4 +71,4 @@ const Page = () => {
 	);
 };
 
-export const Component = Page;
+export default Page;

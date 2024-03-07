@@ -16,6 +16,7 @@ export type PlayerProps = {
 	onClickSwitchPlaybackRate: VoidFunction;
 };
 
+// TODO: 操作できなくていいのでプレイヤーの上部に再生位置の表示を追加
 export const Player: FC<PlayerProps> = ({
 	playing,
 	playbackRate,
