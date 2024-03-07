@@ -21,7 +21,7 @@ const Page = () => {
 
 	return (
 		<div className="p-2">
-			<h1 className="mb-4 text-4xl font-bold">VOA News</h1>
+			<h1 className="mb-4 text-4xl font-bold">Eigo</h1>
 			<ul>
 				{data
 					?.flatMap((data) => data)
