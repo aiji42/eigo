@@ -1,0 +1,1 @@
+CREATE INDEX `publishedAt_idx` ON `Entries` (`publishedAt`);

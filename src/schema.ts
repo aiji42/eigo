@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
 import { InferSelectModel, relations } from 'drizzle-orm';
 import { Content } from './libs/content';
 
@@ -31,18 +31,26 @@ export const channelsRelations = relations(channels, ({ many }) => ({
 	entries: many(entries),
 }));
 
-export const entries = sqliteTable('Entries', {
-	id: integer('id').primaryKey({ autoIncrement: true }).notNull(),
-	channelId: integer('channelId')
-		.notNull()
-		.references(() => channels.id),
-	url: text('url').notNull().unique(),
-	title: text('title').notNull(),
-	description: text('description'),
-	content: text('content', { mode: 'json' }).notNull().$type<Content>(),
-	thumbnailUrl: text('thumbnailUrl'),
-	metadata: text('metadata', { mode: 'json' }),
-	publishedAt: integer('publishedAt', { mode: 'timestamp' }).notNull(),
-});
+export const entries = sqliteTable(
+	'Entries',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }).notNull(),
+		channelId: integer('channelId')
+			.notNull()
+			.references(() => channels.id),
+		url: text('url').notNull().unique(),
+		title: text('title').notNull(),
+		description: text('description'),
+		content: text('content', { mode: 'json' }).notNull().$type<Content>(),
+		thumbnailUrl: text('thumbnailUrl'),
+		metadata: text('metadata', { mode: 'json' }),
+		publishedAt: integer('publishedAt', { mode: 'timestamp' }).notNull(),
+	},
+	(table) => {
+		return {
+			publishedAtIndex: index('publishedAt_idx').on(table.publishedAt),
+		};
+	},
+);
 
 export type Entry = InferSelectModel<typeof entries>;
