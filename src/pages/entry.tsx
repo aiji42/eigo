@@ -1,59 +1,31 @@
 import { useParams } from 'react-router-dom';
 import { displayRelativeTime } from '../libs/utils';
 import { Player } from '../componnts/Player';
-import { usePlayer } from '../hooks/usePlayer';
 import { ParagraphCard } from '../componnts/ParagraphCard';
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
-import { getNextPlaybackTime, getPlaying, getPrevPlaybackTime, isTTSed } from '../libs/content';
-import { useMediaSession } from '../hooks/useMediaSession';
+import { getPlaying, isTTSed } from '../libs/content';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
-import { useNavigate } from 'react-router-dom';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
+import { usePlayer } from '../hooks/usePlayer';
 
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
 	const { entry, isLoading } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
-	const navigate = useNavigate();
-	const nextTrack = useCallback(() => {
-		if (entry?.nextEntryId) navigate(`/${entry.nextEntryId}`, { replace: true });
-		else navigate(`/`);
-	}, [navigate, entry?.nextEntryId]);
-	const prevTrack = useCallback(() => {
-		if (entry?.prevEntryId) navigate(`/${entry.prevEntryId}`, { replace: true });
-		else navigate(`/`);
-	}, [navigate, entry?.prevEntryId]);
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const player = usePlayer(`/playlist/${entryId}/voice.m3u8`, {
-		playPauseSync: () => !!translatingKey,
+	const player = usePlayer(entryId ?? '', entry, {
+		nextId: entry?.nextEntryId,
+		prevId: entry?.prevEntryId,
+		stopAndRestart: !!translatingKey,
 	});
-	useMediaSession(
-		{ title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl },
-		{ onNextTrack: nextTrack, onPrevTrack: prevTrack },
-	);
 
 	// 再生を開始したら翻訳を閉じる
 	useEffect(() => {
 		if (player.playing) translate(null);
 	}, [player.playing]);
-
-	// TODO: usePlayerを原始的なuseAudioとし、Player用のpropsを作るためのusePlayerを作ってあげる(useAudioをusePlayerの中でコール)
-	const backToPrev = useCallback(() => {
-		if (!entry) return;
-		const time = getPrevPlaybackTime(entry.content, player.getCurrentTime());
-		if (time < 0) return prevTrack();
-		else player.seek(time + 0.01);
-	}, [entry, player.seek, player.getCurrentTime, prevTrack]);
-
-	const skipToNext = useCallback(() => {
-		if (!entry) return;
-		const time = getNextPlaybackTime(entry.content, player.getCurrentTime());
-		if (time < 0) nextTrack();
-		else player.seek(time + 0.01);
-	}, [entry, player.seek, player.getCurrentTime, nextTrack]);
 
 	useAwakeScreen(player.playing);
 
@@ -78,7 +50,7 @@ const Page = () => {
 								<>
 									<ParagraphCard
 										paragraph={p}
-										scrollInActive
+										scrollInActive={player.currentTime > 0}
 										activeSentenceKey={playing.paragraph?.key === p.key ? playing.sentence?.key : undefined}
 										showTranslation={isLoading}
 									/>
@@ -92,9 +64,7 @@ const Page = () => {
 				})}
 			</div>
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-900 pb-safe">
-				{/* TODO: player.loadingがfalseになるタイミングと、!isTTSed(entry.content)がfalseになるタイミングがずれるので */}
-				{/* 一瞬、ローディング中に再生が始まっているように見える。=> 再生開始をusePlayerの外で制御したほうが良さそう */}
-				<Player {...player} loading={player.loading || !isTTSed(entry.content)} backToPrev={backToPrev} skipToNext={skipToNext} />
+				<Player {...player} />
 			</div>
 		</>
 	);

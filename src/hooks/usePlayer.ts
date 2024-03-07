@@ -1,172 +1,118 @@
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import Hls from 'hls.js';
+import { Entry } from '../schema';
+import { MediaPlayer, useMediaPlayer } from './useMediaPlayer';
+import { useNavigate } from 'react-router-dom';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { getNextPlaybackTime, getPrevPlaybackTime, isTTSed } from '../libs/content';
+import { PlayerProps } from '../componnts/Player';
 
-// TODO: リファクタ & テスト & (各deps系が正しいか確認)
-export const usePlayer = (src: string, { playPauseSync }: { playPauseSync?: () => boolean } = {}) => {
-	const [playing, setPlaying] = useState(false);
-	const [currentTime, setCurrentTime] = useState(0);
-	const [currentRate, setCurrentRate] = useState(1);
-	const [loading, setLoading] = useState(false);
-	const [ended, setEnded] = useState(false);
-	const audio = useRef<HTMLAudioElement | null>(null);
+export const usePlayer = (
+	entryId: number | string,
+	entry: Entry | null | undefined,
+	{
+		nextId,
+		prevId,
+		stopAndRestart,
+	}: {
+		nextId: number | string | null | undefined;
+		prevId: number | string | null | undefined;
+		stopAndRestart?: boolean;
+	},
+): PlayerProps & MediaPlayer => {
+	const player = useMediaPlayer(`/playlist/${entryId}/voice.m3u8`);
+	const loading = useMemo(() => player.loading || !entry || !isTTSed(entry.content), [player.loading, entry]);
 
-	const play = useCallback(async () => {
-		return audio.current?.play();
-	}, []);
-	const pause = useCallback(() => audio.current?.pause(), []);
-	const getPlaying = useCallback(
-		(showReadyState = true) =>
-			!!audio.current &&
-			audio.current.currentTime > 0 &&
-			!audio.current.paused &&
-			!audio.current.ended &&
-			(showReadyState ? audio.current.readyState > 2 : true),
-		[],
-	);
-	const getCurrentTime = useCallback(() => audio.current?.currentTime ?? 0, []);
-	const toggle = useCallback(async () => {
-		if (getPlaying()) pause();
-		else await play();
-	}, [pause, play, getPlaying]);
-	const seek = useCallback((time: number) => {
-		if (audio.current) audio.current.currentTime = time;
-	}, []);
-	const setVolume = useCallback((volume: number) => {
-		if (audio.current) audio.current.volume = volume;
-	}, []);
-	const setPlaybackRate = useCallback((rate: number) => {
-		if (audio.current) audio.current.playbackRate = rate;
-	}, []);
+	const navigate = useNavigate();
 
-	const config = useRef({
-		playbackRate: audio.current?.playbackRate,
-		volume: audio.current?.volume,
-		wasPlaying: getPlaying(),
+	const beforeNavigatePlayerStatus = useRef({
+		playing: false,
+		playbackRate: 1,
+		// TODO: volume
 	});
-	config.current.wasPlaying = playing || ended;
-	config.current.playbackRate = audio.current?.playbackRate;
 
-	const addEventListener = useCallback((audio: HTMLAudioElement) => {
-		const play = () => {
-			setPlaying(true);
-			setEnded(false);
-		};
-		const pause = () => setPlaying(false);
-		const timeupdate = () => {
-			setCurrentTime(audio.currentTime ?? 0);
-			setEnded(false);
-		};
-		const ratechange = () => setCurrentRate(audio.playbackRate ?? 1);
-		const ended = () => setEnded(true);
-		const loadstart = () => setLoading(true);
-		const loadeddata = () => setLoading(false);
-		audio.addEventListener('play', play);
-		audio.addEventListener('pause', pause);
-		audio.addEventListener('timeupdate', timeupdate);
-		audio.addEventListener('ratechange', ratechange);
-		audio.addEventListener('ended', ended);
-		audio.addEventListener('loadstart', loadstart);
-		audio.addEventListener('loadeddata', loadeddata);
+	useEffect(() => {
+		if (beforeNavigatePlayerStatus.current.playing && !loading) player.play();
+		player.setPlaybackRate(beforeNavigatePlayerStatus.current.playbackRate);
+	}, [entryId, loading]);
 
-		return () => {
-			audio.removeEventListener('play', play);
-			audio.removeEventListener('pause', pause);
-			audio.removeEventListener('timeupdate', timeupdate);
-			audio.removeEventListener('ratechange', ratechange);
-			audio.removeEventListener('ended', ended);
-			audio.removeEventListener('loadstart', loadstart);
-			audio.removeEventListener('loadeddata', loadeddata);
-		};
-	}, []);
+	const nextTrack = useCallback(() => {
+		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
+		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
+		if (nextId) navigate(`/${nextId}`, { replace: true });
+		else navigate(`/`);
+	}, [navigate, nextId, player.playing || player.ended, player.playbackRate]);
 
-	const syncToMediaSession = useCallback((audio: HTMLAudioElement) => {
-		const setPositionState = () =>
-			navigator.mediaSession.setPositionState({
-				// durationはNaNになりえる
-				duration: audio.duration || 0,
-				playbackRate: audio.playbackRate,
-				position: audio.currentTime,
-			});
-		const play = () => (navigator.mediaSession.playbackState = 'playing');
-		const pause = () => (navigator.mediaSession.playbackState = 'paused');
-		audio.addEventListener('play', play);
-		audio.addEventListener('pause', pause);
-		audio.addEventListener('timeupdate', setPositionState);
-		audio.addEventListener('ratechange', setPositionState);
-		audio.addEventListener('loadeddata', setPositionState);
+	const prevTrack = useCallback(() => {
+		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
+		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
+		if (prevId) navigate(`/${prevId}`, { replace: true });
+		else navigate(`/`);
+	}, [navigate, prevId, player.playing || player.ended, player.playbackRate]);
 
-		// MEMO: ステータスがpausedなときは、イヤホンを2回タップしてもnexttrackは発火せず、代わりにplayが発火する
-		navigator.mediaSession.setActionHandler('play', async () => {
-			await audio.play();
-			navigator.mediaSession.playbackState = 'playing';
-		});
-		navigator.mediaSession.setActionHandler('pause', () => {
-			audio.pause();
-			navigator.mediaSession.playbackState = 'paused';
+	useEffect(() => {
+		if (!('mediaSession' in navigator)) return;
+
+		navigator.mediaSession.metadata = new MediaMetadata({
+			title: entry?.title ?? 'Now loading...',
+			artist: 'eigo',
+			artwork: entry?.thumbnailUrl
+				? [
+						{ src: entry.thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
+						{ src: entry.thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
+					]
+				: [],
 		});
 
+		navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
+		navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
+
 		return () => {
-			audio.removeEventListener('play', play);
-			audio.removeEventListener('pause', pause);
-			audio.removeEventListener('timeupdate', setPositionState);
-			audio.removeEventListener('ratechange', setPositionState);
-			audio.removeEventListener('loadeddata', setPositionState);
-			navigator.mediaSession.setActionHandler('play', null);
-			navigator.mediaSession.setActionHandler('pause', null);
+			navigator.mediaSession.setActionHandler('nexttrack', null);
+			navigator.mediaSession.setActionHandler('previoustrack', null);
 		};
-	}, []);
+	}, [entry, nextTrack, prevTrack]);
 
 	// 状態Aから状態Bに遷移する時にプレイヤーが再生中であれば一時停止し、さらにまたAに戻る時に再生する
 	useEffect(() => {
-		if (!!playPauseSync?.() && getPlaying()) {
-			pause();
+		if (stopAndRestart && player.getPlaying()) {
+			player.pause();
 			return () => {
-				play().catch();
+				player.play().catch();
 			};
 		}
-	}, [playPauseSync?.(), getPlaying, pause, play]);
+	}, [stopAndRestart, player.getPlaying, player.pause, player.play]);
 
-	useEffect(() => {
-		audio.current ||= new Audio();
-		const cleanup = addEventListener(audio.current);
-		const cleanupMediaSession = syncToMediaSession(audio.current);
+	const backToStart = useCallback(() => player.seek(0), [player.seek]);
 
-		if (Hls.isSupported()) {
-			const hls = new Hls();
-			hls.loadSource(src);
-			hls.attachMedia(audio.current);
-		} else if (audio.current.canPlayType('application/vnd.apple.mpegurl')) {
-			audio.current.src = src;
-		}
+	const backToPrev = useCallback(() => {
+		if (!entry) return;
+		const time = getPrevPlaybackTime(entry.content, player.getCurrentTime());
+		if (time < 0) return prevTrack();
+		else player.seek(time + 0.01);
+	}, [entry, player.seek, player.getCurrentTime, prevTrack]);
 
-		if (config.current.wasPlaying) audio.current.play();
-		audio.current.playbackRate = config.current?.playbackRate ?? 1;
+	const skipToNext = useCallback(() => {
+		if (!entry) return;
+		const time = getNextPlaybackTime(entry.content, player.getCurrentTime());
+		if (time < 0) nextTrack();
+		else player.seek(time + 0.01);
+	}, [entry, player.seek, player.getCurrentTime, nextTrack]);
 
-		return () => {
-			cleanup();
-			cleanupMediaSession();
-			if (audio.current) audio.current.pause();
-			setPlaying(false);
-			if (audio.current) audio.current.currentTime = 0;
-			setEnded(false);
-			setCurrentTime(0);
-		};
-	}, [src, addEventListener, syncToMediaSession]);
+	const switchPlaybackRate = useCallback(() => {
+		const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
+		const current = rates.indexOf(player.playbackRate);
+		const next = current < 0 ? 2 : (current + 1) % rates.length;
+		player.setPlaybackRate(rates[next]);
+	}, [player.playbackRate, player.setPlaybackRate]);
 
 	return {
-		playing,
-		getPlaying,
-		// currentTimeを監視するとコストが高いので、同期的に処理する必要がないならgetCurrentTimeを使うよ良い
-		currentTime,
-		getCurrentTime,
-		play,
-		pause,
-		toggle,
-		setVolume,
-		seek,
-		setPlaybackRate,
-		playbackRate: currentRate,
+		...player,
 		loading,
-		ended,
-	} as const;
+		onClickPlay: player.play,
+		onClickPause: player.pause,
+		onClickNextTrack: nextTrack,
+		onClickBackToStart: backToStart,
+		onClickBack: backToPrev,
+		onClickForward: skipToNext,
+		onClickSwitchPlaybackRate: switchPlaybackRate,
+	};
 };
