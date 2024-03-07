@@ -18,7 +18,7 @@ export const usePlayer = (
 		stopAndRestart?: boolean;
 	},
 ): PlayerProps & MediaPlayer => {
-	const player = useMediaPlayer(`/playlist/${entryId}/voice.m3u8`);
+	const player = useMediaPlayer(`/${entryId}/playlist.m3u8`);
 	const loading = useMemo(() => player.loading || !entry || !isTTSed(entry.content), [player.loading, entry]);
 
 	const navigate = useNavigate();

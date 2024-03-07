@@ -1,33 +1,35 @@
 import { getEntryById, getNextEntry, getPrevEntry, paginateEntries, updateEntry } from './libs/db';
 import { ttsContent } from './libs/tts';
-import { createM3U } from './libs/m3u';
 import { Hono } from 'hono';
-import { getAudio, putAudio } from './libs/kv';
 import { createCalibrate, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
 import { createContent, isTTSed, joinSentences } from './libs/content';
+import { existsAudioOnBucket, putAudioOnBucket, createM3U } from './libs/audio';
 
 export type Bindings = {
-	CACHE: KVNamespace;
 	DB: D1Database;
 	TTS: Fetcher;
 	Translate: Fetcher;
 	Calibrate: Fetcher;
+	BUCKET: R2Bucket;
 };
 
 const app = new Hono<{
 	Bindings: Bindings;
 }>();
 
-app.get('/audio/:entryId/:key/voice.mp3', async (c) => {
-	const key = c.req.param('key');
-	const id = c.req.param('entryId');
-	const audio = await getAudio(c.env.CACHE, id, key);
+// MEMO: ローカルで開発するとき用のR2のエンドポイント
+app.get('local-r2-pr', async (c) => {
+	if (import.meta.env.PROD) return c.notFound();
+	const key = c.req.query('key');
+	if (!key) return c.notFound();
+	const audio = await c.env.BUCKET.get(key);
 	if (!audio) return c.notFound();
-	return new Response(audio, { headers: { 'Content-Type': 'audio/mpeg' } });
+	return new Response(audio.body, { headers: { 'Content-Type': 'audio/mpeg' } });
 });
 
-app.get('/playlist/:entryId/voice.m3u8', async (c) => {
+// TODO: honoのRPCを使ってリファクタ
+app.get('/:entryId/playlist.m3u8', async (c) => {
 	const id = c.req.param('entryId');
 	let entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
@@ -35,12 +37,23 @@ app.get('/playlist/:entryId/voice.m3u8', async (c) => {
 	if (!isTTSed(entry.content)) {
 		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
 		const { newContent, audios } = await ttsContent(tts, entry.content);
-		// TODO: KVではなくR2にする
-		await Promise.all(audios.map(async ({ audio, key }) => putAudio(c.env.CACHE, id, key, audio)));
+		await Promise.all(audios.map(async ({ audio, key, duration }) => putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration })));
 		entry = await updateEntry(c.env.DB, entry.id, { content: newContent });
+	} else {
+		await Promise.all(
+			entry.content
+				.flatMap(({ sentences }) => sentences)
+				.map(async ({ key, text }) => {
+					if (!(await existsAudioOnBucket(c.env.BUCKET, id, key))) {
+						const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw.clone());
+						const { duration, audio } = await tts(text, true);
+						await putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration });
+					}
+				}),
+		);
 	}
 
-	return new Response(createM3U(entry.content, `/audio/${entry.id}`), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
+	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
 
 app.get('/api/entry/:id', async (c) => {
@@ -122,7 +135,7 @@ app.get('*', (c) => {
 						</>
 					)}
 				</head>
-				<body className="p-safe m-auto max-w-4xl bg-neutral-950 p-2 text-slate-100">
+				<body className="m-auto max-w-4xl bg-neutral-950 p-2 text-slate-100 p-safe">
 					<div id="root"></div>
 				</body>
 			</html>,
