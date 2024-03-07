@@ -6,7 +6,7 @@ import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, PrevIcon, RewindIco
 export type PlayerProps = {
 	playing: boolean;
 	ended: boolean;
-	toggle: () => void;
+	toggle: () => void | Promise<void>;
 	seek: (time: number) => void;
 	playbackRate: number;
 	setPlaybackRate: (rate: number) => void;

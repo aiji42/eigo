@@ -27,11 +27,10 @@ const Page = () => {
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const [playerRef, player] = usePlayer(`/playlist/${entryId}/voice.m3u8`, {
+	const player = usePlayer(`/playlist/${entryId}/voice.m3u8`, {
 		playPauseSync: () => !!translatingKey,
 	});
 	useMediaSession(
-		playerRef,
 		{ title: entry?.title, lgArtwork: entry?.thumbnailUrl, smArtwork: entry?.thumbnailUrl },
 		{ onNextTrack: nextTrack, onPrevTrack: prevTrack },
 	);
@@ -92,7 +91,7 @@ const Page = () => {
 					);
 				})}
 			</div>
-			<div className="pb-safe fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-900">
+			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-900 pb-safe">
 				{/* TODO: player.loadingがfalseになるタイミングと、!isTTSed(entry.content)がfalseになるタイミングがずれるので */}
 				{/* 一瞬、ローディング中に再生が始まっているように見える。=> 再生開始をusePlayerの外で制御したほうが良さそう */}
 				<Player {...player} loading={player.loading || !isTTSed(entry.content)} backToPrev={backToPrev} skipToNext={skipToNext} />
