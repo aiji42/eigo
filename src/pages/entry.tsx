@@ -12,7 +12,7 @@ import { usePlayer } from '../hooks/usePlayer';
 
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
-	const { entry, isLoading } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
+	const { entry } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
@@ -29,8 +29,7 @@ const Page = () => {
 
 	useAwakeScreen(player.playing);
 
-	if (isLoading) return <LoadingSpinnerIcon />;
-	if (!entry) return null;
+	if (!entry) throw new Error('entry not found');
 
 	const playing = getPlaying(entry.content, player.currentTime);
 

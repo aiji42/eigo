@@ -12,12 +12,15 @@ const getKey = (page: number, previousPageData: Entry[][]) => {
 };
 
 const Page = () => {
-	const { data, setSize, isLoading, isValidating } = useSWRInfinite(getKey, getJson<Entry[]>, {
+	const { data, setSize, isValidating } = useSWRInfinite(getKey, getJson<Entry[]>, {
 		revalidateOnReconnect: false,
 		revalidateIfStale: false,
 		revalidateOnFocus: false,
 		revalidateFirstPage: false,
+		suspense: true,
 	});
+
+	const hasMore = (data?.at(-1)?.length ?? 0) >= SIZE;
 
 	return (
 		<div className="p-2">
@@ -39,7 +42,7 @@ const Page = () => {
 						</li>
 					))}
 			</ul>
-			{!isLoading && (data?.at(-1)?.length ?? 0) >= SIZE && (
+			{hasMore && (
 				<button
 					onClick={() => setSize((current) => current + 1)}
 					className="w-full rounded-md bg-neutral-900 p-2 text-2xl active:bg-neutral-700"
@@ -48,7 +51,7 @@ const Page = () => {
 					more
 				</button>
 			)}
-			{(isLoading || isValidating) && (
+			{isValidating && (
 				<div className="fixed inset-0 flex items-center justify-center">
 					<LoadingSpinnerIcon />
 				</div>
