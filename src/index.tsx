@@ -112,34 +112,36 @@ app.post('/api/translate', async (c) => {
 
 app.get('*', (c) => {
 	return c.html(
-		renderToString(
-			<html>
-				<head>
-					<meta charSet="utf-8" />
-					<meta content="width=device-width, initial-scale=1 viewport-fit=cover" name="viewport" />
-					<meta name="apple-mobile-web-app-capable" content="yes" />
-					<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-					<link rel="manifest" href="/static/manifest.json" />
-					<link rel="apple-touch-icon" type="image/png" href="/static/apple-touch-icon-180x180.png" />
-					<link rel="icon" type="image/png" href="/static/icon-192x192.png" />
-					<title>eigo</title>
-					{import.meta.env.PROD ? (
-						<>
-							<script type="module" src="/static/client.__DIGEST__.js" />
-							<link rel="stylesheet" href="/static/style.__DIGEST__.css" />
-						</>
-					) : (
-						<>
-							<script type="module" src="/src/client.tsx" />
-							<link rel="stylesheet" href="/static/style.css" />
-						</>
-					)}
-				</head>
-				<body className="m-auto max-w-4xl bg-neutral-950 p-2 text-slate-100 p-safe">
-					<div id="root"></div>
-				</body>
-			</html>,
-		),
+		`<!DOCTYPE html>` +
+			renderToString(
+				<html lang="en">
+					<head>
+						<meta charSet="utf-8" />
+						<meta content="width=device-width, initial-scale=1 viewport-fit=cover" name="viewport" />
+						<meta name="apple-mobile-web-app-capable" content="yes" />
+						<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+						<meta name="robots" content="noindex nofollow" />
+						<link rel="manifest" href="/static/manifest.json" />
+						<link rel="apple-touch-icon" type="image/png" href="/static/apple-touch-icon-180x180.png" />
+						<link rel="icon" type="image/png" href="/static/icon-192x192.png" />
+						<title>eigo</title>
+						{import.meta.env.PROD ? (
+							<>
+								<script type="module" src="/static/client.__DIGEST__.js" />
+								<link rel="stylesheet" href="/static/style.__DIGEST__.css" />
+							</>
+						) : (
+							<>
+								<script type="module" src="/src/client.tsx" />
+								<link rel="stylesheet" href="/static/style.css" />
+							</>
+						)}
+					</head>
+					<body className="m-auto max-w-4xl bg-neutral-950 p-2 text-slate-100 p-safe">
+						<div id="root"></div>
+					</body>
+				</html>,
+			),
 	);
 });
 
