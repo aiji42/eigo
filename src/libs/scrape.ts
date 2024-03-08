@@ -21,5 +21,5 @@ export const scrapeContent = async (url: string, selector: string): Promise<Cont
 };
 
 const ignorableParagraph = (text: string) => {
-	return text.split(' ').length <= 5 || !text.endsWith('.');
+	return !text.endsWith('.');
 };
