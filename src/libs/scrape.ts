@@ -12,15 +12,14 @@ export const scrapeContent = async (url: string, selector: string): Promise<Cont
 			.text()
 			.split('\n')
 			.forEach((p) => {
-				if (ignorableParagraph(p)) return;
-				paragraphs.push(p);
+				const trim = p.trim();
+				if (!ignorableParagraph(trim)) paragraphs.push(trim);
 			});
 	});
 
 	return createContent(paragraphs);
 };
 
-// TODO: VOAの定型文を除外する
 const ignorableParagraph = (text: string) => {
 	return text.split(' ').length <= 5 || !text.endsWith('.');
 };

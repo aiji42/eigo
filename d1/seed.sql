@@ -1,5 +1,5 @@
 INSERT INTO AbsorbRules (id, name, type, url, rule)
-VALUES (1, 'VOA - Technology', 'RSS2.0', 'https://www.voanews.com/api/zyritequir', '{"contentSelector": ".wsw > p"}')
+VALUES (1, 'VOA - Technology', 'RSS2.0', 'https://www.voanews.com/api/zyritequir', '{"contentSelector": ".wsw:not(.c-author__wsw) > p"}')
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO Channels (id, absorbRuleId, title, url, thumbnailUrl, lastUpdatedAt)
