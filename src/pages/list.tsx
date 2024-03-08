@@ -3,6 +3,7 @@ import { Entry } from '../schema';
 import { displayRelativeTime, getJson } from '../libs/utils';
 import { Link } from 'react-router-dom';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
+import { useInView } from 'react-intersection-observer';
 
 const SIZE = 10;
 
@@ -12,7 +13,7 @@ const getKey = (page: number, previousPageData: Entry[][]) => {
 };
 
 const Page = () => {
-	const { data, setSize, isValidating } = useSWRInfinite(getKey, getJson<Entry[]>, {
+	const { data, setSize, size, isValidating } = useSWRInfinite(getKey, getJson<Entry[]>, {
 		revalidateOnReconnect: false,
 		revalidateIfStale: false,
 		revalidateOnFocus: false,
@@ -20,7 +21,13 @@ const Page = () => {
 		suspense: true,
 	});
 
+	const { ref, inView: isScrollEnd } = useInView();
+
 	const hasMore = (data?.at(-1)?.length ?? 0) >= SIZE;
+
+	if (isScrollEnd && !isValidating && hasMore) {
+		setSize(size + 1);
+	}
 
 	return (
 		<div className="p-2">
@@ -42,15 +49,7 @@ const Page = () => {
 						</li>
 					))}
 			</ul>
-			{hasMore && (
-				<button
-					onClick={() => setSize((current) => current + 1)}
-					className="w-full rounded-md bg-neutral-900 p-2 text-2xl active:bg-neutral-700"
-					disabled={isValidating}
-				>
-					more
-				</button>
-			)}
+			{!isValidating && <div ref={ref} aria-hidden="true" />}
 			{isValidating && (
 				<div className="fixed inset-0 flex items-center justify-center">
 					<LoadingSpinnerIcon />
