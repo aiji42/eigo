@@ -37,13 +37,15 @@ export const usePlayer = (
 	const nextTrack = useCallback(() => {
 		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
 		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
+		player.pause();
 		if (nextId) navigate(`/${nextId}`, { replace: true });
 		else navigate(`/`);
-	}, [navigate, nextId, player.playing || player.ended, player.playbackRate]);
+	}, [navigate, nextId, player.playing || player.ended, player.playbackRate, player.pause]);
 
 	const prevTrack = useCallback(() => {
 		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
 		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
+		player.pause();
 		if (prevId) navigate(`/${prevId}`, { replace: true });
 		else navigate(`/`);
 	}, [navigate, prevId, player.playing || player.ended, player.playbackRate]);
