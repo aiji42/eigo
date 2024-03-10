@@ -24,31 +24,34 @@ export const usePlayer = (
 	const navigate = useNavigate();
 
 	const beforeNavigatePlayerStatus = useRef({
-		playing: false,
-		playbackRate: 1,
-		// TODO: volume
+		playing: player.playing,
+		playbackRate: player.playbackRate,
+		volume: player.volume,
 	});
 
 	useEffect(() => {
 		if (beforeNavigatePlayerStatus.current.playing && !loading) player.play();
 		player.setPlaybackRate(beforeNavigatePlayerStatus.current.playbackRate);
+		player.setVolume(beforeNavigatePlayerStatus.current.volume);
 	}, [entryId, loading]);
 
 	const nextTrack = useCallback(() => {
 		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
 		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
-		player.pause();
+		beforeNavigatePlayerStatus.current.volume = player.volume;
+		player.stop();
 		if (nextId) navigate(`/${nextId}`, { replace: true });
 		else navigate(`/`);
-	}, [navigate, nextId, player.playing || player.ended, player.playbackRate, player.pause]);
+	}, [navigate, nextId, player.playing || player.ended, player.playbackRate, player.stop]);
 
 	const prevTrack = useCallback(() => {
 		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
 		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
-		player.pause();
+		beforeNavigatePlayerStatus.current.volume = player.volume;
+		player.stop();
 		if (prevId) navigate(`/${prevId}`, { replace: true });
 		else navigate(`/`);
-	}, [navigate, prevId, player.playing || player.ended, player.playbackRate]);
+	}, [navigate, prevId, player.playing || player.ended, player.playbackRate, player.stop]);
 
 	useEffect(() => {
 		if (!('mediaSession' in navigator)) return;
@@ -64,14 +67,19 @@ export const usePlayer = (
 				: [],
 		});
 
+		// audioが終端に達すると、イヤホンを2回タップしてもnexttrackは発火せず、代わりにplayが発火するので、endedの場合はnextTrackを呼ぶ
+		navigator.mediaSession.setActionHandler('play', player.ended ? nextTrack : player.play);
+		navigator.mediaSession.setActionHandler('pause', player.pause);
 		navigator.mediaSession.setActionHandler('nexttrack', nextTrack);
 		navigator.mediaSession.setActionHandler('previoustrack', prevTrack);
 
 		return () => {
+			navigator.mediaSession.setActionHandler('play', null);
+			navigator.mediaSession.setActionHandler('pause', null);
 			navigator.mediaSession.setActionHandler('nexttrack', null);
 			navigator.mediaSession.setActionHandler('previoustrack', null);
 		};
-	}, [entry, nextTrack, prevTrack]);
+	}, [entry, nextTrack, prevTrack, player.ended, player.play, player.pause]);
 
 	// 状態Aから状態Bに遷移する時にプレイヤーが再生中であれば一時停止し、さらにまたAに戻る時に再生する
 	useEffect(() => {

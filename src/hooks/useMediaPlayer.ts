@@ -3,6 +3,7 @@ import Hls from 'hls.js';
 
 export const useMediaPlayer = (src: string) => {
 	const [playing, setPlaying] = useState(false);
+	const [volume, setCurrentVolume] = useState(1);
 	const [currentTime, setCurrentTime] = useState(0);
 	const [currentRate, setCurrentRate] = useState(1);
 	const [loading, setLoading] = useState(false);
@@ -10,9 +11,17 @@ export const useMediaPlayer = (src: string) => {
 	const audio = useRef<HTMLAudioElement | null>(null);
 
 	const play = useCallback(async () => {
-		return audio.current?.play();
+		return audio.current?.play().then(() => {
+			setPlaying(true);
+			navigator.mediaSession.playbackState = 'playing';
+		});
 	}, []);
-	const pause = useCallback(() => audio.current?.pause(), []);
+	const pause = useCallback(() => {
+		if (!audio.current) return;
+		audio.current.pause();
+		setPlaying(false);
+		navigator.mediaSession.playbackState = 'paused';
+	}, []);
 	const getPlaying = useCallback(
 		(showReadyState = true) =>
 			!!audio.current &&
@@ -28,14 +37,24 @@ export const useMediaPlayer = (src: string) => {
 		else await play();
 	}, [pause, play, getPlaying]);
 	const seek = useCallback((time: number) => {
-		if (audio.current) audio.current.currentTime = time;
+		if (!audio.current) return;
+		audio.current.currentTime = time;
+		setCurrentTime(time);
 	}, []);
 	const setVolume = useCallback((volume: number) => {
-		if (audio.current) audio.current.volume = volume;
+		if (!audio.current) return;
+		audio.current.volume = volume;
+		setCurrentVolume(volume);
 	}, []);
 	const setPlaybackRate = useCallback((rate: number) => {
-		if (audio.current) audio.current.playbackRate = rate;
+		if (!audio.current) return;
+		audio.current.playbackRate = rate;
+		setCurrentRate(rate);
 	}, []);
+	const stop = useCallback(() => {
+		seek(0);
+		pause();
+	}, [seek, pause]);
 
 	const addEventListener = useCallback((audio: HTMLAudioElement) => {
 		const play = () => {
@@ -44,10 +63,11 @@ export const useMediaPlayer = (src: string) => {
 		};
 		const pause = () => setPlaying(false);
 		const timeupdate = () => {
-			setCurrentTime(audio.currentTime ?? 0);
+			setCurrentTime(audio.currentTime);
 			setEnded(false);
 		};
-		const ratechange = () => setCurrentRate(audio.playbackRate ?? 1);
+		const ratechange = () => setCurrentRate(audio.playbackRate);
+		const volumechange = () => setCurrentVolume(audio.volume);
 		const ended = () => setEnded(true);
 		const loadstart = () => setLoading(true);
 		const loadeddata = () => setLoading(false);
@@ -55,6 +75,7 @@ export const useMediaPlayer = (src: string) => {
 		audio.addEventListener('pause', pause);
 		audio.addEventListener('timeupdate', timeupdate);
 		audio.addEventListener('ratechange', ratechange);
+		audio.addEventListener('volumechange', volumechange);
 		audio.addEventListener('ended', ended);
 		audio.addEventListener('loadstart', loadstart);
 		audio.addEventListener('loadeddata', loadeddata);
@@ -64,6 +85,7 @@ export const useMediaPlayer = (src: string) => {
 			audio.removeEventListener('pause', pause);
 			audio.removeEventListener('timeupdate', timeupdate);
 			audio.removeEventListener('ratechange', ratechange);
+			audio.removeEventListener('volumechange', volumechange);
 			audio.removeEventListener('ended', ended);
 			audio.removeEventListener('loadstart', loadstart);
 			audio.removeEventListener('loadeddata', loadeddata);
@@ -86,24 +108,12 @@ export const useMediaPlayer = (src: string) => {
 		audio.addEventListener('ratechange', setPositionState);
 		audio.addEventListener('loadeddata', setPositionState);
 
-		// MEMO: ステータスがpausedなときは、イヤホンを2回タップしてもnexttrackは発火せず、代わりにplayが発火する
-		navigator.mediaSession.setActionHandler('play', async () => {
-			await audio.play();
-			navigator.mediaSession.playbackState = 'playing';
-		});
-		navigator.mediaSession.setActionHandler('pause', () => {
-			audio.pause();
-			navigator.mediaSession.playbackState = 'paused';
-		});
-
 		return () => {
 			audio.removeEventListener('play', play);
 			audio.removeEventListener('pause', pause);
 			audio.removeEventListener('timeupdate', setPositionState);
 			audio.removeEventListener('ratechange', setPositionState);
 			audio.removeEventListener('loadeddata', setPositionState);
-			navigator.mediaSession.setActionHandler('play', null);
-			navigator.mediaSession.setActionHandler('pause', null);
 		};
 	}, []);
 
@@ -139,8 +149,10 @@ export const useMediaPlayer = (src: string) => {
 		getCurrentTime,
 		play,
 		pause,
+		stop,
 		toggle,
 		setVolume,
+		volume,
 		seek,
 		setPlaybackRate,
 		playbackRate: currentRate,
