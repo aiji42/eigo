@@ -17,7 +17,7 @@ export type TTSResponseData = {
 	};
 };
 
-export const ttsByGoogle = async (token: string, text: string) => {
+export const ttsByGoogle = async (token: string, text: string, voiceName: string) => {
 	const body = {
 		audioConfig: {
 			audioEncoding: 'MP3_64_KBPS',
@@ -30,7 +30,7 @@ export const ttsByGoogle = async (token: string, text: string) => {
 		},
 		voice: {
 			languageCode: 'en-US',
-			name: 'en-US-Studio-O',
+			name: voiceName,
 		},
 	};
 
