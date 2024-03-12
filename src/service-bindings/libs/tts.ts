@@ -23,7 +23,7 @@ export const ttsByGoogle = async (token: string, text: string, voiceName: string
 			audioEncoding: 'MP3_64_KBPS',
 			effectsProfileId: ['headphone-class-device'],
 			pitch: 1,
-			speakingRate: 0.65,
+			speakingRate: 0.85,
 		},
 		input: {
 			text,
