@@ -47,7 +47,7 @@ const Page = () => {
 					<Link
 						to={{ pathname: `/${entryId}` }}
 						replace
-						className="rounded-md border-2 border-purple-700 px-1 py-0.5 font-bold text-purple-700"
+						className="rounded-md border-2 border-purple-700 bg-purple-700 px-1 py-0.5 font-bold text-slate-950"
 					>
 						{level}
 					</Link>
