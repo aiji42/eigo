@@ -10,6 +10,7 @@ import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
 import { usePlayer } from '../hooks/usePlayer';
 import { StickyHeader } from '../componnts/StickyHeader';
+import { clsx } from 'clsx';
 
 // TODO: オリジナルページのURLをソースとして表示する
 // TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
@@ -43,27 +44,32 @@ const Page = () => {
 		<>
 			<StickyHeader>
 				{level ? (
-					<Link to={{ pathname: `/${entryId}` }} replace>
-						<span className="rounded-md border-2 border-purple-700 px-1 py-0.5 font-bold text-purple-700">{level}</span>
+					<Link
+						to={{ pathname: `/${entryId}` }}
+						replace
+						className="rounded-md border-2 border-purple-700 px-1 py-0.5 font-bold text-purple-700"
+					>
+						{level}
 					</Link>
-				) : hasCalibratedEntry ? (
-					<Link to={{ pathname: `/${entryId}`, search: `level=A1` }} replace>
-						<span className="rounded-md border-2 border-purple-300 px-1 py-0.5 font-bold text-purple-300">A1</span>
+				) : !hasCalibratedEntry ? (
+					<Link
+						to={{ pathname: `/${entryId}`, search: `level=A1` }}
+						replace
+						className="rounded-md border-2 border-purple-300 px-1 py-0.5 font-bold text-purple-300"
+					>
+						A1
 					</Link>
 				) : (
 					<button
 						onClick={() => calibrate()}
 						disabled={isCalibrating}
-						className="flex"
+						className={clsx(
+							'rounded-md border-2 border-slate-400 px-1 py-0.5 font-bold text-slate-400',
+							isCalibrating && 'animate-pulse border-slate-300 text-slate-300',
+						)}
 						aria-label="Calibrate the difficulty of this entry. It may take a while."
 					>
-						{isCalibrating ? (
-							<div className="relative size-6">
-								<LoadingSpinnerIcon />
-							</div>
-						) : (
-							<span className="rounded-md border-2 border-slate-400 px-1 py-0.5 font-bold text-slate-400">A1</span>
-						)}
+						A1
 					</button>
 				)}
 			</StickyHeader>
