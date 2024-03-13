@@ -1,29 +1,40 @@
-import { Entry } from '../schema';
+import { Entry, CalibratedEntry } from '../schema';
 import { useEffect, useState } from 'react';
 import useSWRImmutable from 'swr/immutable';
-import { getJson } from '../libs/utils';
+import { getJson, getJsonNoError, postJson } from '../libs/utils';
+import useSWRMutation from 'swr/mutation';
 
-export const useEntry = (entryId: string | undefined, refreshUntil: (entry: Entry | undefined) => boolean) => {
+type Key = { entryId: string | undefined; level: string | null };
+
+export const useEntry = ({ entryId, level }: Key, refreshUntil: (entry: Entry | CalibratedEntry | undefined) => boolean) => {
 	const [refreshInterval, setRefreshInterval] = useState(0);
-	const { data, isValidating } = useSWRImmutable<Entry & { nextEntryId: number | null; prevEntryId: number | null }>(
-		entryId,
-		async (key) => {
-			const entryPromise = getJson<Entry>(`/api/entry/${key}`);
-			// TODO: 本体の取得と分ける (本体のrefreshが数回行われる可能性があるので)
-			const nextEntryPromise = getJson<Entry>(`/api/next-entry/${key}`).catch(() => null);
-			const prevEntryPromise = getJson<Entry>(`/api/prev-entry/${key}`).catch(() => null);
-			return {
-				...(await entryPromise),
-				nextEntryId: (await nextEntryPromise)?.id ?? null,
-				prevEntryId: (await prevEntryPromise)?.id ?? null,
-			};
-		},
+	const { data: entry, isValidating } = useSWRImmutable(
+		level ? `/api/calibrated-entry/${entryId}/${level}` : `/api/entry/${entryId}`,
+		getJson<Entry | CalibratedEntry>,
 		{ refreshInterval, suspense: true },
 	);
 	useEffect(() => {
-		if (refreshUntil(data)) setRefreshInterval(1000);
+		if (refreshUntil(entry)) setRefreshInterval(1000);
 		else setRefreshInterval(0);
-	}, [data, refreshUntil]);
+	}, [entry, refreshUntil]);
 
-	return { entry: data, isValidating };
+	const { data: nextEntry } = useSWRImmutable(`/api/next-entry/${entryId}`, getJsonNoError<Entry>, { suspense: true });
+	const { data: prevEntry } = useSWRImmutable(`/api/prev-entry/${entryId}`, getJsonNoError<Entry>, { suspense: true });
+	const { data: calibratedEntry } = useSWRImmutable(`/api/calibrated-entry/${entryId}/A1`, getJsonNoError<Entry>, { suspense: true });
+
+	const { isMutating, trigger } = useSWRMutation(
+		calibratedEntry ? null : `/api/calibrated-entry/${entryId}/A1`,
+		postJson<CalibratedEntry>,
+		{ populateCache: true },
+	);
+
+	return {
+		entry,
+		nextEntryId: nextEntry?.id ?? null,
+		prevEntryId: prevEntry?.id ?? null,
+		hasCalibratedEntry: !!calibratedEntry,
+		isValidating,
+		calibrate: trigger,
+		isCalibrating: isMutating,
+	};
 };

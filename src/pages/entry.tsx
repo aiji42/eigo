@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { displayRelativeTime } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { ParagraphCard } from '../componnts/ParagraphCard';
@@ -9,18 +9,24 @@ import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
 import { usePlayer } from '../hooks/usePlayer';
+import { StickyHeader } from '../componnts/StickyHeader';
 
 // TODO: オリジナルページのURLをソースとして表示する
 // TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
-	const { entry } = useEntry(entryId, (entry) => !!entry && !isTTSed(entry.content));
+	const [searchParams] = useSearchParams();
+	const level = searchParams.get('level');
+	const { entry, nextEntryId, prevEntryId, hasCalibratedEntry, isCalibrating, calibrate } = useEntry(
+		{ entryId, level },
+		(entry) => !!entry && !isTTSed(entry.content),
+	);
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const player = usePlayer(entryId ?? '', entry, {
-		nextId: entry?.nextEntryId,
-		prevId: entry?.prevEntryId,
+	const player = usePlayer(level ? `/${entryId}/${level}/playlist.m3u8` : `/${entryId}/playlist.m3u8`, entry, {
+		nextId: nextEntryId,
+		prevId: prevEntryId,
 		stopAndRestart: !!translatingKey,
 	});
 
@@ -31,15 +37,38 @@ const Page = () => {
 
 	useAwakeScreen(player.playing);
 
-	if (!entry) throw new Error('entry not found');
-
 	const playing = getPlaying(entry.content, player.currentTime);
 
 	return (
 		<>
+			<StickyHeader>
+				{level ? (
+					<span className="rounded-md border-2 border-purple-700 px-1 py-0.5 font-bold text-purple-700">{level}</span>
+				) : hasCalibratedEntry ? (
+					<Link to={{ pathname: `/${entryId}`, search: `level=A1` }}>
+						<span className="rounded-md border-2 border-purple-300 px-1 py-0.5 font-bold text-purple-300">A1</span>
+					</Link>
+				) : (
+					<button
+						onClick={() => calibrate()}
+						disabled={isCalibrating}
+						className="flex"
+						aria-label="
+					"
+					>
+						{isCalibrating ? (
+							<div className="relative size-6">
+								<LoadingSpinnerIcon />
+							</div>
+						) : (
+							<span className="rounded-md border-2 border-slate-400 px-1 py-0.5 font-bold text-slate-400">A1</span>
+						)}
+					</button>
+				)}
+			</StickyHeader>
 			<div className="flex flex-col gap-4 p-2">
-				<h1 className="text-center text-4xl font-bold">{entry.title}</h1>
-				<p className="text-center text-gray-500">{displayRelativeTime(entry.publishedAt)} ago</p>
+				<h1 className="text-center text-4xl font-bold text-slate-300">{entry.title}</h1>
+				<p className="text-center text-gray-500">{displayRelativeTime('publishedAt' in entry ? entry.publishedAt : entry.createdAt)} ago</p>
 				{entry.thumbnailUrl && <img className="m-auto h-64 object-cover md:h-96" src={entry.thumbnailUrl} alt={entry.title} />}
 			</div>
 			<div className="mb-32 mt-8 flex flex-col gap-6 text-2xl">

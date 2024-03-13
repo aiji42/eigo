@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `CalibratedEntries_entryId_cefrLevel_unique` ON `CalibratedEntries` (`entryId`,`cefrLevel`);

@@ -1,3 +1,5 @@
+import { CEFRLevel } from '../schema';
+
 export const base64ToUint8Array = (base64: string) => {
 	const raw = atob(base64);
 	const uint8Array = new Uint8Array(raw.length);
@@ -32,6 +34,12 @@ export const getJson = async <T>(url: string): Promise<T> => {
 	return await res.json();
 };
 
+export const getJsonNoError = async <T>(url: string): Promise<T | null> => {
+	const res = await fetch(url);
+	if (!res.ok) return null;
+	return await res.json();
+};
+
 export const postJson = async <T>(url: string, data: any): Promise<T> => {
 	const res = await fetch(url, {
 		method: 'POST',
@@ -41,3 +49,13 @@ export const postJson = async <T>(url: string, data: any): Promise<T> => {
 	if (!res.ok) throw new Error(`fetch failed: ${res.status} ${res.statusText}`);
 	return await res.json();
 };
+
+export const isCEFRLevel = (level: string): level is CEFRLevel => {
+	return ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(level);
+};
+
+export function assertCEFRLevel(level: string): asserts level is CEFRLevel {
+	if (!isCEFRLevel(level)) {
+		throw new Error(`invalid CEFR level: ${level}`);
+	}
+}

@@ -1,10 +1,18 @@
-import { sha256 } from './libs/utils';
-import { calibrateByOpenAI, CalibrateOption } from './libs/calibrate';
+import { calibrateByOpenAI } from './libs/calibrate';
+import { CEFRLevel } from '../schema';
+import { assertCEFRLevel } from '../libs/utils';
 
 interface Env {
 	CACHE: KVNamespace;
 	OPEN_AI_API_KEY: string;
 }
+
+export type CalibratePayload = {
+	text: string;
+	level: CEFRLevel;
+	maxWords: number;
+	minWords: number;
+};
 
 export default {
 	async fetch(request: Request, env: Env, context: ExecutionContext) {
@@ -18,27 +26,27 @@ export default {
 
 		const payload = await request.json();
 
-		if (!payload || typeof payload !== 'object' || !('text' in payload) || typeof payload.text !== 'string')
+		try {
+			assertPayload(payload);
+		} catch (e) {
 			return new Response('400 Bad Request', { status: 400 });
-
-		const calibrateOption: CalibrateOption = {
-			level: 'A1',
-			maxWords: 300,
-			minWords: 400,
-		};
-
-		const cacheKey = `calibrate:${await sha256(payload.text + JSON.stringify(calibrateOption))}`;
-		const value = await env.CACHE.get(cacheKey);
-
-		if (value) {
-			console.log('cache hit');
-			return new Response(value);
 		}
 
-		const calibrated = await calibrateByOpenAI(env.OPEN_AI_API_KEY, payload.text, calibrateOption);
+		const calibrated = await calibrateByOpenAI(env.OPEN_AI_API_KEY, payload.text, {
+			level: payload.level,
+			maxWords: payload.maxWords,
+			minWords: payload.minWords,
+		});
 
-		context.waitUntil(env.CACHE.put(cacheKey, calibrated));
-
-		return new Response(calibrated);
+		return Response.json(calibrated);
 	},
 };
+
+function assertPayload(payload: any): asserts payload is CalibratePayload {
+	if (!payload || typeof payload !== 'object') throw new Error('Invalid payload');
+	if (!('text' in payload) || typeof payload.text !== 'string') throw new Error('Invalid payload');
+	if (!('level' in payload) || typeof payload.level !== 'string') throw new Error('Invalid payload');
+	assertCEFRLevel(payload.level);
+	if (!('maxWords' in payload) || typeof payload.maxWords !== 'number') throw new Error('Invalid payload');
+	if (!('minWords' in payload) || typeof payload.minWords !== 'number') throw new Error('Invalid payload');
+}

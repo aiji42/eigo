@@ -1,62 +1,41 @@
-type OpenAIResponseData = {
-	choices: [
-		{
-			finish_reason: 'stop' | 'length' | 'function_call' | 'content_filter' | null;
-			index: 0;
-			message: {
-				content: string;
-				role: 'assistant';
-			};
-			logprobs: null;
-		},
-	];
-	created: number;
-	id: string;
-	model: string;
-	object: string;
-	usage: {
-		completion_tokens: number;
-		prompt_tokens: number;
-		total_tokens: number;
-	};
-};
+import OpenAI from 'openai';
+import { CEFRLevel } from '../../schema';
 
 export type CalibrateOption = {
-	level?: 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
+	level?: CEFRLevel;
 	maxWords?: number;
 	minWords?: number;
 };
+
+export type CalibratedData = { title: string; content: string };
 
 export const calibrateByOpenAI = async (
 	token: string,
 	text: string,
 	{ level = 'A1', maxWords = 400, minWords = 300 }: CalibrateOption = {},
-) => {
-	const body = {
+): Promise<CalibratedData> => {
+	const openai = new OpenAI({
+		apiKey: token,
+		baseURL: 'https://gateway.ai.cloudflare.com/v1/940ed59491ce58430777f23d481336bb/eigo/openai',
+	});
+
+	const chatCompletion = await openai.chat.completions.create({
 		model: 'gpt-4-0125-preview',
 		response_format: { type: 'json_object' },
 		messages: [
 			{
 				role: 'system',
-				content: 'You are an excellent assistant in linguistics, especially English.',
+				content: 'You are an advanced English text transformer skilled in producing structured, coherent passages.',
 			},
 			{
 				role: 'user',
-				content: `Please convert the following English text into an English text consisting of ${minWords}-${maxWords} words at CEFR level ${level} and return it as JSON data with the key "calibrated". Please break up paragraphs appropriately and use line feed codes between paragraphs.\n'''''${text}\n'''''`,
+				content: `Transform the text below into a well-structured English passage with paragraphs clearly separated by line breaks. Ensure the text consists of ${minWords}-${maxWords} words, aligning with CEFR level ${level}. Divide the text into paragraphs, each with approximately 50 words, ensuring logical flow and coherence. Also, generate a suitable title and provide both in JSON format with keys 'content' and 'title'. Enforce the word count strictly and ensure logical paragraph division.\n'''''${text}\n'''''`,
 			},
 		],
-	};
-
-	const response = await fetch('https://api.openai.com/v1/chat/completions', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			Authorization: `Bearer ${token}`,
-		},
-		body: JSON.stringify(body),
 	});
 
-	if (!response.ok) throw new Error(await response.text());
+	chatCompletion.choices[0].finish_reason;
+
 	const {
 		choices: [
 			{
@@ -64,10 +43,19 @@ export const calibrateByOpenAI = async (
 				message: { content },
 			},
 		],
-	} = (await response.json()) as OpenAIResponseData;
+	} = chatCompletion;
 
 	if (finish_reason !== 'stop') throw new Error(`Calibration failed; finish_reason is ${finish_reason}`);
-	const { calibrated } = JSON.parse(content) as { calibrated: string };
+	if (!content) throw new Error(`Calibration failed; empty response`);
+	const data = JSON.parse(content);
 
-	return calibrated;
+	assert(data);
+
+	return data;
 };
+
+function assert(data: any): asserts data is CalibratedData {
+	if (!data || typeof data !== 'object') throw new Error(`Calibration failed; invalid response: ${data}`);
+	if (!('title' in data && typeof data.title === 'string')) throw new Error(`Calibration failed; invalid response: ${data}`);
+	if (!('content' in data && typeof data.content === 'string')) throw new Error(`Calibration failed; invalid response: ${data}`);
+}

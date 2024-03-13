@@ -1,3 +1,5 @@
+import { CalibratePayload } from '../service-bindings/calibrate';
+
 const mapping: Record<string, string> = {
 	TTS: 'http://localhost:8050',
 	Translate: 'http://localhost:8051',
@@ -63,10 +65,10 @@ export const createTranslate =
 
 export const createCalibrate =
 	(fetcher: Fetcher, req: Request) =>
-	async (text: string, cloned = false) => {
+	async (payload: CalibratePayload, cloned = false) => {
 		const newReq = new Request(cloned ? req : req.clone(), {
 			method: 'POST',
-			body: JSON.stringify({ text }),
+			body: JSON.stringify(payload),
 			headers: {
 				'Content-Type': 'application/json',
 			},

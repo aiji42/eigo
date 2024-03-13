@@ -1,4 +1,4 @@
-import { Entry } from '../schema';
+import { CalibratedEntry, Entry } from '../schema';
 import { MediaPlayer, useMediaPlayer } from './useMediaPlayer';
 import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
@@ -6,8 +6,8 @@ import { getNextPlaybackTime, getPrevPlaybackTime, isTTSed } from '../libs/conte
 import { PlayerProps } from '../componnts/Player';
 
 export const usePlayer = (
-	entryId: number | string,
-	entry: Entry | null | undefined,
+	src: string,
+	entry: Entry | CalibratedEntry | null | undefined,
 	{
 		nextId,
 		prevId,
@@ -18,7 +18,7 @@ export const usePlayer = (
 		stopAndRestart?: boolean;
 	},
 ): PlayerProps & MediaPlayer => {
-	const player = useMediaPlayer(`/${entryId}/playlist.m3u8`);
+	const player = useMediaPlayer(src);
 	const loading = useMemo(() => player.loading || !entry || !isTTSed(entry.content), [player.loading, entry]);
 
 	const navigate = useNavigate();
@@ -33,7 +33,7 @@ export const usePlayer = (
 		if (beforeNavigatePlayerStatus.current.playing && !loading) player.play();
 		player.setPlaybackRate(beforeNavigatePlayerStatus.current.playbackRate);
 		player.setVolume(beforeNavigatePlayerStatus.current.volume);
-	}, [entryId, loading]);
+	}, [src, loading]);
 
 	const nextTrack = useCallback(() => {
 		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;

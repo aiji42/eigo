@@ -1,5 +1,5 @@
 // TODO: ピッチや声、速度によってキーを変える
-import { Entry } from '../schema';
+import { CalibratedEntry, Entry } from '../schema';
 
 export const audioBucketKey = (entryId: string | number, sentenceKey: string) => {
 	return `voices/entry-${entryId}/normal/${sentenceKey}.mp3`;
@@ -25,8 +25,9 @@ export const putAudioOnBucket = async (
 	return bucket.put(audioBucketKey(entryId, sentenceKey), audio, { customMetadata: { duration: String(metadata.duration) } });
 };
 
-export const createM3U = ({ content, id }: Entry) => {
-	const sentences = content.flatMap(({ sentences }) => sentences);
+export const createM3U = (entry: Entry | CalibratedEntry) => {
+	const sentences = entry.content.flatMap(({ sentences }) => sentences);
+	const id = 'entryId' in entry ? entry.entryId : entry.id;
 
 	const targetDuration = Math.ceil(Math.max(...sentences.map(({ duration }) => duration ?? 0)));
 	return `#EXTM3U

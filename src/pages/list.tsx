@@ -4,6 +4,8 @@ import { displayRelativeTime, getJson } from '../libs/utils';
 import { Link } from 'react-router-dom';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
 import { useInView } from 'react-intersection-observer';
+import { StickyHeader } from '../componnts/StickyHeader';
+import { useMemo } from 'react';
 
 const SIZE = 10;
 
@@ -29,10 +31,11 @@ const Page = () => {
 		setSize(size + 1);
 	}
 
+	// TODO: wordsカウントと、calibratesの有無を表示する
 	return (
-		<div className="p-2">
-			<h1 className="mb-4 text-4xl font-bold">Eigo</h1>
-			<ul>
+		<>
+			<StickyHeader />
+			<ul className="p-2">
 				{data
 					?.flatMap((data) => data)
 					.map((item) => (
@@ -55,7 +58,7 @@ const Page = () => {
 					<LoadingSpinnerIcon />
 				</div>
 			)}
-		</div>
+		</>
 	);
 };
 

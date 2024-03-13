@@ -1,4 +1,4 @@
-import { sqliteTable, text, integer, index } from 'drizzle-orm/sqlite-core';
+import { sqliteTable, text, integer, index, unique } from 'drizzle-orm/sqlite-core';
 import { InferSelectModel, relations } from 'drizzle-orm';
 import { Content } from './libs/content';
 
@@ -54,3 +54,32 @@ export const entries = sqliteTable(
 );
 
 export type Entry = InferSelectModel<typeof entries>;
+
+export const entriesRelations = relations(entries, ({ many }) => ({
+	calibratedEntries: many(calibratedEntries),
+}));
+
+export const calibratedEntries = sqliteTable(
+	'CalibratedEntries',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }).notNull(),
+		entryId: integer('entryId')
+			.notNull()
+			.references(() => entries.id),
+		cefrLevel: text('cefrLevel').notNull().$type<CEFRLevel>(),
+		title: text('title').notNull(),
+		content: text('content', { mode: 'json' }).notNull().$type<Content>(),
+		thumbnailUrl: text('thumbnailUrl'),
+		metadata: text('metadata', { mode: 'json' }),
+		createdAt: integer('createdAt', { mode: 'timestamp' }).notNull(),
+	},
+	(table) => {
+		return {
+			unique: unique().on(table.entryId, table.cefrLevel),
+		};
+	},
+);
+
+export type CalibratedEntry = InferSelectModel<typeof calibratedEntries>;
+
+export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';

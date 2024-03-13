@@ -1,10 +1,21 @@
-import { getEntryById, getNextEntry, getPrevEntry, paginateEntries, updateEntry } from './libs/db';
+import {
+	getCalibratedEntryByEntryIdAndCefrLevel,
+	getEntryById,
+	getNextEntry,
+	getPrevEntry,
+	insertCalibratedEntry,
+	paginateEntries,
+	updateCalibratedEntry,
+	updateEntry,
+} from './libs/db';
 import { ttsContent } from './libs/tts';
 import { Hono } from 'hono';
 import { createCalibrate, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
 import { createContent, isTTSed, joinSentences } from './libs/content';
 import { existsAudioOnBucket, putAudioOnBucket, createM3U } from './libs/audio';
+import { CalibratedData } from './service-bindings/libs/calibrate';
+import { isCEFRLevel } from './libs/utils';
 
 export type Bindings = {
 	DB: D1Database;
@@ -56,6 +67,36 @@ app.get('/:entryId/playlist.m3u8', async (c) => {
 	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
 
+// TODO: PlayListの生成を共通化する
+app.get('/:entryId/:level/playlist.m3u8', async (c) => {
+	const id = c.req.param('entryId');
+	const level = c.req.param('level');
+	if (!isCEFRLevel(level)) return c.notFound();
+	let calibratedEntry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
+	if (!calibratedEntry) return c.notFound();
+
+	if (!isTTSed(calibratedEntry.content)) {
+		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
+		const { newContent, audios } = await ttsContent(tts, calibratedEntry.content);
+		await Promise.all(audios.map(async ({ audio, key, duration }) => putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration })));
+		calibratedEntry = await updateCalibratedEntry(c.env.DB, calibratedEntry.id, { content: newContent });
+	} else {
+		await Promise.all(
+			calibratedEntry.content
+				.flatMap(({ sentences }) => sentences)
+				.map(async ({ key, text }) => {
+					if (!(await existsAudioOnBucket(c.env.BUCKET, id, key))) {
+						const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw.clone());
+						const { duration, audio } = await tts(text, true);
+						await putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration });
+					}
+				}),
+		);
+	}
+
+	return new Response(createM3U(calibratedEntry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
+});
+
 app.get('/api/entry/:id', async (c) => {
 	const id = c.req.param('id');
 	let entry = await getEntryById(c.env.DB, Number(id));
@@ -64,6 +105,7 @@ app.get('/api/entry/:id', async (c) => {
 	return c.json(entry);
 });
 
+// TODO: /api/entry/:id と統合する
 app.get('/api/next-entry/:id', async (c) => {
 	const id = c.req.param('id');
 	let entry = await getNextEntry(c.env.DB, Number(id));
@@ -72,6 +114,7 @@ app.get('/api/next-entry/:id', async (c) => {
 	return c.json(entry);
 });
 
+// TODO: /api/entry/:id と統合する
 app.get('/api/prev-entry/:id', async (c) => {
 	const id = c.req.param('id');
 	let entry = await getPrevEntry(c.env.DB, Number(id));
@@ -80,17 +123,45 @@ app.get('/api/prev-entry/:id', async (c) => {
 	return c.json(entry);
 });
 
-app.get('/calibrate/:entryId', async (c) => {
+app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
 	const id = c.req.param('entryId');
-	let entry = await getEntryById(c.env.DB, Number(id));
+	const level = c.req.param('level');
+	if (!isCEFRLevel(level)) return c.notFound();
+	const entry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
+	if (!entry) return c.notFound();
+
+	return c.json(entry);
+});
+
+app.post('/api/calibrated-entry/:entryId/:level', async (c) => {
+	const id = c.req.param('entryId');
+	const level = c.req.param('level');
+	if (!isCEFRLevel(level)) return c.notFound();
+	const calibratedEntry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
+	if (calibratedEntry) return c.json(calibratedEntry);
+
+	const entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
 
 	const calibre = createCalibrate(serviceBindingsMock(c.env).Calibrate, c.req.raw.clone());
-	const calibrated = await calibre(entry.content.map(joinSentences).join('\n\n'));
+	const calibratedContent = await calibre({
+		text: entry.content.map(joinSentences).join('\n\n'),
+		level,
+		minWords: 300,
+		maxWords: 400,
+	});
+	const data: CalibratedData = JSON.parse(calibratedContent);
 
-	const paragraphs = calibrated.trim().split('\n').filter(Boolean);
+	const paragraphs = data.content
+		.trim()
+		.split('\n')
+		.map((p) => p.trim())
+		.filter(Boolean);
+	const content = await createContent(paragraphs);
 
-	return c.json(await createContent(paragraphs));
+	const res = await insertCalibratedEntry(c.env.DB, entry, level, data.title, content);
+
+	return c.json(res);
 });
 
 app.get('/api/list', async (c) => {

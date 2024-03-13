@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import * as schema from '../schema';
 import { RSSFeed, RSSItem } from './rss-parser';
 import { Content } from './content';
-import { entries, Entry } from '../schema';
+import { CalibratedEntry, CEFRLevel, entries, Entry } from '../schema';
 
 export const getAllRules = async (d1: D1Database) => {
 	const db = drizzle(d1, { schema });
@@ -109,4 +109,34 @@ export const paginateEntries = async (d1: D1Database, limit: number, offset: num
 		limit,
 		offset,
 	});
+};
+
+export const getCalibratedEntryByEntryIdAndCefrLevel = async (d1: D1Database, entryId: number, cefrLevel: CEFRLevel = 'A1') => {
+	const db = drizzle(d1, { schema });
+	return db.query.calibratedEntries.findFirst({
+		where: (record, { eq, and }) => and(eq(record.entryId, entryId), eq(record.cefrLevel, cefrLevel)),
+	});
+};
+
+export const insertCalibratedEntry = async (d1: D1Database, entry: Entry, cefrLevel: CEFRLevel, title: string, content: Content) => {
+	const db = drizzle(d1, { schema });
+	const result = await db
+		.insert(schema.calibratedEntries)
+		.values({
+			entryId: entry.id,
+			cefrLevel,
+			title,
+			content,
+			thumbnailUrl: entry.thumbnailUrl,
+			createdAt: new Date(),
+		})
+		.returning();
+
+	return result[0];
+};
+
+export const updateCalibratedEntry = async (d1: D1Database, id: number, calibratedEntry: Partial<CalibratedEntry>) => {
+	const db = drizzle(d1, { schema });
+	const [result] = await db.update(schema.calibratedEntries).set(calibratedEntry).where(eq(schema.calibratedEntries.id, id)).returning();
+	return result;
 };
