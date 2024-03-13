@@ -47,7 +47,7 @@ const Page = () => {
 					<Link
 						to={{ pathname: `/${entryId}` }}
 						replace
-						className="rounded-md border-2 border-purple-700 bg-purple-700 px-1 py-0.5 font-bold text-slate-950"
+						className="block rounded-md border-2 border-purple-700 bg-purple-700 px-1 py-0.5 font-bold text-slate-950"
 					>
 						{level}
 					</Link>
@@ -55,7 +55,7 @@ const Page = () => {
 					<Link
 						to={{ pathname: `/${entryId}`, search: `level=A1` }}
 						replace
-						className="rounded-md border-2 border-purple-300 px-1 py-0.5 font-bold text-purple-300"
+						className="block rounded-md border-2 border-purple-300 px-1 py-0.5 font-bold text-purple-300"
 					>
 						A1
 					</Link>
