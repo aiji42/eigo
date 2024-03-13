@@ -43,9 +43,11 @@ const Page = () => {
 		<>
 			<StickyHeader>
 				{level ? (
-					<span className="rounded-md border-2 border-purple-700 px-1 py-0.5 font-bold text-purple-700">{level}</span>
+					<Link to={{ pathname: `/${entryId}` }} replace>
+						<span className="rounded-md border-2 border-purple-700 px-1 py-0.5 font-bold text-purple-700">{level}</span>
+					</Link>
 				) : hasCalibratedEntry ? (
-					<Link to={{ pathname: `/${entryId}`, search: `level=A1` }}>
+					<Link to={{ pathname: `/${entryId}`, search: `level=A1` }} replace>
 						<span className="rounded-md border-2 border-purple-300 px-1 py-0.5 font-bold text-purple-300">A1</span>
 					</Link>
 				) : (
@@ -53,8 +55,7 @@ const Page = () => {
 						onClick={() => calibrate()}
 						disabled={isCalibrating}
 						className="flex"
-						aria-label="
-					"
+						aria-label="Calibrate the difficulty of this entry. It may take a while."
 					>
 						{isCalibrating ? (
 							<div className="relative size-6">
