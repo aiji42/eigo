@@ -51,7 +51,7 @@ const Page = () => {
 					>
 						{level}
 					</Link>
-				) : !hasCalibratedEntry ? (
+				) : hasCalibratedEntry ? (
 					<Link
 						to={{ pathname: `/${entryId}`, search: `level=A1` }}
 						replace
