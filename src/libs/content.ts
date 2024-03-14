@@ -21,25 +21,32 @@ export type Sentence = {
 export const createContent = async (paragraphs: string[]): Promise<Content> => {
 	const segmenter = new Intl.Segmenter('en-US', { granularity: 'sentence' });
 
-	return await Promise.all(
-		paragraphs.map(async (paragraph) => ({
-			type: 'paragraph',
-			key: await sha256(paragraph),
-			duration: null,
-			offset: null,
-			sentences: await Promise.all(
-				Array.from(segmenter.segment(paragraph)).map(async ({ segment }) => {
-					return {
-						type: 'sentence',
-						key: await sha256(segment),
-						text: segment,
-						duration: null,
-						offset: null,
-					};
-				}),
-			),
-		})),
+	const content = await Promise.all(
+		paragraphs.map<Promise<Paragraph | null>>(async (p) => {
+			const paragraph = p.trim();
+			if (!paragraph) return null;
+			return {
+				type: 'paragraph',
+				key: await sha256(paragraph),
+				duration: null,
+				offset: null,
+				sentences: await Promise.all(
+					Array.from(segmenter.segment(paragraph)).map(async ({ segment: s }) => {
+						const segment = s.trim();
+						return {
+							type: 'sentence',
+							key: await sha256(segment),
+							text: segment,
+							duration: null,
+							offset: null,
+						};
+					}),
+				),
+			};
+		}),
 	);
+
+	return content.filter((c): c is Paragraph => c !== null);
 };
 
 export const isTTSed = (content: Content) => {

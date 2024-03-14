@@ -18,16 +18,14 @@ const Page = () => {
 	const { entryId } = useParams<'entryId'>();
 	const [searchParams] = useSearchParams();
 	const level = searchParams.get('level');
-	const { entry, nextEntryId, prevEntryId, hasCalibratedEntry, isCalibrating, calibrate } = useEntry(
-		{ entryId, level },
-		(entry) => !!entry && !isTTSed(entry.content),
-	);
+	const { entry, hasCalibratedEntry, isCalibrating, calibrate } = useEntry({ entryId, level }, (entry) => !isTTSed(entry.content));
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
 	const player = usePlayer(level ? `/${entryId}/${level}/playlist.m3u8` : `/${entryId}/playlist.m3u8`, entry, {
-		nextId: nextEntryId,
-		prevId: prevEntryId,
+		nextId: entry.nextEntryId,
+		prevId: entry.prevEntryId,
+		// FIXME: 翻訳状態でリストページに戻るとバックグラウンドで再生が始まり、壊れる
 		stopAndRestart: !!translatingKey,
 	});
 

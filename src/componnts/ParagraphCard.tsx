@@ -35,6 +35,7 @@ export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenc
 			{paragraph.sentences.map(({ text, key }) => (
 				<span key={key} className={clsx(key === activeSentenceKey && 'text-slate-100')} lang="en" data-key={key}>
 					{text}
+					{!text.endsWith(' ') && ' '}
 				</span>
 			))}
 		</p>

@@ -99,46 +99,44 @@ app.get('/:entryId/:level/playlist.m3u8', async (c) => {
 
 app.get('/api/entry/:id', async (c) => {
 	const id = c.req.param('id');
-	let entry = await getEntryById(c.env.DB, Number(id));
+	const [entry, next, prev] = await Promise.all([
+		getEntryById(c.env.DB, Number(id)),
+		getNextEntry(c.env.DB, Number(id)),
+		getPrevEntry(c.env.DB, Number(id)),
+	]);
 	if (!entry) return c.notFound();
 
-	return c.json(entry);
-});
-
-// TODO: /api/entry/:id と統合する
-app.get('/api/next-entry/:id', async (c) => {
-	const id = c.req.param('id');
-	let entry = await getNextEntry(c.env.DB, Number(id));
-	if (!entry) return c.notFound();
-
-	return c.json(entry);
-});
-
-// TODO: /api/entry/:id と統合する
-app.get('/api/prev-entry/:id', async (c) => {
-	const id = c.req.param('id');
-	let entry = await getPrevEntry(c.env.DB, Number(id));
-	if (!entry) return c.notFound();
-
-	return c.json(entry);
+	return c.json({ ...entry, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
 });
 
 app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
 	const id = c.req.param('entryId');
 	const level = c.req.param('level');
 	if (!isCEFRLevel(level)) return c.notFound();
-	const entry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
+
+	const [entry, next, prev] = await Promise.all([
+		getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level),
+		getNextEntry(c.env.DB, Number(id)),
+		getPrevEntry(c.env.DB, Number(id)),
+	]);
+
 	if (!entry) return c.notFound();
 
-	return c.json(entry);
+	return c.json({ ...entry, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
 });
 
 app.post('/api/calibrated-entry/:entryId/:level', async (c) => {
 	const id = c.req.param('entryId');
 	const level = c.req.param('level');
 	if (!isCEFRLevel(level)) return c.notFound();
-	const calibratedEntry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
-	if (calibratedEntry) return c.json(calibratedEntry);
+
+	const [calibratedEntry, next, prev] = await Promise.all([
+		getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level),
+		getNextEntry(c.env.DB, Number(id)),
+		getPrevEntry(c.env.DB, Number(id)),
+	]);
+
+	if (calibratedEntry) return c.json({ ...calibratedEntry, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
 
 	const entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
@@ -152,16 +150,12 @@ app.post('/api/calibrated-entry/:entryId/:level', async (c) => {
 	});
 	const data: CalibratedData = JSON.parse(calibratedContent);
 
-	const paragraphs = data.content
-		.trim()
-		.split('\n')
-		.map((p) => p.trim())
-		.filter(Boolean);
+	const paragraphs = data.content.split('\n');
 	const content = await createContent(paragraphs);
 
 	const res = await insertCalibratedEntry(c.env.DB, entry, level, data.title, content);
 
-	return c.json(res);
+	return c.json({ ...res, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
 });
 
 app.get('/api/list', async (c) => {
