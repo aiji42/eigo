@@ -25,11 +25,12 @@ export const calibrateByOpenAI = async (
 		messages: [
 			{
 				role: 'system',
-				content: 'You are an advanced English text transformer skilled in producing structured, coherent passages.',
+				content:
+					'You are an advanced English text transformer capable of analyzing and adjusting text complexity according to CEFR guidelines.',
 			},
 			{
 				role: 'user',
-				content: `Transform the text below into a well-structured English passage with paragraphs clearly separated by line breaks. Ensure the text consists of ${minWords}-${maxWords} words, aligning with CEFR level ${level}. Divide the text into paragraphs, each with approximately 50 words, ensuring logical flow and coherence. Also, generate a suitable title and provide both in JSON format with keys 'content' and 'title'. Enforce the word count strictly and ensure logical paragraph division.\n'''''${text}\n'''''`,
+				content: `Transform the text below into a well-structured English passage with paragraphs clearly separated by line breaks. First, determine the current CEFR level of the text, then adjust it to strictly match CEFR level ${level}, ensuring the text consists of ${minWords}-${maxWords} words. Divide the text into paragraphs, each with approximately 50 words, maintaining logical flow and coherence throughout. Also, generate a suitable title and provide both in JSON format with keys 'content', 'title' and 'originalCEFR'. Strictly enforce the word count, ensure logical paragraph division, and adhere strictly to the specified CEFR level.\n'''''${text}\n'''''`,
 			},
 		],
 	});
