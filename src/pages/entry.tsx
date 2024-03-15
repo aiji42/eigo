@@ -55,8 +55,14 @@ const Page = () => {
 						{level !== 'A2' && <CalibrateLevelButton level="A2" {...a2} onClickCalibrate={a2.calibrate} />}
 						{level !== 'B1' && <CalibrateLevelButton level="B1" {...b1} onClickCalibrate={b1.calibrate} />}
 					</div>
-					<div className="z-10 flex items-center bg-slate-950 text-slate-400">
-						<button className={clsx('z-10 block rounded-full duration-100 active:bg-slate-800', !isOpen && 'rotate-180')} onClick={toggle}>
+					<div className="z-10 flex items-center gap-2 bg-slate-950 text-slate-400">
+						<button
+							className={clsx(
+								'z-10 flex size-8 items-center justify-center rounded-full duration-100 active:bg-slate-800',
+								!isOpen && 'rotate-180',
+							)}
+							onClick={toggle}
+						>
 							<ArrowIcon />
 						</button>
 						<CalibrateLevelButton level={isCEFRLevel(level) ? level : 'Og'} isCurrent isCalibrated />
