@@ -49,7 +49,7 @@ const Page = () => {
 		<>
 			<StickyHeader>
 				<div className="flex items-center gap-2 overflow-hidden">
-					<div className={clsx('flex gap-2 duration-200', !isOpen && 'translate-x-52')}>
+					<div className={clsx('flex gap-4 duration-200', !isOpen && 'translate-x-52')}>
 						{!!level && <CalibrateLevelButton level="Og" isCalibrated />}
 						{level !== 'A1' && <CalibrateLevelButton level="A1" {...a1} onClickCalibrate={a1.calibrate} />}
 						{level !== 'A2' && <CalibrateLevelButton level="A2" {...a2} onClickCalibrate={a2.calibrate} />}
@@ -164,7 +164,9 @@ const CalibrateLevelButton = ({
 	return (
 		<button
 			type="button"
-			onClick={onClickCalibrate}
+			onClick={() => {
+				if (onClickCalibrate && confirm('Are you sure to calibrate this entry?')) onClickCalibrate();
+			}}
 			disabled={isCalibrating}
 			className={clsx(
 				'rounded-md border-2 border-transparent px-1 py-0.5 font-bold active:bg-slate-800',
