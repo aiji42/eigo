@@ -8,9 +8,13 @@ export const useCalibrateEntryState = (entryId: string | undefined, level: CEFRL
 		suspense: true,
 	});
 
-	const { isMutating, trigger } = useSWRMutation(data ? null : `/api/calibrated-entry/${entryId}/${level}`, postJson<CalibratedEntry>, {
-		populateCache: true,
-	});
+	const { isMutating, trigger } = useSWRMutation<CalibratedEntry, Error, string | null>(
+		data ? null : `/api/calibrated-entry/${entryId}/${level}`,
+		async (key) => postJson(key, {}),
+		{
+			populateCache: true,
+		},
+	);
 
 	return {
 		isCalibrated: !!data,
