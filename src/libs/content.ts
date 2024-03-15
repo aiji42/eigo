@@ -59,7 +59,7 @@ export const getTotalDuration = (content: Content) => {
 
 export const getTotalWordsCount = (content: Content) => {
 	const segmenter = new Intl.Segmenter('en-US', { granularity: 'word' });
-	return content.flatMap(({ sentences }) => sentences).reduce((acc, { text }) => acc + Array.from(segmenter.segment(text)).length, 0);
+	return Array.from(segmenter.segment(content.flatMap(joinSentences).join(' '))).filter((seg) => seg.isWordLike).length;
 };
 
 export const joinSentences = (paragraph: Paragraph) => {
