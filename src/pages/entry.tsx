@@ -4,7 +4,7 @@ import { Player } from '../componnts/Player';
 import { ParagraphCard } from '../componnts/ParagraphCard';
 import { useEffect } from 'react';
 import { LoadingSpinnerIcon } from '../componnts/Icons';
-import { getPlaying, isTTSed } from '../libs/content';
+import { getPlaying, getTotalWordsCount, isTTSed } from '../libs/content';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
@@ -73,10 +73,13 @@ const Page = () => {
 			</StickyHeader>
 			<div className="flex flex-col gap-4 p-2">
 				<h1 className="text-center text-4xl font-bold text-slate-300">{entry.title}</h1>
-				<p className="text-center text-gray-500">{displayRelativeTime('publishedAt' in entry ? entry.publishedAt : entry.createdAt)} ago</p>
 				{entry.thumbnailUrl && <img className="m-auto h-64 object-cover md:h-96" src={entry.thumbnailUrl} alt={entry.title} />}
+				<div className="flex gap-4 text-gray-500">
+					<p>{displayRelativeTime('publishedAt' in entry ? entry.publishedAt : entry.createdAt)} ago</p>
+					<p>{getTotalWordsCount(entry.content).toLocaleString()} words</p>
+				</div>
 			</div>
-			<div className="mb-32 mt-8 flex flex-col gap-6 text-2xl">
+			<div className="mb-32 mt-2 flex flex-col gap-6 text-2xl">
 				{entry.content.map((p, i) => {
 					const isLoading = translatingKey === p.key && isLoadingTranslate;
 					return (
