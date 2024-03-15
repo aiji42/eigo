@@ -50,11 +50,12 @@ export const postJson = async <T>(url: string, data: any): Promise<T> => {
 	return await res.json();
 };
 
-export const isCEFRLevel = (level: string): level is CEFRLevel => {
+export const isCEFRLevel = (level?: string | null): level is CEFRLevel => {
+	if (!level) return false;
 	return ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(level);
 };
 
-export function assertCEFRLevel(level: string): asserts level is CEFRLevel {
+export function assertCEFRLevel(level?: string | null): asserts level is CEFRLevel {
 	if (!isCEFRLevel(level)) {
 		throw new Error(`invalid CEFR level: ${level}`);
 	}

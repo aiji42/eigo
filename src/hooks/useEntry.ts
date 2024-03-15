@@ -1,8 +1,7 @@
 import { Entry, CalibratedEntry } from '../schema';
 import { useEffect, useState } from 'react';
 import useSWRImmutable from 'swr/immutable';
-import { getJson, getJsonNoError, postJson } from '../libs/utils';
-import useSWRMutation from 'swr/mutation';
+import { getJson } from '../libs/utils';
 
 type Data = (Entry | CalibratedEntry) & { nextEntryId: string | null; prevEntryId: string | null };
 type Key = { entryId: string | undefined; level: string | null };
@@ -20,21 +19,5 @@ export const useEntry = ({ entryId, level }: Key, refreshUntil: (entry: Data) =>
 		else setRefreshInterval(0);
 	}, [entry, refreshUntil]);
 
-	const { data: calibratedEntry } = useSWRImmutable(`/api/calibrated-entry/${entryId}/A1`, getJsonNoError<Exclude<Data, Entry>>, {
-		suspense: true,
-	});
-
-	const { isMutating, trigger } = useSWRMutation(
-		calibratedEntry ? null : `/api/calibrated-entry/${entryId}/A1`,
-		postJson<Exclude<Data, Entry>>,
-		{ populateCache: true },
-	);
-
-	return {
-		entry,
-		hasCalibratedEntry: !!calibratedEntry,
-		isValidating,
-		calibrate: trigger,
-		isCalibrating: isMutating,
-	};
+	return { entry, isValidating };
 };
