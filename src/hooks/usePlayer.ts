@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { getNextPlaybackTime, getPrevPlaybackTime, isTTSed } from '../libs/content';
 import { PlayerProps } from '../componnts/Player';
+import { imageUrlByEntry } from '../libs/image';
 
 export const usePlayer = (
 	src: string,
@@ -61,8 +62,8 @@ export const usePlayer = (
 			artist: 'eigo',
 			artwork: entry?.thumbnailUrl
 				? [
-						{ src: entry.thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
-						{ src: entry.thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
+						{ src: imageUrlByEntry(entry)!, sizes: '96x96' },
+						{ src: imageUrlByEntry(entry)!, sizes: '128x128' },
 					]
 				: [],
 		});

@@ -9,6 +9,8 @@ export const imageUrl = (entry: string | number) => {
 	return import.meta.env.PROD ? `https://media.eigo.aiji42.com/${bucketKey}` : `/local-r2-pr?key=${bucketKey}`;
 };
 
+// TODO: URLを直接持っているので、idを参照せずに画像を取得したい
+// imageUrlをServiceBindingsから参照するとimport.meta.env.PRODが使えないのでエラーになる
 export const imageUrlByEntry = (entry: Entry | CalibratedEntry) => {
 	if (entry.thumbnailUrl?.startsWith('images/')) {
 		const id = 'entryId' in entry ? entry.entryId : entry.id;
