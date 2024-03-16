@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 import { useInView } from 'react-intersection-observer';
 import { StickyHeader } from '../componnts/StickyHeader';
 
-const SIZE = 1;
+const SIZE = 10;
 
 const getKey = (page: number, previousPageData: Entry[][]) => {
 	if (previousPageData && !previousPageData.length) return null;
