@@ -2,7 +2,7 @@ import { FC, useEffect, useReducer, useRef } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon } from './Icons';
 import { CEFRLevel } from '../schema';
-import { useSearchParams } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { CalibrateEntryState } from '../hooks/useCalibrateEntryState';
 
 export type Level = {
@@ -117,36 +117,43 @@ const levelColors = {
 };
 
 const CEFRLevelsMenu: FC<{ level: Level; onClose: VoidFunction }> = ({ level: { current, availables }, onClose }) => {
-	const [, setSearchParams] = useSearchParams();
-
 	return (
 		<div className="flex w-44 flex-col gap-4 bg-neutral-900 p-3">
-			<button
-				className="flex w-36 items-center gap-4 active:bg-neutral-800"
-				disabled={!current}
-				onClick={() => setSearchParams({ level: '' })}
-			>
-				<div className="w-8 text-xl font-bold">Or</div>
-				<div className="text-base">{!current ? 'Current' : 'Available'}</div>
-			</button>
-			{availables.map(({ level, isCalibrating, isCalibrated, calibrate }) => (
-				<button
-					key={level}
-					className={clsx('flex w-36 items-center justify-start gap-4 active:bg-neutral-800', isCalibrating && 'animate-pulse')}
-					disabled={current === level || isCalibrating}
-					onClick={() => {
-						if (isCalibrated) {
-							setSearchParams({ level });
-							onClose();
-						} else calibrate();
-					}}
-				>
-					<div className={clsx('w-8 text-xl font-bold', levelColors[level])}>{level}</div>
-					<div className="text-base">
-						{current === level ? 'Current' : isCalibrated ? 'Available' : isCalibrating ? 'Generating...' : 'Generate'}
-					</div>
-				</button>
-			))}
+			{current ? (
+				<Link className="flex w-36 items-center gap-4 active:bg-neutral-800" to={{ search: '' }} onClick={onClose} replace>
+					<div className="w-8 text-xl font-bold">Or</div>
+					<div className="text-base">Available</div>
+				</Link>
+			) : (
+				<span className="flex w-36 items-center gap-4 active:bg-neutral-800">
+					<div className="w-8 text-xl font-bold">Or</div>
+					<div className="text-base">Current</div>
+				</span>
+			)}
+			{availables.map(({ level, isCalibrating, isCalibrated, calibrate }) =>
+				current !== level && isCalibrated ? (
+					<Link
+						to={{ search: `level=${level}` }}
+						onClick={onClose}
+						replace
+						key={level}
+						className="flex w-36 items-center justify-start gap-4 active:bg-neutral-800"
+					>
+						<div className={clsx('w-8 text-xl font-bold', levelColors[level])}>{level}</div>
+						<div className="text-base">Available</div>
+					</Link>
+				) : (
+					<button
+						key={level}
+						className={clsx('flex w-36 items-center justify-start gap-4 active:bg-neutral-800', isCalibrating && 'animate-pulse')}
+						disabled={current === level || isCalibrating}
+						onClick={() => calibrate()}
+					>
+						<div className={clsx('w-8 text-xl font-bold', levelColors[level])}>{level}</div>
+						<div className="text-base">{current === level ? 'Current' : isCalibrating ? 'Generating...' : 'Generate'}</div>
+					</button>
+				),
+			)}
 		</div>
 	);
 };
