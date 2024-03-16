@@ -17,8 +17,11 @@ export const useCalibrateEntryState = (entryId: string | undefined, level: CEFRL
 	);
 
 	return {
+		level,
 		isCalibrated: !!data,
 		isCalibrating: isMutating,
 		calibrate: trigger,
 	};
 };
+
+export type CalibrateEntryState = ReturnType<typeof useCalibrateEntryState>;
