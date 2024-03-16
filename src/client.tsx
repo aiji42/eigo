@@ -1,7 +1,6 @@
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from 'react-router-dom';
 import { Suspense } from 'react';
-import { LoadingSpinnerIcon } from './componnts/Icons';
 import { ErrorBoundary } from 'react-error-boundary';
 
 const Root = () => {
@@ -9,7 +8,14 @@ const Root = () => {
 		<>
 			<ScrollRestoration />
 			<ErrorBoundary fallback={<div className="flex items-center justify-center pt-24 text-3xl">🙇‍ Something went wrong...</div>}>
-				<Suspense fallback={<LoadingSpinnerIcon />}>
+				<Suspense
+					fallback={
+						<picture className="absolute inset-0 flex items-center justify-center">
+							<source srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" type="image/webp" />
+							<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.gif" alt="🌎" width="64" height="64" />
+						</picture>
+					}
+				>
 					<Outlet />
 				</Suspense>
 			</ErrorBoundary>
