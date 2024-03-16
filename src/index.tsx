@@ -114,23 +114,7 @@ app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
 	const level = c.req.param('level');
 	if (!isCEFRLevel(level)) return c.notFound();
 
-	const [entry, next, prev] = await Promise.all([
-		getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level),
-		getNextEntry(c.env.DB, Number(id)),
-		getPrevEntry(c.env.DB, Number(id)),
-	]);
-
-	if (!entry) return c.notFound();
-
-	return c.json({ ...entry, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
-});
-
-app.post('/api/calibrated-entry/:entryId/:level', async (c) => {
-	const id = c.req.param('entryId');
-	const level = c.req.param('level');
-	if (!isCEFRLevel(level)) return c.notFound();
-
-	const [calibratedEntry, next, prev] = await Promise.all([
+	let [calibratedEntry, next, prev] = await Promise.all([
 		getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level),
 		getNextEntry(c.env.DB, Number(id)),
 		getPrevEntry(c.env.DB, Number(id)),

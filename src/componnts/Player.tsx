@@ -1,14 +1,9 @@
-import { FC, useEffect, useReducer, useRef } from 'react';
+import { FC, useEffect, useReducer, useState } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon } from './Icons';
 import { CEFRLevel } from '../schema';
-import { Link } from 'react-router-dom';
-import { CalibrateEntryState } from '../hooks/useCalibrateEntryState';
-
-export type Level = {
-	current: CEFRLevel | null;
-	availables: CalibrateEntryState[];
-};
+import { Link, useSearchParams } from 'react-router-dom';
+import { isCEFRLevel } from '../libs/utils';
 
 export type PlayerProps = {
 	playing: boolean;
@@ -22,7 +17,6 @@ export type PlayerProps = {
 	onClickBack: VoidFunction;
 	onClickForward: VoidFunction;
 	onClickSwitchPlaybackRate: VoidFunction;
-	level: Level;
 };
 
 // TODO: 操作できなくていいのでプレイヤーの上部に再生位置の表示を追加
@@ -37,9 +31,13 @@ export const Player: FC<PlayerProps> = ({
 	onClickBack,
 	onClickForward,
 	onClickSwitchPlaybackRate,
-	level,
 }) => {
-	const [isOpening, toggle] = useReducer((s) => !s, false);
+	const [isOpening, setIsOpen] = useState(false);
+	const [searchParams] = useSearchParams();
+	const level = searchParams.get('level');
+	useEffect(() => {
+		setIsOpen(false);
+	}, [level]);
 
 	return (
 		<div className="relative w-full max-w-4xl select-none">
@@ -49,16 +47,16 @@ export const Player: FC<PlayerProps> = ({
 						<button
 							type="button"
 							className="flex size-12 items-center justify-center rounded-full font-bold active:text-slate-100"
-							onClick={toggle}
+							onClick={() => setIsOpen((c) => !c)}
 							aria-label={!isOpening ? 'Open CEFR levels menu' : 'Close CEFR levels menu'}
 						>
-							{level.current ?? 'Og'}
+							{level ?? 'Og'}
 						</button>
 						<div
 							className={clsx('absolute bottom-full transform duration-200', !isOpening && 'pointer-events-none opacity-0')}
 							{...(!isOpening && { inert: '' })}
 						>
-							<CEFRLevelsMenu level={level} onClose={toggle} />
+							<CEFRLevelsMenu current={isCEFRLevel(level) ? level : null} />
 						</div>
 					</div>
 					<button
@@ -116,44 +114,21 @@ const levelColors = {
 	C2: 'text-teal-200',
 };
 
-const CEFRLevelsMenu: FC<{ level: Level; onClose: VoidFunction }> = ({ level: { current, availables }, onClose }) => {
+const CEFRLevelsMenu: FC<{ current: null | CEFRLevel }> = ({ current }) => {
 	return (
-		<div className="flex w-44 flex-col gap-4 bg-neutral-900 p-3">
-			{current ? (
-				<Link className="flex w-36 items-center gap-4 active:bg-neutral-800" to={{ search: '' }} onClick={onClose} replace>
-					<div className="w-8 text-xl font-bold">Or</div>
-					<div className="text-base">Available</div>
+		<div className="flex flex-col gap-4 bg-neutral-900 p-3 text-xl font-bold">
+			{current && (
+				<Link className="active:bg-neutral-800" to={{ search: '' }} replace>
+					Or
 				</Link>
-			) : (
-				<span className="flex w-36 items-center gap-4 active:bg-neutral-800">
-					<div className="w-8 text-xl font-bold">Or</div>
-					<div className="text-base">Current</div>
-				</span>
 			)}
-			{availables.map(({ level, isCalibrating, isCalibrated, calibrate }) =>
-				current !== level && isCalibrated ? (
-					<Link
-						to={{ search: `level=${level}` }}
-						onClick={onClose}
-						replace
-						key={level}
-						className="flex w-36 items-center justify-start gap-4 active:bg-neutral-800"
-					>
-						<div className={clsx('w-8 text-xl font-bold', levelColors[level])}>{level}</div>
-						<div className="text-base">Available</div>
+			{(['A1', 'A2', 'B1'] as const)
+				.filter((level) => current !== level)
+				.map((level) => (
+					<Link to={{ search: `level=${level}` }} replace key={level} className={clsx('active:bg-neutral-800', levelColors[level])}>
+						{level}
 					</Link>
-				) : (
-					<button
-						key={level}
-						className={clsx('flex w-36 items-center justify-start gap-4 active:bg-neutral-800', isCalibrating && 'animate-pulse')}
-						disabled={current === level || isCalibrating}
-						onClick={() => calibrate()}
-					>
-						<div className={clsx('w-8 text-xl font-bold', levelColors[level])}>{level}</div>
-						<div className="text-base">{current === level ? 'Current' : isCalibrating ? 'Generating...' : 'Generate'}</div>
-					</button>
-				),
-			)}
+				))}
 		</div>
 	);
 };

@@ -1,5 +1,5 @@
 import { useParams, useSearchParams } from 'react-router-dom';
-import { displayRelativeTime, isCEFRLevel } from '../libs/utils';
+import { displayRelativeTime } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { ParagraphCard } from '../componnts/ParagraphCard';
 import { useEffect } from 'react';
@@ -10,7 +10,6 @@ import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
 import { usePlayer } from '../hooks/usePlayer';
 import { StickyHeader } from '../componnts/StickyHeader';
-import { useCalibrateEntryState } from '../hooks/useCalibrateEntryState';
 import { imageUrlByEntry } from '../libs/image';
 
 // TODO: オリジナルページのURLをソースとして表示する
@@ -20,10 +19,6 @@ const Page = () => {
 	const [searchParams] = useSearchParams();
 	const level = searchParams.get('level');
 	const { entry } = useEntry({ entryId, level }, (entry) => !isTTSed(entry.content));
-	const a1 = useCalibrateEntryState(entryId, 'A1');
-	const a2 = useCalibrateEntryState(entryId, 'A2');
-	const b1 = useCalibrateEntryState(entryId, 'B1');
-	const b2 = useCalibrateEntryState(entryId, 'B2');
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
@@ -77,13 +72,7 @@ const Page = () => {
 				})}
 			</div>
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-900 pb-safe">
-				<Player
-					{...player}
-					level={{
-						current: isCEFRLevel(level) ? level : null,
-						availables: [a1, a2, b1, b2],
-					}}
-				/>
+				<Player {...player} />
 			</div>
 		</>
 	);
