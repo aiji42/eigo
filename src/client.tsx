@@ -2,20 +2,14 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from 'react-router-dom';
 import { Suspense } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
+import { LoadingIcon } from './componnts/Icons';
 
 const Root = () => {
 	return (
 		<>
 			<ScrollRestoration />
 			<ErrorBoundary fallback={<div className="flex items-center justify-center pt-24 text-3xl">🙇‍ Something went wrong...</div>}>
-				<Suspense
-					fallback={
-						<picture className="absolute inset-0 flex items-center justify-center">
-							<source srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" type="image/webp" />
-							<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.gif" alt="🌎" width="64" height="64" />
-						</picture>
-					}
-				>
+				<Suspense fallback={<LoadingIcon />}>
 					<Outlet />
 				</Suspense>
 			</ErrorBoundary>

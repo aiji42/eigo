@@ -2,12 +2,11 @@ import useSWRInfinite from 'swr/infinite';
 import { Entry } from '../schema';
 import { displayRelativeTime, getJson } from '../libs/utils';
 import { Link } from 'react-router-dom';
-import { LoadingSpinnerIcon } from '../componnts/Icons';
+import { LoadingIcon } from '../componnts/Icons';
 import { useInView } from 'react-intersection-observer';
 import { StickyHeader } from '../componnts/StickyHeader';
-import { useMemo } from 'react';
 
-const SIZE = 10;
+const SIZE = 1;
 
 const getKey = (page: number, previousPageData: Entry[][]) => {
 	if (previousPageData && !previousPageData.length) return null;
@@ -55,7 +54,7 @@ const Page = () => {
 			{!isValidating && <div ref={ref} aria-hidden="true" />}
 			{isValidating && (
 				<div className="fixed inset-0 flex items-center justify-center">
-					<LoadingSpinnerIcon />
+					<LoadingIcon />
 				</div>
 			)}
 		</>

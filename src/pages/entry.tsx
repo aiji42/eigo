@@ -3,7 +3,7 @@ import { displayRelativeTime, isCEFRLevel } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { ParagraphCard } from '../componnts/ParagraphCard';
 import { useEffect } from 'react';
-import { LoadingSpinnerIcon } from '../componnts/Icons';
+import { LoadingIcon, LoadingSpinnerIcon } from '../componnts/Icons';
 import { getPlaying, getTotalWordsCount, isTTSed } from '../libs/content';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
@@ -66,7 +66,7 @@ const Page = () => {
 										activeSentenceKey={playing.paragraph?.key === p.key ? playing.sentence?.key : undefined}
 										showTranslation={isLoading}
 									/>
-									{isLoading && <LoadingSpinnerIcon />}
+									{isLoading && <LoadingIcon size={32} />}
 								</>
 							) : (
 								<p className="rounded-md bg-neutral-800 p-2">{translated?.translated}</p>

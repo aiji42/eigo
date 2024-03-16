@@ -93,6 +93,15 @@ export const LoadingSpinnerIcon = () => {
 	);
 };
 
+export const LoadingIcon = ({ size = 64 }: { size?: number }) => {
+	return (
+		<picture className="absolute inset-0 flex items-center justify-center">
+			<source srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" type="image/webp" />
+			<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.gif" alt="🌎" width={size} height={size} />
+		</picture>
+	);
+};
+
 export const ArrowIcon = () => {
 	return (
 		<svg width="24" height="24" fill="none">
