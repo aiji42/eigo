@@ -1,9 +1,14 @@
 import { fetchAndParseRSS } from './libs/rss-parser';
 import { scrapeContent } from './libs/scrape';
-import { getAllRules, getEntryByUrl, insertEntry, upsertChannel } from './libs/db';
+import { getAllRules, getEntryByUrl, insertEntry, updateEntry, upsertChannel } from './libs/db';
+import { generateFeaturedImg } from './service-bindings/libs/featuredImg';
+import { joinSentences } from './libs/content';
+import { putImageOnBucket } from './libs/image';
 
 interface Env {
 	DB: D1Database;
+	OPEN_AI_API_KEY: string;
+	BUCKET: R2Bucket;
 }
 
 export default {
@@ -23,7 +28,13 @@ export default {
 				// TODO: パラグラフが少ない場合は保存しない
 				if (!content.length) continue;
 				const entry = await insertEntry(env.DB, channel, item, content);
-				console.log(entry);
+
+				// プロンプトが長すぎるとエラーになるので、タイトルと最初のパラグラフを使う
+				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, [item.title, joinSentences(content[0])].join('\n'));
+				const thumbnailUrl = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
+				const res = await updateEntry(env.DB, entry.id, { thumbnailUrl });
+
+				console.log(res);
 			}
 		}
 	},

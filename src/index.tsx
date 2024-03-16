@@ -34,9 +34,9 @@ app.get('local-r2-pr', async (c) => {
 	if (import.meta.env.PROD) return c.notFound();
 	const key = c.req.query('key');
 	if (!key) return c.notFound();
-	const audio = await c.env.BUCKET.get(key);
-	if (!audio) return c.notFound();
-	return new Response(audio.body, { headers: { 'Content-Type': 'audio/mpeg' } });
+	const data = await c.env.BUCKET.get(key);
+	if (!data) return c.notFound();
+	return new Response(data.body, { headers: { 'Content-Type': key.endsWith('webp') ? 'image/webp' : 'audio/mpeg' } });
 });
 
 // TODO: honoのRPCを使ってリファクタ

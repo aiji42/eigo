@@ -66,6 +66,7 @@
     "react-intersection-observer": "^9.8.1",
     "react-router-dom": "^6.22.2",
     "react-use-audio-player": "^2.2.0",
-    "swr": "^2.2.5"
+    "swr": "^2.2.5",
+    "wasm-image-optimization": "^1.0.1"
   }
 }

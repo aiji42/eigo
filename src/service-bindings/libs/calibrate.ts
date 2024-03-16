@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import { CEFRLevel } from '../../schema';
+import { getOpenAI } from './openAI';
 
 export type CalibrateOption = {
 	level?: CEFRLevel;
@@ -14,10 +15,7 @@ export const calibrateByOpenAI = async (
 	text: string,
 	{ level = 'A1', maxWords = 400, minWords = 300 }: CalibrateOption = {},
 ): Promise<CalibratedData> => {
-	const openai = new OpenAI({
-		apiKey: token,
-		baseURL: 'https://gateway.ai.cloudflare.com/v1/940ed59491ce58430777f23d481336bb/eigo/openai',
-	});
+	const openai = getOpenAI(token);
 
 	const chatCompletion = await openai.chat.completions.create({
 		model: 'gpt-4-0125-preview',

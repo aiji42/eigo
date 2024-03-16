@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { LoadingIcon } from '../componnts/Icons';
 import { useInView } from 'react-intersection-observer';
 import { StickyHeader } from '../componnts/StickyHeader';
+import { imageUrlByEntry } from '../libs/image';
 
 const SIZE = 10;
 
@@ -38,7 +39,7 @@ const Page = () => {
 							<li key={item.id}>
 								<Link to={`/${item.id}`}>
 									<div className="mb-4 flex items-center justify-between gap-4 rounded-md hover:bg-neutral-800">
-										<img src={item.thumbnailUrl ?? ''} alt={item.title} className="size-32 rounded-md object-cover" />
+										<img src={imageUrlByEntry(item) ?? ''} alt={item.title} className="size-32 rounded-md object-cover" />
 										<div className="min-w-0 flex-1">
 											<h2 className="overflow-hidden overflow-ellipsis text-xl md:text-3xl">{item.title}</h2>
 											<p className="text-gray-400">{displayRelativeTime(item.publishedAt)} ago</p>
