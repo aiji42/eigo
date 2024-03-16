@@ -2,7 +2,6 @@ import useSWRInfinite from 'swr/infinite';
 import { Entry } from '../schema';
 import { displayRelativeTime, getJson } from '../libs/utils';
 import { Link } from 'react-router-dom';
-import { LoadingIcon } from '../componnts/Icons';
 import { useInView } from 'react-intersection-observer';
 import { StickyHeader } from '../componnts/StickyHeader';
 
@@ -15,10 +14,6 @@ const getKey = (page: number, previousPageData: Entry[][]) => {
 
 const Page = () => {
 	const { data, setSize, size, isValidating } = useSWRInfinite(getKey, getJson<Entry[]>, {
-		revalidateOnReconnect: false,
-		revalidateIfStale: false,
-		revalidateOnFocus: false,
-		revalidateFirstPage: false,
 		suspense: true,
 	});
 
@@ -52,11 +47,6 @@ const Page = () => {
 					))}
 			</ul>
 			{!isValidating && <div ref={ref} aria-hidden="true" />}
-			{isValidating && (
-				<div className="fixed inset-0 flex items-center justify-center">
-					<LoadingIcon />
-				</div>
-			)}
 		</>
 	);
 };

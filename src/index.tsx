@@ -189,6 +189,8 @@ app.get('*', (c) => {
 						<link rel="manifest" href="/static/manifest.json" />
 						<link rel="apple-touch-icon" type="image/png" href="/static/apple-touch-icon-180x180.png" />
 						<link rel="icon" type="image/png" href="/static/icon-192x192.png" />
+						<link rel="preconnect" href="https://fonts.gstatic.com" />
+						<link rel="prefetch" href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" />
 						<title>eigo</title>
 						{import.meta.env.PROD ? (
 							<>
