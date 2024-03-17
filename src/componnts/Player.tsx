@@ -20,8 +20,6 @@ export type PlayerProps = {
 };
 
 export const Player: FC<PlayerProps> = ({
-	currentTime,
-	progresses,
 	playing,
 	playbackRate,
 	loading,
@@ -33,28 +31,9 @@ export const Player: FC<PlayerProps> = ({
 	onClickForward,
 	onClickSwitchPlaybackRate,
 	onClickBackToStart,
-	onClickProgress,
 }) => {
 	return (
-		<div className="relative flex w-full max-w-4xl select-none flex-col gap-2 bg-neutral-900 p-2 text-slate-400">
-			<div className="flex gap-0.5">
-				{progresses.map((p, i) => {
-					const offset = p.offset ?? 0;
-					const duration = p.duration ?? 0;
-					return (
-						<button
-							key={i}
-							type="button"
-							className={clsx('h-1.5 flex-1 overflow-hidden rounded', currentTime < offset + duration ? 'bg-neutral-700' : 'bg-slate-400')}
-							onClick={() => onClickProgress(offset)}
-						>
-							{offset < currentTime && currentTime < offset + duration && (
-								<div className="h-full rounded-full bg-slate-400" style={{ width: `${((currentTime - offset) / duration) * 100}%` }} />
-							)}
-						</button>
-					);
-				})}
-			</div>
+		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-900 p-2 font-sans text-slate-400">
 			<div className="flex items-center">
 				<div className="flex flex-auto items-center justify-evenly">
 					<button

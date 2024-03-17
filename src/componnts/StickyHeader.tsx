@@ -21,7 +21,7 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
 	const [currentLevel, setLevel] = useLevel();
 
 	return (
-		<header className="sticky left-0 right-0 top-0 z-10 flex min-h-12 w-full max-w-4xl items-center justify-between bg-neutral-950 p-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
+		<header className="sticky left-0 right-0 top-0 z-10 flex min-h-12 w-full max-w-4xl items-center justify-between bg-neutral-950 p-2 pt-[calc(0.5rem+env(safe-area-inset-top))] font-sans">
 			<div>
 				<Link to="/">
 					<h1 className="text-xl font-bold text-slate-300">Eigo</h1>
@@ -31,7 +31,7 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
 				{children}
 				<select
 					className={clsx(
-						'appearance-none bg-transparent bg-gradient-to-tr bg-clip-text text-xl font-bold',
+						'appearance-none bg-transparent bg-gradient-to-tr bg-clip-text font-mono text-xl font-bold',
 						currentLevel && levelColors[currentLevel],
 					)}
 					onChange={(e) => setLevel(isCEFRLevel(e.target.value) ? e.target.value : null)}
