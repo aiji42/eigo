@@ -51,14 +51,11 @@ export const Player: FC<PlayerProps> = ({
 					return (
 						<button
 							key={i}
-							className={clsx(
-								'h-1.5 flex-1 overflow-hidden rounded',
-								currentTime < offset + duration ? 'bg-neutral-800' : 'bg-neutral-700',
-							)}
+							className={clsx('h-1.5 flex-1 overflow-hidden rounded', currentTime < offset + duration ? 'bg-neutral-700' : 'bg-slate-400')}
 							onClick={() => onClickProgress(offset)}
 						>
 							{offset < currentTime && currentTime < offset + duration && (
-								<div className="h-full rounded-full bg-neutral-700" style={{ width: `${((currentTime - offset) / duration) * 100}%` }} />
+								<div className="h-full rounded-full bg-slate-400" style={{ width: `${((currentTime - offset) / duration) * 100}%` }} />
 							)}
 						</button>
 					);
