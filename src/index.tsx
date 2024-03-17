@@ -175,6 +175,10 @@ app.get('*', (c) => {
 						<link rel="icon" type="image/png" href="/static/icon-192x192.png" />
 						<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 						<link rel="preload" href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" />
+						<link
+							rel="stylesheet"
+							href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0"
+						/>
 						<title>eigo</title>
 						{import.meta.env.PROD ? (
 							<>

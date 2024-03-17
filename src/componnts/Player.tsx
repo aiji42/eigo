@@ -1,6 +1,6 @@
 import { FC, useEffect, useReducer, useState } from 'react';
 import { clsx } from 'clsx';
-import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, PrevIcon, RewindIcon, SkipIcon } from './Icons';
+import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext } from './Icons';
 import { CEFRLevel } from '../schema';
 import { Link, useSearchParams } from 'react-router-dom';
 import { isCEFRLevel } from '../libs/utils';
@@ -66,7 +66,7 @@ export const Player: FC<PlayerProps> = ({
 						aria-label="Rewind to previous sentence"
 						disabled={loading}
 					>
-						<RewindIcon />
+						<SkipPrev />
 					</button>
 				</div>
 				<button
@@ -89,7 +89,7 @@ export const Player: FC<PlayerProps> = ({
 						aria-label="Skoip to next sentence"
 						disabled={loading}
 					>
-						<SkipIcon />
+						<SkipNext />
 					</button>
 					<button
 						type="button"

@@ -1,79 +1,21 @@
-export const PrevIcon = () => {
-	return (
-		<svg width="24" height="24" fill="none">
-			<path
-				d="m10 12 8-6v12l-8-6Z"
-				fill="currentColor"
-				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-			<path d="M6 6v12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-		</svg>
-	);
+export const SkipPrev = () => {
+	return <span className="material-symbols-rounded -rotate-45 -scale-x-100 text-2xl">forward_media</span>;
 };
 
-export const RewindIcon = () => {
-	return (
-		<svg width="24" height="24" fill="none">
-			<path
-				d="M6.492 16.95c2.861 2.733 7.5 2.733 10.362 0 2.861-2.734 2.861-7.166 0-9.9-2.862-2.733-7.501-2.733-10.362 0A7.096 7.096 0 0 0 5.5 8.226"
-				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-			<path d="M5 5v3.111c0 .491.398.889.889.889H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-		</svg>
-	);
-};
-
-export const SkipIcon = () => {
-	return (
-		<svg width="24" height="24" fill="none">
-			<path
-				d="M17.509 16.95c-2.862 2.733-7.501 2.733-10.363 0-2.861-2.734-2.861-7.166 0-9.9 2.862-2.733 7.501-2.733 10.363 0 .38.365.711.759.991 1.176"
-				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-			<path
-				d="M19 5v3.111c0 .491-.398.889-.889.889H15"
-				stroke="currentColor"
-				strokeWidth="2"
-				strokeLinecap="round"
-				strokeLinejoin="round"
-			/>
-		</svg>
-	);
+export const SkipNext = () => {
+	return <span className="material-symbols-rounded rotate-45 text-2xl">forward_media</span>;
 };
 
 export const PlayIcon = () => {
-	return (
-		<svg width="30" height="32" fill="currentColor" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-			<path d="M 9,5 L 26,16 L 9,27 Z" />
-		</svg>
-	);
+	return <span className="material-symbols-rounded text-5xl">play_arrow</span>;
 };
 
 export const PauseIcon = () => {
-	return (
-		<svg width="30" height="32" fill="currentColor">
-			<rect x="3" y="4" width="8" height="24" rx="2" />
-			<rect x="19" y="4" width="8" height="24" rx="2" />
-		</svg>
-	);
+	return <span className="material-symbols-rounded text-5xl">pause</span>;
 };
 
 export const NextTrack = () => {
-	return (
-		<svg width="30" height="32" fill="currentColor" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
-			<path d="M 6,5 L 16,16 L 6,27 Z" />
-			<path d="M 17,5 L 27,16 L 17,27 Z" />
-		</svg>
-	);
+	return <span className="material-symbols-rounded text-5xl">skip_next</span>;
 };
 
 export const LoadingSpinnerIcon = () => {
@@ -99,13 +41,5 @@ export const LoadingIcon = ({ size = 64 }: { size?: number }) => {
 			<source srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" type="image/webp" />
 			<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.gif" alt="🌎" width={size} height={size} />
 		</picture>
-	);
-};
-
-export const ArrowIcon = () => {
-	return (
-		<svg width="24" height="24" fill="none">
-			<path d="M8 6l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-		</svg>
 	);
 };
