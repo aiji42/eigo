@@ -1,6 +1,5 @@
 import { CalibratedEntry, Entry } from '../schema';
 import { MediaPlayer, useMediaPlayer } from './useMediaPlayer';
-import { useNavigate } from 'react-router-dom';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { getNextPlaybackTime, getPrevPlaybackTime, isTTSed } from '../libs/content';
 import { PlayerProps } from '../componnts/Player';
@@ -9,19 +8,17 @@ export const usePlayer = (
 	src: string,
 	entry: Entry | CalibratedEntry | null | undefined,
 	{
-		nextId,
-		prevId,
+		navigateToNext,
+		navigateToPrev,
 		stopAndRestart,
 	}: {
-		nextId: number | string | null | undefined;
-		prevId: number | string | null | undefined;
+		navigateToNext: VoidFunction;
+		navigateToPrev: VoidFunction;
 		stopAndRestart?: boolean;
 	},
 ): PlayerProps & MediaPlayer => {
 	const player = useMediaPlayer(src);
 	const loading = useMemo(() => player.loading || !entry || !isTTSed(entry.content), [player.loading, entry]);
-
-	const navigate = useNavigate();
 
 	const beforeNavigatePlayerStatus = useRef({
 		playing: player.playing,
@@ -40,18 +37,16 @@ export const usePlayer = (
 		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
 		beforeNavigatePlayerStatus.current.volume = player.volume;
 		player.stop();
-		if (nextId) navigate(`/${nextId}`, { replace: true });
-		else navigate(`/`);
-	}, [navigate, nextId, player.playing || player.ended, player.playbackRate, player.stop]);
+		navigateToNext();
+	}, [navigateToNext, player.playing || player.ended, player.playbackRate, player.stop]);
 
 	const prevTrack = useCallback(() => {
 		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
 		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
 		beforeNavigatePlayerStatus.current.volume = player.volume;
 		player.stop();
-		if (prevId) navigate(`/${prevId}`, { replace: true });
-		else navigate(`/`);
-	}, [navigate, prevId, player.playing || player.ended, player.playbackRate, player.stop]);
+		navigateToPrev();
+	}, [navigateToPrev, player.playing || player.ended, player.playbackRate, player.stop]);
 
 	useEffect(() => {
 		if (!('mediaSession' in navigator)) return;

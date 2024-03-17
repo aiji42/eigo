@@ -1,8 +1,8 @@
-import { useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { displayRelativeTime } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { ParagraphCard } from '../componnts/ParagraphCard';
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { LoadingIcon } from '../componnts/Icons';
 import { getPlaying, getTotalWordsCount, isTTSed } from '../libs/content';
 import { useEntry } from '../hooks/useEntry';
@@ -18,12 +18,27 @@ const Page = () => {
 	const [searchParams] = useSearchParams();
 	const level = searchParams.get('level');
 	const { entry } = useEntry({ entryId, level }, (entry) => !isTTSed(entry.content));
+	const navigate = useNavigate();
+	const navigateToNext = useCallback(
+		() =>
+			entry.nextEntryId
+				? navigate({ pathname: `/${entry.nextEntryId}`, search: level ? `level=${level}` : '' }, { replace: true })
+				: navigate('/'),
+		[entry.nextEntryId, level, navigate],
+	);
+	const navigateToPrev = useCallback(
+		() =>
+			entry.nextEntryId
+				? navigate({ pathname: `/${entry.prevEntryId}`, search: level ? `level=${level}` : '' }, { replace: true })
+				: navigate('/'),
+		[entry.prevEntryId, level, navigate],
+	);
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
 	const player = usePlayer(level ? `/${entryId}/${level}/playlist.m3u8` : `/${entryId}/playlist.m3u8`, entry, {
-		nextId: entry.nextEntryId,
-		prevId: entry.prevEntryId,
+		navigateToNext,
+		navigateToPrev,
 		// FIXME: 翻訳状態でリストページに戻るとバックグラウンドで再生が始まり、壊れる
 		stopAndRestart: !!translatingKey,
 	});
