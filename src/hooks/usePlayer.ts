@@ -107,6 +107,8 @@ export const usePlayer = (
 		player.setPlaybackRate(rates[next]);
 	}, [player.playbackRate, player.setPlaybackRate]);
 
+	const backToStart = useCallback(() => player.seek(0), [player.seek]);
+
 	return {
 		...player,
 		loading,
@@ -118,5 +120,6 @@ export const usePlayer = (
 		onClickBack: backToPrev,
 		onClickForward: skipToNext,
 		onClickSwitchPlaybackRate: switchPlaybackRate,
+		onClickBackToStart: backToStart,
 	};
 };

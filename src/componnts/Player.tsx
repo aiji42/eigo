@@ -1,9 +1,6 @@
-import { FC, useEffect, useState } from 'react';
+import { FC } from 'react';
 import { clsx } from 'clsx';
-import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext } from './Icons';
-import { CEFRLevel } from '../schema';
-import { isCEFRLevel } from '../libs/utils';
-import { useLevel } from '../hooks/useLevel';
+import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext, BackToStart } from './Icons';
 
 export type PlayerProps = {
 	playing: boolean;
@@ -13,6 +10,7 @@ export type PlayerProps = {
 	progresses: { offset: number | null; duration: number | null }[];
 	loading: boolean;
 	onClickProgress: (offset: number) => void;
+	onClickBackToStart: VoidFunction;
 	onClickPlay: VoidFunction;
 	onClickPause: VoidFunction;
 	onClickNextTrack: VoidFunction;
@@ -34,14 +32,9 @@ export const Player: FC<PlayerProps> = ({
 	onClickBack,
 	onClickForward,
 	onClickSwitchPlaybackRate,
+	onClickBackToStart,
 	onClickProgress,
 }) => {
-	const [isOpening, setIsOpen] = useState(false);
-	const [level] = useLevel();
-	useEffect(() => {
-		setIsOpen(false);
-	}, [level]);
-
 	return (
 		<div className="relative flex w-full max-w-4xl select-none flex-col gap-2 bg-neutral-900 p-2 text-slate-400">
 			<div className="flex gap-0.5">
@@ -51,6 +44,7 @@ export const Player: FC<PlayerProps> = ({
 					return (
 						<button
 							key={i}
+							type="button"
 							className={clsx('h-1.5 flex-1 overflow-hidden rounded', currentTime < offset + duration ? 'bg-neutral-700' : 'bg-slate-400')}
 							onClick={() => onClickProgress(offset)}
 						>
@@ -63,22 +57,15 @@ export const Player: FC<PlayerProps> = ({
 			</div>
 			<div className="flex items-center">
 				<div className="flex flex-auto items-center justify-evenly">
-					<div>
-						<button
-							type="button"
-							className="flex size-12 items-center justify-center rounded-full font-bold active:text-slate-100"
-							onClick={() => setIsOpen((c) => !c)}
-							aria-label={!isOpening ? 'Open CEFR levels menu' : 'Close CEFR levels menu'}
-						>
-							{level ?? 'Og'}
-						</button>
-						<div
-							className={clsx('absolute bottom-1/2 transform duration-200', !isOpening && 'pointer-events-none opacity-0')}
-							{...(!isOpening && { inert: '' })}
-						>
-							<CEFRLevelsMenu current={isCEFRLevel(level) ? level : null} />
-						</div>
-					</div>
+					<button
+						type="button"
+						className="flex size-12 items-center justify-center rounded-full active:text-slate-100"
+						onClick={onClickBackToStart}
+						aria-label="Back to start"
+						disabled={loading}
+					>
+						<BackToStart />
+					</button>
 					<button
 						type="button"
 						className="flex size-12 items-center justify-center rounded-full active:text-slate-100"
@@ -121,30 +108,6 @@ export const Player: FC<PlayerProps> = ({
 					</button>
 				</div>
 			</div>
-		</div>
-	);
-};
-
-const levelColors = {
-	A1: 'text-violet-100',
-	A2: 'text-violet-200',
-	B1: 'text-teal-100',
-	B2: 'text-teal-200',
-	C1: 'text-pink-100',
-	C2: 'text-teal-200',
-};
-
-const CEFRLevelsMenu: FC<{ current: null | CEFRLevel }> = ({ current }) => {
-	const [, setLevel] = useLevel();
-	return (
-		<div className="flex flex-col gap-4 bg-neutral-900 p-3 text-xl font-bold">
-			{([null, 'A1', 'A2', 'B1'] as const)
-				.filter((level) => current !== level)
-				.map((level) => (
-					<button onClick={() => setLevel(level)} key={level} className={clsx('active:bg-neutral-800', level && levelColors[level])}>
-						{level ?? 'Og'}
-					</button>
-				))}
 		</div>
 	);
 };

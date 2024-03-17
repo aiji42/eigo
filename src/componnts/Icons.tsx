@@ -2,6 +2,10 @@ export const SkipPrev = () => {
 	return <span className="material-symbols-rounded -rotate-45 -scale-x-100 text-2xl">forward_media</span>;
 };
 
+export const BackToStart = () => {
+	return <span className="material-symbols-rounded text-3xl">first_page</span>;
+};
+
 export const SkipNext = () => {
 	return <span className="material-symbols-rounded rotate-45 text-2xl">forward_media</span>;
 };
