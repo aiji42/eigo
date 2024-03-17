@@ -30,13 +30,15 @@ const app = new Hono<{
 }>();
 
 // MEMO: ローカルで開発するとき用のR2のエンドポイント
-app.get('local-r2-pr', async (c) => {
+app.get('/local-r2-pr', async (c) => {
 	if (import.meta.env.PROD) return c.notFound();
 	const key = c.req.query('key');
 	if (!key) return c.notFound();
 	const data = await c.env.BUCKET.get(key);
 	if (!data) return c.notFound();
-	return new Response(data.body, { headers: { 'Content-Type': key.endsWith('webp') ? 'image/webp' : 'audio/mpeg' } });
+	return new Response(await data.arrayBuffer(), {
+		headers: { 'Content-Type': key.endsWith('webp') ? 'image/webp' : 'audio/mpeg', 'Content-Length': data.size.toString() },
+	});
 });
 
 // TODO: honoのRPCを使ってリファクタ

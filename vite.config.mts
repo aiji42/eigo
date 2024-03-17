@@ -1,9 +1,9 @@
 import pages from '@hono/vite-cloudflare-pages';
+import cloudflareAdapter from '@hono/vite-dev-server/cloudflare';
 import devServer from '@hono/vite-dev-server';
 import { defineConfig } from 'vite';
 import { replaceCodePlugin } from 'vite-plugin-replace';
 import { run } from 'vite-plugin-run';
-import { getPlatformProxy } from 'wrangler';
 import { execSync } from 'node:child_process';
 
 export default defineConfig(async ({ mode, command }) => {
@@ -52,16 +52,10 @@ export default defineConfig(async ({ mode, command }) => {
 							},
 						],
 					}),
-				command === 'serve' &&
-					(await getPlatformProxy().then(({ env, dispose }) =>
-						devServer({
-							entry: 'src/index.tsx',
-							adapter: {
-								env,
-								onServerClose: dispose,
-							},
-						}),
-					)),
+				devServer({
+					entry: 'src/index.tsx',
+					adapter: cloudflareAdapter,
+				}),
 				command === 'serve' &&
 					run([
 						{
