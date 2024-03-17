@@ -117,6 +117,8 @@ export const usePlayer = (
 	return {
 		...player,
 		loading,
+		progresses: entry?.content ?? [],
+		onClickProgress: player.seek,
 		onClickPlay: player.play,
 		onClickPause: player.pause,
 		onClickNextTrack: nextTrack,

@@ -9,7 +9,10 @@ export type PlayerProps = {
 	playing: boolean;
 	ended: boolean;
 	playbackRate: number;
+	currentTime: number;
+	progresses: { offset: number | null; duration: number | null }[];
 	loading: boolean;
+	onClickProgress: (offset: number) => void;
 	onClickPlay: VoidFunction;
 	onClickPause: VoidFunction;
 	onClickNextTrack: VoidFunction;
@@ -21,6 +24,8 @@ export type PlayerProps = {
 
 // TODO: 操作できなくていいのでプレイヤーの上部に再生位置の表示を追加
 export const Player: FC<PlayerProps> = ({
+	currentTime,
+	progresses,
 	playing,
 	playbackRate,
 	loading,
@@ -31,6 +36,7 @@ export const Player: FC<PlayerProps> = ({
 	onClickBack,
 	onClickForward,
 	onClickSwitchPlaybackRate,
+	onClickProgress,
 }) => {
 	const [isOpening, setIsOpen] = useState(false);
 	const [searchParams] = useSearchParams();
@@ -40,8 +46,25 @@ export const Player: FC<PlayerProps> = ({
 	}, [level]);
 
 	return (
-		<div className="relative w-full max-w-4xl select-none">
-			<div className="flex items-center rounded-md bg-neutral-900 p-2 text-slate-400">
+		<div className="relative flex w-full max-w-4xl select-none flex-col gap-4 bg-neutral-900 p-2 text-slate-400">
+			<div className="flex gap-0.5">
+				{progresses.map((p, i) => {
+					const offset = p.offset ?? 0;
+					const duration = p.duration ?? 0;
+					return (
+						<button
+							key={i}
+							className={clsx('h-2 flex-1 overflow-hidden rounded', currentTime < offset + duration ? 'bg-neutral-800' : 'bg-neutral-700')}
+							onClick={() => onClickProgress(offset)}
+						>
+							{offset < currentTime && currentTime < offset + duration && (
+								<div className="h-full rounded-full bg-neutral-700" style={{ width: `${((currentTime - offset) / duration) * 100}%` }} />
+							)}
+						</button>
+					);
+				})}
+			</div>
+			<div className="flex items-center">
 				<div className="flex flex-auto items-center justify-evenly">
 					<div>
 						<button
@@ -53,7 +76,7 @@ export const Player: FC<PlayerProps> = ({
 							{level ?? 'Og'}
 						</button>
 						<div
-							className={clsx('absolute bottom-full transform duration-200', !isOpening && 'pointer-events-none opacity-0')}
+							className={clsx('absolute bottom-1/2 transform duration-200', !isOpening && 'pointer-events-none opacity-0')}
 							{...(!isOpening && { inert: '' })}
 						>
 							<CEFRLevelsMenu current={isCEFRLevel(level) ? level : null} />
