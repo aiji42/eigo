@@ -9,6 +9,7 @@ interface Env {
 	DB: D1Database;
 	OPEN_AI_API_KEY: string;
 	BUCKET: R2Bucket;
+	IMAGE_HOST_PREFIX: string;
 }
 
 export default {
@@ -31,8 +32,8 @@ export default {
 
 				// プロンプトが長すぎるとエラーになるので、タイトルと最初のパラグラフを使う
 				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, [item.title, joinSentences(content[0])].join('\n'));
-				const thumbnailUrl = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
-				const res = await updateEntry(env.DB, entry.id, { thumbnailUrl });
+				const key = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
+				const res = await updateEntry(env.DB, entry.id, { thumbnailUrl: `${env.IMAGE_HOST_PREFIX}${key}` });
 
 				console.log(res);
 			}

@@ -10,7 +10,6 @@ import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
 import { usePlayer } from '../hooks/usePlayer';
 import { StickyHeader } from '../componnts/StickyHeader';
-import { imageUrlByEntry } from '../libs/image';
 
 // TODO: オリジナルページのURLをソースとして表示する
 // TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
@@ -43,7 +42,7 @@ const Page = () => {
 			<StickyHeader />
 			<div className="flex flex-col gap-4 p-2">
 				<h1 className="text-center text-4xl font-bold text-slate-300">{entry.title}</h1>
-				<img className="m-auto h-64 object-cover md:h-96" src={imageUrlByEntry(entry) ?? ''} alt={entry.title} />
+				<img className="m-auto h-64 object-cover md:h-96" src={entry.thumbnailUrl ?? ''} alt={entry.title} />
 				<div className="flex gap-4 text-gray-500">
 					<p>{displayRelativeTime('publishedAt' in entry ? entry.publishedAt : entry.createdAt)} ago</p>
 					<p>{getTotalWordsCount(entry.content).toLocaleString()} words</p>
