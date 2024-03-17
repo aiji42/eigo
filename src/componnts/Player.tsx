@@ -7,9 +7,8 @@ export type PlayerProps = {
 	ended: boolean;
 	playbackRate: number;
 	currentTime: number;
-	progresses: { offset: number | null; duration: number | null }[];
 	loading: boolean;
-	onClickProgress: (offset: number) => void;
+	duration: number;
 	onClickBackToStart: VoidFunction;
 	onClickPlay: VoidFunction;
 	onClickPause: VoidFunction;
@@ -24,6 +23,8 @@ export const Player: FC<PlayerProps> = ({
 	playbackRate,
 	loading,
 	ended,
+	duration,
+	currentTime,
 	onClickPlay,
 	onClickPause,
 	onClickNextTrack,
@@ -33,7 +34,11 @@ export const Player: FC<PlayerProps> = ({
 	onClickBackToStart,
 }) => {
 	return (
-		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-900 p-2 font-sans text-slate-400">
+		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-900 py-2 font-sans text-slate-400">
+			<div
+				className="absolute bottom-[calc(100%-2px)] h-0.5 rounded-full bg-green-400"
+				style={{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }}
+			/>
 			<div className="flex items-center">
 				<div className="flex flex-auto items-center justify-evenly">
 					<button

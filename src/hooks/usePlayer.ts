@@ -1,7 +1,7 @@
 import { CalibratedEntry, Entry } from '../schema';
 import { MediaPlayer, useMediaPlayer } from './useMediaPlayer';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { getNextPlaybackTime, getPrevPlaybackTime, isTTSed } from '../libs/content';
+import { getNextPlaybackTime, getPrevPlaybackTime, getTotalDuration, isTTSed } from '../libs/content';
 import { PlayerProps } from '../componnts/Player';
 
 export const usePlayer = (
@@ -112,8 +112,7 @@ export const usePlayer = (
 	return {
 		...player,
 		loading,
-		progresses: entry?.content ?? [],
-		onClickProgress: player.seek,
+		duration: getTotalDuration(entry?.content ?? []),
 		onClickPlay: player.play,
 		onClickPause: player.pause,
 		onClickNextTrack: nextTrack,
