@@ -35,9 +35,10 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
 						currentLevel && levelColors[currentLevel],
 					)}
 					onChange={(e) => setLevel(isCEFRLevel(e.target.value) ? e.target.value : null)}
+					value={currentLevel ?? ''}
 				>
 					{([null, 'A1', 'A2', 'B1'] as const).map((level) => (
-						<option key={level} value={level ?? ''} selected={level === currentLevel}>
+						<option key={level} value={level ?? ''}>
 							{level ?? 'Og'}
 						</option>
 					))}

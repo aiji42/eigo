@@ -175,8 +175,8 @@ app.get('*', (c) => {
 						<link rel="manifest" href="/static/manifest.json" />
 						<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
 						<link rel="icon" href="/static/favicon.ico" />
-						<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-						<link rel="preload" href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" />
+						<link rel="preconnect" href="https://fonts.gstatic.com" />
+						<link rel="preload" href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" as="image" type="image/webp" />
 						<link
 							rel="stylesheet"
 							href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0"
