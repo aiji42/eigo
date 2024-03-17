@@ -9,9 +9,9 @@ type StickyHeaderProps = {
 };
 
 const levelColors = {
-	A1: 'text-violet-100',
-	A2: 'text-violet-200',
-	B1: 'text-teal-100',
+	A1: 'text-transparent from-pink-400 to-pink-200',
+	A2: 'text-transparent from-violet-400 to-pink-200',
+	B1: 'text-transparent from-cyan-400 to-emerald-200',
 	B2: 'text-teal-200',
 	C1: 'text-pink-100',
 	C2: 'text-teal-200',
@@ -30,7 +30,10 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
 			<div>
 				{children}
 				<select
-					className={clsx('appearance-none bg-transparent text-xl font-bold', currentLevel && levelColors[currentLevel])}
+					className={clsx(
+						'appearance-none bg-transparent bg-gradient-to-tr bg-clip-text text-xl font-bold',
+						currentLevel && levelColors[currentLevel],
+					)}
 					onChange={(e) => setLevel(isCEFRLevel(e.target.value) ? e.target.value : null)}
 				>
 					{([null, 'A1', 'A2', 'B1'] as const).map((level) => (
