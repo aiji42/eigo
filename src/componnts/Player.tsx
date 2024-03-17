@@ -1,4 +1,4 @@
-import { FC, useEffect, useReducer, useState } from 'react';
+import { FC, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext } from './Icons';
 import { CEFRLevel } from '../schema';
@@ -22,7 +22,6 @@ export type PlayerProps = {
 	onClickSwitchPlaybackRate: VoidFunction;
 };
 
-// TODO: 操作できなくていいのでプレイヤーの上部に再生位置の表示を追加
 export const Player: FC<PlayerProps> = ({
 	currentTime,
 	progresses,
@@ -46,7 +45,7 @@ export const Player: FC<PlayerProps> = ({
 	}, [level]);
 
 	return (
-		<div className="relative flex w-full max-w-4xl select-none flex-col gap-4 bg-neutral-900 p-2 text-slate-400">
+		<div className="relative flex w-full max-w-4xl select-none flex-col gap-2 bg-neutral-900 p-2 text-slate-400">
 			<div className="flex gap-0.5">
 				{progresses.map((p, i) => {
 					const offset = p.offset ?? 0;
@@ -54,7 +53,10 @@ export const Player: FC<PlayerProps> = ({
 					return (
 						<button
 							key={i}
-							className={clsx('h-2 flex-1 overflow-hidden rounded', currentTime < offset + duration ? 'bg-neutral-800' : 'bg-neutral-700')}
+							className={clsx(
+								'h-1.5 flex-1 overflow-hidden rounded',
+								currentTime < offset + duration ? 'bg-neutral-800' : 'bg-neutral-700',
+							)}
 							onClick={() => onClickProgress(offset)}
 						>
 							{offset < currentTime && currentTime < offset + duration && (
