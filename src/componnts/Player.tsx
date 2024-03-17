@@ -16,7 +16,6 @@ export type PlayerProps = {
 	onClickPlay: VoidFunction;
 	onClickPause: VoidFunction;
 	onClickNextTrack: VoidFunction;
-	onClickBackToStart: VoidFunction;
 	onClickBack: VoidFunction;
 	onClickForward: VoidFunction;
 	onClickSwitchPlaybackRate: VoidFunction;

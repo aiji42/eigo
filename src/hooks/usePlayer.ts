@@ -91,8 +91,6 @@ export const usePlayer = (
 		}
 	}, [stopAndRestart, player.getPlaying, player.pause, player.play]);
 
-	const backToStart = useCallback(() => player.seek(0), [player.seek]);
-
 	const backToPrev = useCallback(() => {
 		if (!entry) return;
 		const time = getPrevPlaybackTime(entry.content, player.getCurrentTime());
@@ -122,7 +120,6 @@ export const usePlayer = (
 		onClickPlay: player.play,
 		onClickPause: player.pause,
 		onClickNextTrack: nextTrack,
-		onClickBackToStart: backToStart,
 		onClickBack: backToPrev,
 		onClickForward: skipToNext,
 		onClickSwitchPlaybackRate: switchPlaybackRate,
