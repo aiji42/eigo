@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
+import { useLocalStorage } from '@rehooks/local-storage';
 
 export const useMediaPlayer = (src: string) => {
 	const [playing, setPlaying] = useState(false);
 	const [volume, setCurrentVolume] = useState(1);
 	const [currentTime, setCurrentTime] = useState(0);
-	const [currentRate, setCurrentRate] = useState(1);
+	const [currentRate, setCurrentRate] = useLocalStorage('playbackRate', 1);
 	const [loading, setLoading] = useState(false);
 	const [ended, setEnded] = useState(false);
 	const audio = useRef<HTMLAudioElement | null>(null);

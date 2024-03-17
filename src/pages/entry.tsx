@@ -1,4 +1,4 @@
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { displayRelativeTime } from '../libs/utils';
 import { Player } from '../componnts/Player';
 import { ParagraphCard } from '../componnts/ParagraphCard';
@@ -10,29 +10,22 @@ import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
 import { usePlayer } from '../hooks/usePlayer';
 import { StickyHeader } from '../componnts/StickyHeader';
+import { useLevel } from '../hooks/useLevel';
 
 // TODO: オリジナルページのURLをソースとして表示する
 // TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
-// TODO: Levelはローカルストレージで管理
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
-	const [searchParams] = useSearchParams();
-	const level = searchParams.get('level');
+	const [level] = useLevel();
 	const { entry } = useEntry({ entryId, level }, (entry) => !isTTSed(entry.content));
 	const navigate = useNavigate();
 	const navigateToNext = useCallback(
-		() =>
-			entry.nextEntryId
-				? navigate({ pathname: `/${entry.nextEntryId}`, search: level ? `level=${level}` : '' }, { replace: true })
-				: navigate('/'),
-		[entry.nextEntryId, level, navigate],
+		() => navigate(`/${entry.nextEntryId ?? ''}`, { replace: !!entry.nextEntryId }),
+		[entry.nextEntryId, navigate],
 	);
 	const navigateToPrev = useCallback(
-		() =>
-			entry.nextEntryId
-				? navigate({ pathname: `/${entry.prevEntryId}`, search: level ? `level=${level}` : '' }, { replace: true })
-				: navigate('/'),
-		[entry.prevEntryId, level, navigate],
+		() => navigate(`/${entry.prevEntryId ?? ''}`, { replace: !!entry.prevEntryId }),
+		[entry.prevEntryId, navigate],
 	);
 
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);

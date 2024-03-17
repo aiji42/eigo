@@ -2,8 +2,8 @@ import { FC, useEffect, useState } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext } from './Icons';
 import { CEFRLevel } from '../schema';
-import { Link, useSearchParams } from 'react-router-dom';
 import { isCEFRLevel } from '../libs/utils';
+import { useLevel } from '../hooks/useLevel';
 
 export type PlayerProps = {
 	playing: boolean;
@@ -37,8 +37,7 @@ export const Player: FC<PlayerProps> = ({
 	onClickProgress,
 }) => {
 	const [isOpening, setIsOpen] = useState(false);
-	const [searchParams] = useSearchParams();
-	const level = searchParams.get('level');
+	const [level] = useLevel();
 	useEffect(() => {
 		setIsOpen(false);
 	}, [level]);
@@ -139,19 +138,15 @@ const levelColors = {
 };
 
 const CEFRLevelsMenu: FC<{ current: null | CEFRLevel }> = ({ current }) => {
+	const [, setLevel] = useLevel();
 	return (
 		<div className="flex flex-col gap-4 bg-neutral-900 p-3 text-xl font-bold">
-			{current && (
-				<Link className="active:bg-neutral-800" to={{ search: '' }} replace>
-					Or
-				</Link>
-			)}
-			{(['A1', 'A2', 'B1'] as const)
+			{([null, 'A1', 'A2', 'B1'] as const)
 				.filter((level) => current !== level)
 				.map((level) => (
-					<Link to={{ search: `level=${level}` }} replace key={level} className={clsx('active:bg-neutral-800', levelColors[level])}>
-						{level}
-					</Link>
+					<button onClick={() => setLevel(level)} key={level} className={clsx('active:bg-neutral-800', level && levelColors[level])}>
+						{level ?? 'Og'}
+					</button>
 				))}
 		</div>
 	);
