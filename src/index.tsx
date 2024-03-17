@@ -173,8 +173,8 @@ app.get('*', (c) => {
 						<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 						<meta name="robots" content="noindex nofollow" />
 						<link rel="manifest" href="/static/manifest.json" />
-						<link rel="apple-touch-icon" type="image/png" href="/static/apple-touch-icon-180x180.png" />
-						<link rel="icon" type="image/png" href="/static/icon-192x192.png" />
+						<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
+						<link rel="icon" href="/static/favicon.ico" />
 						<link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
 						<link rel="preload" href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" />
 						<link

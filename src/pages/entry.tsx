@@ -13,6 +13,7 @@ import { StickyHeader } from '../componnts/StickyHeader';
 
 // TODO: オリジナルページのURLをソースとして表示する
 // TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
+// TODO: Levelはローカルストレージで管理
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
 	const [searchParams] = useSearchParams();
