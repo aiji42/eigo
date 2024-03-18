@@ -48,7 +48,6 @@ const Page = () => {
 
 	return (
 		<>
-			<StickyHeader />
 			<div className="flex flex-col gap-4 p-2">
 				<h1 className="text-center text-4xl font-bold text-slate-300">{entry.title}</h1>
 				<img className="m-auto h-64 object-cover md:h-96" src={entry.thumbnailUrl ?? ''} alt={entry.title} />
@@ -79,6 +78,8 @@ const Page = () => {
 					);
 				})}
 			</div>
+			{/* TODO: 終端に達したら、次のエピソードの画像やタイトルを表示してクリックを促す */}
+			{/* TODO: リストページでもプレイヤーを引き継ぐ(写真とタイトルだけ)、クリックしたらそのエピソードページへ */}
 			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-900 pb-safe">
 				<Player {...player} />
 			</div>

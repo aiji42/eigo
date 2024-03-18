@@ -1,13 +1,18 @@
 import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, Outlet, RouterProvider, ScrollRestoration } from 'react-router-dom';
-import { Suspense } from 'react';
+import { Suspense, lazy } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { LoadingIcon } from './componnts/Icons';
+import { StickyHeader } from './componnts/StickyHeader';
+
+const ListPage = lazy(() => import('./pages/list'));
+const EntryPage = lazy(() => import('./pages/entry'));
 
 const Root = () => {
 	return (
 		<>
 			<ScrollRestoration />
+			<StickyHeader />
 			<ErrorBoundary fallback={<div className="flex items-center justify-center pt-24 text-3xl">🙇‍ Something went wrong...</div>}>
 				<Suspense fallback={<LoadingIcon />}>
 					<Outlet />
@@ -23,18 +28,12 @@ const router = createBrowserRouter([
 		element: <Root />,
 		children: [
 			{
-				path: '/',
-				lazy: async () => ({
-					Component: (await import('./pages/list')).default,
-					loader: () => null,
-				}),
+				index: true,
+				element: <ListPage />,
 			},
 			{
 				path: '/:entryId',
-				lazy: async () => ({
-					Component: (await import('./pages/entry')).default,
-					loader: () => null,
-				}),
+				element: <EntryPage />,
 			},
 		],
 	},
