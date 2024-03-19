@@ -43,9 +43,8 @@ export const LoadingIcon = ({ size = 64 }: { size?: number }) => {
 	// @ts-ignore
 	const code = window._loadingIconCode ?? '1f30e'; // 🌎
 	return (
-		<picture className="absolute inset-0 flex items-center justify-center">
-			<source srcSet={`https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.webp`} type="image/webp" />
+		<div className="absolute inset-0 flex items-center justify-center">
 			<img src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.gif`} alt="" width={size} height={size} />
-		</picture>
+		</div>
 	);
 };

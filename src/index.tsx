@@ -188,7 +188,7 @@ app.get('*', (c) => {
 						<link rel="preconnect" href="https://fonts.gstatic.com" />
 						<link
 							rel="preload"
-							href={`https://fonts.gstatic.com/s/e/notoemoji/latest/${loadingIconCode}/512.webp`}
+							href={`https://fonts.gstatic.com/s/e/notoemoji/latest/${loadingIconCode}/512.gif`}
 							as="image"
 							type="image/webp"
 						/>
