@@ -1,6 +1,15 @@
 import { fetchAndParseRSS } from './libs/rss-parser';
 import { scrapeContent } from './libs/scrape';
-import { getAllRules, getEntryByUrl, insertEntry, updateEntry, upsertChannel } from './libs/db';
+import {
+	getAllCalibratedEntriesByEntryId,
+	getAllRules,
+	getEntryById,
+	getEntryByUrl,
+	insertEntry,
+	updateCalibratedEntry,
+	updateEntry,
+	upsertChannel,
+} from './libs/db';
 import { generateFeaturedImg } from './service-bindings/libs/featuredImg';
 import { joinSentences } from './libs/content';
 import { putImageOnBucket } from './libs/image';
@@ -32,14 +41,38 @@ export default {
 
 				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, item.title);
 				const key = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
-				const res = await updateEntry(env.DB, entry.id, { thumbnailUrl: `${env.IMAGE_HOST_PREFIX}${key}` });
+				const res = await updateEntry(env.DB, entry.id, { thumbnailUrl: `${env.IMAGE_HOST_PREFIX}${key}?digest=${new Date().getTime()}` });
 
 				console.log(res);
 			}
 		}
 	},
 
-	async fetch() {
+	async fetch(req: Request, env: Env, ctx: ExecutionContext) {
+		const url = new URL(req.url);
+
+		// featured imgの再生成
+		if (url.pathname === '/api/regenerate-featured-img') {
+			const entryId = url.searchParams.get('id');
+			if (!entryId) return new Response('id is required', { status: 400 });
+
+			const entry = await getEntryById(env.DB, Number(entryId));
+			if (!entry) return new Response('entry not found', { status: 404 });
+
+			const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, entry.title);
+			const key = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
+			const thumbnailUrl = `${env.IMAGE_HOST_PREFIX}${key}?digest=${new Date().getTime()}`;
+			await updateEntry(env.DB, entry.id, { thumbnailUrl });
+			const calibratedEntries = await getAllCalibratedEntriesByEntryId(env.DB, entry.id);
+			await Promise.all(
+				calibratedEntries.map(async (calibratedEntry) => {
+					return updateCalibratedEntry(env.DB, calibratedEntry.id, { thumbnailUrl });
+				}),
+			);
+
+			return new Response(`Updated: entry thumbnail (id: ${entry.id}) and ${calibratedEntries.length} calibrated entries`);
+		}
+
 		// テストの実行用のリンクが表示されているhtmlを返す
 		return new Response(
 			`

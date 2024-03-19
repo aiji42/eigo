@@ -111,6 +111,11 @@ export const paginateEntries = async (d1: D1Database, limit: number, offset: num
 	});
 };
 
+export const getAllCalibratedEntriesByEntryId = async (d1: D1Database, entryId: number) => {
+	const db = drizzle(d1, { schema });
+	return db.query.calibratedEntries.findMany({ where: eq(schema.calibratedEntries.entryId, entryId) });
+};
+
 export const getCalibratedEntryByEntryIdAndCefrLevel = async (d1: D1Database, entryId: number, cefrLevel: CEFRLevel = 'A1') => {
 	const db = drizzle(d1, { schema });
 	return db.query.calibratedEntries.findFirst({
