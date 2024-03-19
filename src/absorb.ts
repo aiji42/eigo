@@ -39,7 +39,7 @@ export default {
 				if (!content.length) continue;
 				const entry = await insertEntry(env.DB, channel, item, content);
 
-				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, item.title);
+				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, [item.title, joinSentences(content[0])].join('\n'));
 				const key = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
 				const res = await updateEntry(env.DB, entry.id, { thumbnailUrl: `${env.IMAGE_HOST_PREFIX}${key}?digest=${new Date().getTime()}` });
 
@@ -59,7 +59,7 @@ export default {
 			const entry = await getEntryById(env.DB, Number(entryId));
 			if (!entry) return new Response('entry not found', { status: 404 });
 
-			const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, entry.title);
+			const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, [entry.title, joinSentences(entry.content[0])].join('\n'));
 			const key = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
 			const thumbnailUrl = `${env.IMAGE_HOST_PREFIX}${key}?digest=${new Date().getTime()}`;
 			await updateEntry(env.DB, entry.id, { thumbnailUrl });
