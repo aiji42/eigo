@@ -4,9 +4,14 @@ import { optimizeImage } from 'wasm-image-optimization';
 export const generateFeaturedImg = async (token: string, text: string): Promise<Uint8Array> => {
 	const openAI = getOpenAI(token);
 
+	const targets = ['die-cut sticker'];
+	const background = ['vivid monochromatic', 'vibrant monochromatic', 'bright monochromatic'];
+
 	const res = await openAI.images.generate({
 		model: 'dall-e-3',
-		prompt: `Generate data for a cute and pop die-cut sticker on a vivid monochromatic background associated with this text. \n'''''${text}\n'''''`,
+		prompt: `Generate data for a cute and pop ${targets[Math.floor(Math.random() * targets.length)]} on a ${
+			background[Math.floor(Math.random() * background.length)]
+		} background associated with this text. \n'''''${text}\n'''''`,
 		n: 1,
 		size: '1792x1024',
 		response_format: 'b64_json',
