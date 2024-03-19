@@ -27,7 +27,7 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
 			<div>
 				<Link to="/">
 					<h1 className="text-xl font-bold">
-						🌎 <span className="bg-transparent bg-gradient-to-tr from-slate-600 to-slate-300 bg-clip-text text-transparent">Eigo</span>
+						🌎 <span className="bg-transparent bg-gradient-to-tr from-slate-600 to-slate-400 bg-clip-text text-transparent">Eigo</span>
 					</h1>
 				</Link>
 			</div>
