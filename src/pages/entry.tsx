@@ -79,7 +79,7 @@ const Page = () => {
 			</div>
 			{/* TODO: 終端に達したら、次のエピソードの画像やタイトルを表示してクリックを促す */}
 			{/* TODO: リストページでもプレイヤーを引き継ぐ(写真とタイトルだけ)、クリックしたらそのエピソードページへ */}
-			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center pb-safe">
+			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-100 pb-safe">
 				<Player {...player} />
 			</div>
 		</>
