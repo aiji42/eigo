@@ -34,7 +34,7 @@ export const Player: FC<PlayerProps> = ({
 	onClickBackToStart,
 }) => {
 	return (
-		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-900 py-2 font-sans text-slate-400">
+		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-900 py-2 text-slate-400">
 			<div
 				className="absolute bottom-[calc(100%-2px)] h-0.5 rounded-full bg-green-400"
 				style={{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }}

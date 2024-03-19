@@ -26,7 +26,7 @@ export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenc
 	return (
 		<p
 			className={clsx(
-				'scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] hyphens-auto break-words p-2 text-gray-500',
+				'scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] hyphens-auto break-words p-2 font-serif text-gray-500',
 				showTranslation && 'opacity-75',
 			)}
 			ref={ref}

@@ -4,7 +4,6 @@ import { displayRelativeTime, getJson } from '../libs/utils';
 import { Link } from 'react-router-dom';
 import { LoadingIcon } from '../componnts/Icons';
 import { useInView } from 'react-intersection-observer';
-import { StickyHeader } from '../componnts/StickyHeader';
 
 const SIZE = 10;
 
@@ -39,7 +38,7 @@ const Page = () => {
 									<img src={item.thumbnailUrl ?? ''} alt={item.title} className="size-32 rounded-md object-cover" />
 									<div className="min-w-0 flex-1">
 										<h2 className="overflow-hidden overflow-ellipsis text-xl md:text-3xl">{item.title}</h2>
-										<p className="font-sans text-gray-400">{displayRelativeTime(item.publishedAt)} ago</p>
+										<p className="text-gray-400">{displayRelativeTime(item.publishedAt)} ago</p>
 									</div>
 								</div>
 							</Link>

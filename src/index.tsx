@@ -194,7 +194,7 @@ app.get('*', (c) => {
 							</>
 						)}
 					</head>
-					<body className="m-auto max-w-4xl bg-neutral-950 font-serif text-slate-100 px-safe">
+					<body className="m-auto max-w-4xl bg-neutral-950 font-sans text-slate-100 px-safe">
 						<div id="root"></div>
 					</body>
 				</html>,
