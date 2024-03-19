@@ -30,8 +30,7 @@ export default {
 				if (!content.length) continue;
 				const entry = await insertEntry(env.DB, channel, item, content);
 
-				// プロンプトが長すぎるとエラーになるので、タイトルと最初のパラグラフを使う
-				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, [item.title, joinSentences(content[0])].join('\n'));
+				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, item.title);
 				const key = await putImageOnBucket(env.BUCKET, entry.id, thumbnail);
 				const res = await updateEntry(env.DB, entry.id, { thumbnailUrl: `${env.IMAGE_HOST_PREFIX}${key}` });
 
