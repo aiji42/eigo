@@ -169,6 +169,8 @@ app.get('*', (c) => {
 		'1f52e', // 🔮
 		'1f98e', // 🦎
 		'1f422', // 🐢
+		'1f37f', // 🍿
+		'1f379', // 🍹
 	][Math.floor(Math.random() * 6)];
 	return c.html(
 		`<!DOCTYPE html>` +
