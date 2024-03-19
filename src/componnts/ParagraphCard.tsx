@@ -26,14 +26,14 @@ export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenc
 	return (
 		<p
 			className={clsx(
-				'scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] hyphens-auto break-words p-2 font-serif text-gray-500',
+				'scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] hyphens-auto break-words p-2 font-serif text-neutral-500',
 				showTranslation && 'opacity-75',
 			)}
 			ref={ref}
 			data-key={paragraph.key}
 		>
 			{paragraph.sentences.map(({ text, key }) => (
-				<span key={key} className={clsx(key === activeSentenceKey && 'text-slate-100')} lang="en" data-key={key}>
+				<span key={key} className={clsx(key === activeSentenceKey && 'text-neutral-900')} lang="en" data-key={key}>
 					{text}
 					{!text.endsWith(' ') && ' '}
 				</span>

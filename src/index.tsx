@@ -162,6 +162,14 @@ app.post('/api/translate', async (c) => {
 });
 
 app.get('*', (c) => {
+	const loadingIconCode = [
+		'1f6f8', // 🛸
+		'1f30e', // 🌎
+		'1faa9', // 🪩
+		'1f52e', // 🔮
+		'1f98e', // 🦎
+		'1f422', // 🐢
+	][Math.floor(Math.random() * 6)];
 	return c.html(
 		`<!DOCTYPE html>` +
 			renderToString(
@@ -176,12 +184,18 @@ app.get('*', (c) => {
 						<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png" />
 						<link rel="icon" href="/static/favicon.ico" />
 						<link rel="preconnect" href="https://fonts.gstatic.com" />
-						<link rel="preload" href="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" as="image" type="image/webp" />
+						<link
+							rel="preload"
+							href={`https://fonts.gstatic.com/s/e/notoemoji/latest/${loadingIconCode}/512.webp`}
+							as="image"
+							type="image/webp"
+						/>
 						<link
 							rel="stylesheet"
 							href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,1,0"
 						/>
-						<title>eigo</title>
+						<script dangerouslySetInnerHTML={{ __html: `_loadingIconCode = '${loadingIconCode}'` }} />
+						<title>Eigo</title>
 						{import.meta.env.PROD ? (
 							<>
 								<script type="module" src="/static/client.__DIGEST__.js" />
@@ -194,7 +208,7 @@ app.get('*', (c) => {
 							</>
 						)}
 					</head>
-					<body className="m-auto max-w-4xl bg-neutral-950 font-sans text-slate-100 px-safe">
+					<body className="m-auto max-w-4xl bg-neutral-50 font-sans text-neutral-700 px-safe">
 						<div id="root"></div>
 					</body>
 				</html>,

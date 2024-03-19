@@ -34,11 +34,11 @@ const Page = () => {
 					.map((item) => (
 						<li key={item.id}>
 							<Link to={`/${item.id}`}>
-								<div className="mb-4 flex items-center justify-between gap-4 rounded-md hover:bg-neutral-800">
+								<div className="actove:bg-neutral-200 mb-4 flex items-center justify-between gap-4 rounded-md">
 									<img src={item.thumbnailUrl ?? ''} alt={item.title} className="size-32 rounded-md object-cover" />
 									<div className="min-w-0 flex-1">
-										<h2 className="overflow-hidden overflow-ellipsis text-xl md:text-3xl">{item.title}</h2>
-										<p className="text-gray-400">{displayRelativeTime(item.publishedAt)} ago</p>
+										<h2 className="overflow-hidden overflow-ellipsis text-xl md:text-2xl">{item.title}</h2>
+										<p className="text-neutral-500">{displayRelativeTime(item.publishedAt)} ago</p>
 									</div>
 								</div>
 							</Link>

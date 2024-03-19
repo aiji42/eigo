@@ -34,7 +34,7 @@ export const Player: FC<PlayerProps> = ({
 	onClickBackToStart,
 }) => {
 	return (
-		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-900 py-2 text-slate-400">
+		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-100 py-2 text-neutral-500">
 			<div
 				className="absolute bottom-[calc(100%-2px)] h-0.5 rounded-full bg-green-400"
 				style={{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }}
@@ -43,7 +43,7 @@ export const Player: FC<PlayerProps> = ({
 				<div className="flex flex-auto items-center justify-evenly">
 					<button
 						type="button"
-						className="flex size-12 items-center justify-center rounded-full active:text-slate-100"
+						className="flex size-12 items-center justify-center rounded-full active:text-slate-400"
 						onClick={onClickBackToStart}
 						aria-label="Back to start"
 						disabled={loading}
@@ -52,7 +52,7 @@ export const Player: FC<PlayerProps> = ({
 					</button>
 					<button
 						type="button"
-						className="flex size-12 items-center justify-center rounded-full active:text-slate-100"
+						className="flex size-12 items-center justify-center rounded-full active:text-slate-400"
 						onClick={onClickBack}
 						aria-label="Rewind to previous sentence"
 						disabled={loading}
@@ -63,7 +63,7 @@ export const Player: FC<PlayerProps> = ({
 				<button
 					type="button"
 					className={clsx(
-						'relative mx-auto flex size-14 flex-none items-center justify-center rounded-full bg-slate-100 shadow-md ring-1 ring-slate-900/5 active:bg-slate-50',
+						'relative mx-auto flex size-14 flex-none items-center justify-center rounded-full bg-neutral-200/50 shadow-md  active:bg-neutral-100',
 						playing ? 'text-slate-600' : 'text-green-600',
 					)}
 					onClick={ended ? onClickNextTrack : playing ? onClickPause : onClickPlay}
@@ -75,7 +75,7 @@ export const Player: FC<PlayerProps> = ({
 				<div className="flex flex-auto items-center justify-evenly">
 					<button
 						type="button"
-						className="flex size-12 items-center justify-center rounded-full active:text-slate-100"
+						className="flex size-12 items-center justify-center rounded-full active:text-slate-400"
 						onClick={onClickForward}
 						aria-label="Skoip to next sentence"
 						disabled={loading}
@@ -84,7 +84,7 @@ export const Player: FC<PlayerProps> = ({
 					</button>
 					<button
 						type="button"
-						className="flex size-12 items-center justify-center rounded-full font-bold active:text-slate-100"
+						className="flex size-12 items-center justify-center rounded-full font-bold active:text-slate-400"
 						onClick={onClickSwitchPlaybackRate}
 						aria-label="Change playback rate"
 					>

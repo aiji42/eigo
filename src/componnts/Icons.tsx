@@ -25,7 +25,7 @@ export const NextTrack = () => {
 export const LoadingSpinnerIcon = () => {
 	return (
 		<div className="absolute inset-0 flex items-center justify-center">
-			<svg aria-hidden="true" className="size-12 animate-spin fill-slate-300 text-slate-700" viewBox="0 0 100 101" fill="none">
+			<svg aria-hidden="true" className="size-12 animate-spin fill-neutral-200 text-neutral-400" viewBox="0 0 100 101" fill="none">
 				<path
 					d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
 					fill="currentColor"
@@ -40,10 +40,12 @@ export const LoadingSpinnerIcon = () => {
 };
 
 export const LoadingIcon = ({ size = 64 }: { size?: number }) => {
+	// @ts-ignore
+	const code = window._loadingIconCode ?? '1f30e'; // 🌎
 	return (
 		<picture className="absolute inset-0 flex items-center justify-center">
-			<source srcSet="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.webp" type="image/webp" />
-			<img src="https://fonts.gstatic.com/s/e/notoemoji/latest/1f30e/512.gif" alt="🌎" width={size} height={size} />
+			<source srcSet={`https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.webp`} type="image/webp" />
+			<img src={`https://fonts.gstatic.com/s/e/notoemoji/latest/${code}/512.gif`} alt="" width={size} height={size} />
 		</picture>
 	);
 };
