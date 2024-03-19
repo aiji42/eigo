@@ -6,7 +6,7 @@ export const generateFeaturedImg = async (token: string, text: string): Promise<
 
 	const res = await openAI.images.generate({
 		model: 'dall-e-3',
-		prompt: `Generate data for a flat, vector art style, pop, simple, logo-like, die-cut sticker that does not include text, reminiscent of the following text. The background should be a bright monochromatic color. [${text}]`,
+		prompt: `Generate data for a cute and pop die-cut sticker on a monochromatic, light background associated with this text. [${text}]`,
 		n: 1,
 		size: '1792x1024',
 		response_format: 'b64_json',
