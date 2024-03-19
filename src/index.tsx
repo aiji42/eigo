@@ -131,8 +131,8 @@ app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
 	const calibratedContent = await calibre({
 		text: entry.content.map(joinSentences).join('\n\n'),
 		level,
-		minWords: 300,
-		maxWords: 400,
+		minWords: 400,
+		maxWords: 500,
 	});
 	const data: CalibratedData = JSON.parse(calibratedContent);
 
