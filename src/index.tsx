@@ -171,7 +171,7 @@ app.get('*', (c) => {
 		'1f422', // 🐢
 		'1f37f', // 🍿
 		'1f379', // 🍹
-	][Math.floor(Math.random() * 6)];
+	][Math.floor(Math.random() * 8)];
 	return c.html(
 		`<!DOCTYPE html>` +
 			renderToString(
