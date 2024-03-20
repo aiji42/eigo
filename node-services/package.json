@@ -1,8 +1,8 @@
 {
-  "type": "module",
   "scripts": {
-    "dev": "vercel dev",
-    "deploy": "vercel"
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "tsx src/index.ts"
   },
   "dependencies": {
     "@hono/node-server": "^1.8.2",
@@ -11,6 +11,7 @@
     "sharp": "^0.33.2"
   },
   "devDependencies": {
-    "vercel": "^32.4.1"
+    "tsx": "^4.7.1",
+    "typescript": "^5.4.2"
   }
 }

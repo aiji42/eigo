@@ -1,9 +1,9 @@
 import { Hono } from 'hono';
-import { handle } from '@hono/node-server/vercel';
+import { serve } from '@hono/node-server';
 import { removeBackground } from '@imgly/background-removal-node';
 import sharp from 'sharp';
 
-const app = new Hono().basePath('/api');
+const app = new Hono();
 
 app.get('/remove-background', async (c) => {
 	const img = c.req.query('img');
@@ -13,11 +13,11 @@ app.get('/remove-background', async (c) => {
 		debug: true,
 		progress: console.log,
 		output: {
-			format: 'image/png',
+			format: 'image/webp',
 		},
 	}).then((res) => res.arrayBuffer());
 
-	if (c.req.query('fit')) foreground = await sharp(foreground).trim().toFormat('png').toBuffer();
+	if (c.req.query('fit')) foreground = await sharp(foreground).trim().toFormat('webp').toBuffer();
 
 	return new Response(foreground, {
 		headers: {
@@ -27,4 +27,10 @@ app.get('/remove-background', async (c) => {
 	});
 });
 
-export default handle(app);
+const port = 8080;
+console.log(`Server is running on http://localhost:${port}`);
+
+serve({
+	fetch: app.fetch,
+	port,
+});
