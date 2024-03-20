@@ -21,7 +21,7 @@ app.get('/remove-background', async (c) => {
 
 	return new Response(foreground, {
 		headers: {
-			'Content-Type': 'image/png',
+			'Content-Type': 'image/webp',
 			'Content-Length': foreground.byteLength.toString(),
 		},
 	});
