@@ -108,7 +108,7 @@ app.get('/api/entry/:id', async (c) => {
 	]);
 	if (!entry) return c.notFound();
 
-	return c.json({ ...entry, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
+	return c.json({ ...entry, next, prev });
 });
 
 app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
@@ -122,7 +122,7 @@ app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
 		getPrevEntry(c.env.DB, Number(id)),
 	]);
 
-	if (calibratedEntry) return c.json({ ...calibratedEntry, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
+	if (calibratedEntry) return c.json({ ...calibratedEntry, next, prev });
 
 	const entry = await getEntryById(c.env.DB, Number(id));
 	if (!entry) return c.notFound();
@@ -141,7 +141,7 @@ app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
 
 	const res = await insertCalibratedEntry(c.env.DB, entry, level, data.title, content);
 
-	return c.json({ ...res, nextEntryId: next?.id ?? null, prevEntryId: prev?.id ?? null });
+	return c.json({ ...res, next, prev });
 });
 
 app.get('/api/list', async (c) => {

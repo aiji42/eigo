@@ -1,49 +1,49 @@
-import { useNavigate, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { displayRelativeTime } from '../libs/utils';
-import { Player } from '../componnts/Player';
 import { ParagraphCard } from '../componnts/ParagraphCard';
-import { useCallback, useEffect } from 'react';
+import { useEffect } from 'react';
 import { LoadingIcon } from '../componnts/Icons';
-import { getPlaying, getTotalWordsCount, isTTSed } from '../libs/content';
+import { Content, getPlaying, getTotalWordsCount, isTTSed } from '../libs/content';
 import { useEntry } from '../hooks/useEntry';
 import { useTranslate } from '../hooks/useTranslate';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
-import { usePlayer } from '../hooks/usePlayer';
 import { useLevel } from '../hooks/useLevel';
+import { useMediaControllerContext } from '../componnts/MediaControllerContext';
+
+const refreshUntil = ({ content }: { content: Content }) => !isTTSed(content);
 
 // TODO: オリジナルページのURLをソースとして表示する
 // TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
 const Page = () => {
 	const { entryId } = useParams<'entryId'>();
 	const [level] = useLevel();
-	const { entry } = useEntry({ entryId, level }, (entry) => !isTTSed(entry.content));
-	const navigate = useNavigate();
-	const navigateToNext = useCallback(
-		() => navigate(`/${entry.nextEntryId ?? ''}`, { replace: !!entry.nextEntryId }),
-		[entry.nextEntryId, navigate],
-	);
-	const navigateToPrev = useCallback(
-		() => navigate(`/${entry.prevEntryId ?? ''}`, { replace: !!entry.prevEntryId }),
-		[entry.prevEntryId, navigate],
-	);
-
+	const { entry } = useEntry({ entryId, level }, refreshUntil);
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const player = usePlayer(level ? `/${entryId}/${level}/playlist.m3u8` : `/${entryId}/playlist.m3u8`, entry, {
-		navigateToNext,
-		navigateToPrev,
-		// FIXME: 翻訳状態でリストページに戻るとバックグラウンドで再生が始まり、壊れる
-		stopAndRestart: !!translatingKey,
-	});
+	const { setEntry, player } = useMediaControllerContext();
+	useEffect(() => {
+		setEntry(entry);
+	}, [setEntry, entry]);
 
 	// 再生を開始したら翻訳を閉じる
 	useEffect(() => {
-		if (player.playing) translate(null);
-	}, [player.playing]);
+		if (player?.playing) translate(null);
+	}, [player?.playing]);
 
-	useAwakeScreen(player.playing);
+	// 翻訳を開いたときに再生を一時停止し、翻訳を閉じたときに再生を再開する
+	useEffect(() => {
+		if (!!translatingKey && player?.getPlaying()) {
+			player.pause();
+			return () => {
+				player.play();
+			};
+		}
+	}, [!!translatingKey, player?.getPlaying, player?.pause, player?.play]);
 
-	const playing = getPlaying(entry.content, player.currentTime);
+	useAwakeScreen(player?.playing);
+
+	const currentTime = player?.currentTime ?? 0;
+	const playing = getPlaying(entry.content, currentTime);
 
 	return (
 		<>
@@ -64,7 +64,7 @@ const Page = () => {
 								<>
 									<ParagraphCard
 										paragraph={p}
-										scrollInActive={player.currentTime > 0}
+										scrollInActive={currentTime > 0}
 										activeSentenceKey={playing.paragraph?.key === p.key ? playing.sentence?.key : undefined}
 										showTranslation={isLoading}
 									/>
@@ -76,11 +76,6 @@ const Page = () => {
 						</div>
 					);
 				})}
-			</div>
-			{/* TODO: 終端に達したら、次のエピソードの画像やタイトルを表示してクリックを促す */}
-			{/* TODO: リストページでもプレイヤーを引き継ぐ(写真とタイトルだけ)、クリックしたらそのエピソードページへ */}
-			<div className="fixed bottom-0 left-0 right-0 flex items-center justify-center bg-neutral-100 pb-safe">
-				<Player {...player} />
 			</div>
 		</>
 	);

@@ -4,6 +4,8 @@ import { Suspense, lazy } from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 import { LoadingIcon } from './componnts/Icons';
 import { StickyHeader } from './componnts/StickyHeader';
+import { MediaControllerProvider } from './componnts/MediaControllerContext';
+import { StickyMediaController } from './componnts/StickyMediaController';
 
 const ListPage = lazy(() => import('./pages/list'));
 const EntryPage = lazy(() => import('./pages/entry'));
@@ -15,7 +17,10 @@ const Root = () => {
 			<StickyHeader />
 			<ErrorBoundary fallback={<div className="flex items-center justify-center pt-24 text-3xl">🙇‍ Something went wrong...</div>}>
 				<Suspense fallback={<LoadingIcon />}>
-					<Outlet />
+					<MediaControllerProvider>
+						<Outlet />
+						<StickyMediaController />
+					</MediaControllerProvider>
 				</Suspense>
 			</ErrorBoundary>
 		</>

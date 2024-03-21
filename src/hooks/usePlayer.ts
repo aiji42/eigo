@@ -1,24 +1,29 @@
-import { CalibratedEntry, Entry } from '../schema';
+import { Entry, CalibratedEntry } from '../schema';
 import { MediaPlayer, useMediaPlayer } from './useMediaPlayer';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { getNextPlaybackTime, getPrevPlaybackTime, getTotalDuration, isTTSed } from '../libs/content';
 import { PlayerProps } from '../componnts/Player';
+import { CEFRLevel } from '../schema';
+import { useLevel } from './useLevel';
+import { useNavigate } from 'react-router-dom';
 
-export const usePlayer = (
-	src: string,
-	entry: Entry | CalibratedEntry | null | undefined,
-	{
-		navigateToNext,
-		navigateToPrev,
-		stopAndRestart,
-	}: {
-		navigateToNext: VoidFunction;
-		navigateToPrev: VoidFunction;
-		stopAndRestart?: boolean;
-	},
-): PlayerProps & MediaPlayer => {
+export type EntryData = (Entry | CalibratedEntry) & {
+	next: Entry | null;
+	prev: Entry | null;
+};
+
+const getSrc = (entry: EntryData | null, level: CEFRLevel | null) => {
+	if (!entry) return null;
+	const entryId = 'entryId' in entry ? entry.entryId : entry.id;
+	return level ? `/${entryId}/${level}/playlist.m3u8` : `/${entryId}/playlist.m3u8`;
+};
+
+export const usePlayer = (entry: EntryData | null): PlayerProps & MediaPlayer => {
+	const [level] = useLevel();
+	const src = getSrc(entry, level);
 	const player = useMediaPlayer(src);
 	const loading = useMemo(() => player.loading || !entry || !isTTSed(entry.content), [player.loading, entry]);
+	const navigate = useNavigate();
 
 	const beforeNavigatePlayerStatus = useRef({
 		playing: player.playing,
@@ -26,35 +31,37 @@ export const usePlayer = (
 		volume: player.volume,
 	});
 
+	const stopAndStorePlayerStatus = useCallback(() => {
+		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
+		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
+		beforeNavigatePlayerStatus.current.volume = player.volume;
+		player.stop();
+	}, [player.playing || player.ended, player.playbackRate, player.volume, player.stop]);
+
+	// auto play
 	useEffect(() => {
-		if (beforeNavigatePlayerStatus.current.playing && !loading) player.play();
+		if (beforeNavigatePlayerStatus.current.playing && !loading && src) player.play();
 		player.setPlaybackRate(beforeNavigatePlayerStatus.current.playbackRate);
 		player.setVolume(beforeNavigatePlayerStatus.current.volume);
 	}, [src, loading]);
 
 	const nextTrack = useCallback(() => {
-		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
-		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
-		beforeNavigatePlayerStatus.current.volume = player.volume;
-		player.stop();
-		navigateToNext();
-	}, [navigateToNext, player.playing || player.ended, player.playbackRate, player.stop]);
+		stopAndStorePlayerStatus();
+		navigate(entry?.next ? `/${entry.next.id}` : '/', { replace: !!entry?.next });
+	}, [navigate, entry?.next, stopAndStorePlayerStatus]);
 
 	const prevTrack = useCallback(() => {
-		beforeNavigatePlayerStatus.current.playing = player.playing || player.ended;
-		beforeNavigatePlayerStatus.current.playbackRate = player.playbackRate;
-		beforeNavigatePlayerStatus.current.volume = player.volume;
-		player.stop();
-		navigateToPrev();
-	}, [navigateToPrev, player.playing || player.ended, player.playbackRate, player.stop]);
+		stopAndStorePlayerStatus();
+		navigate(entry?.prev ? `/${entry.prev.id}` : '/', { replace: !!entry?.prev });
+	}, [navigate, entry?.prev, stopAndStorePlayerStatus]);
 
 	useEffect(() => {
-		if (!('mediaSession' in navigator)) return;
+		if (!('mediaSession' in navigator) || !entry) return;
 
 		navigator.mediaSession.metadata = new MediaMetadata({
-			title: entry?.title ?? 'Now loading...',
+			title: entry.title,
 			artist: 'eigo',
-			artwork: entry?.thumbnailUrl
+			artwork: entry.thumbnailUrl
 				? [
 						{ src: entry.thumbnailUrl, sizes: '96x96' },
 						{ src: entry.thumbnailUrl, sizes: '128x128' },
@@ -75,16 +82,6 @@ export const usePlayer = (
 			navigator.mediaSession.setActionHandler('previoustrack', null);
 		};
 	}, [entry, nextTrack, prevTrack, player.ended, player.play, player.pause]);
-
-	// 状態Aから状態Bに遷移する時にプレイヤーが再生中であれば一時停止し、さらにまたAに戻る時に再生する
-	useEffect(() => {
-		if (stopAndRestart && player.getPlaying()) {
-			player.pause();
-			return () => {
-				player.play().catch();
-			};
-		}
-	}, [stopAndRestart, player.getPlaying, player.pause, player.play]);
 
 	const backToPrev = useCallback(() => {
 		if (!entry) return;

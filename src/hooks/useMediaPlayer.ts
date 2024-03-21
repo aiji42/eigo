@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Hls from 'hls.js';
 import { useLocalStorage } from '@rehooks/local-storage';
 
-export const useMediaPlayer = (src: string) => {
+export const useMediaPlayer = (src: string | null) => {
 	const [playing, setPlaying] = useState(false);
 	const [volume, setCurrentVolume] = useState(1);
 	const [currentTime, setCurrentTime] = useState(0);
@@ -119,6 +119,7 @@ export const useMediaPlayer = (src: string) => {
 	}, []);
 
 	useEffect(() => {
+		if (!src) return;
 		audio.current ||= new Audio();
 		const cleanup = addEventListener(audio.current);
 		const cleanupMediaSession = syncToMediaSession(audio.current);

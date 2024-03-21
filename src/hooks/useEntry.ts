@@ -3,7 +3,10 @@ import { useEffect, useState } from 'react';
 import useSWRImmutable from 'swr/immutable';
 import { getJson } from '../libs/utils';
 
-type Data = (Entry | CalibratedEntry) & { nextEntryId: string | null; prevEntryId: string | null };
+type Data = (Entry | CalibratedEntry) & {
+	next: Entry | null;
+	prev: Entry | null;
+};
 type Key = { entryId: string | undefined; level: string | null };
 
 export const useEntry = ({ entryId, level }: Key, refreshUntil: (entry: Data) => boolean) => {

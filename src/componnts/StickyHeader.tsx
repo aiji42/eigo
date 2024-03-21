@@ -33,6 +33,8 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
 			</div>
 			<div>
 				{children}
+				{/* TODO: リストページにプレイヤーが侵食したことで、リストページで再生中エントリーのcalibrate前のレベルを選択するとプレイリストが404になるので無限ローディングになる。 */}
+				{/* 強制的に該当のentryを開いてあげることで回避したいが、再生中でなければリストページにとどまればいいので、player側で制御すべき？ */}
 				<select
 					className={clsx(
 						'appearance-none rounded-md bg-purple-600 bg-transparent bg-gradient-to-tr px-2 py-0.5 text-center font-mono font-bold text-neutral-50',
