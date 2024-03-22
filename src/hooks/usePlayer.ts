@@ -1,8 +1,7 @@
 import { Entry, CalibratedEntry } from '../schema';
-import { MediaPlayer, useMediaPlayer } from './useMediaPlayer';
+import { useMediaPlayer } from './useMediaPlayer';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { getNextPlaybackTime, getPrevPlaybackTime, getTotalDuration, isTTSed } from '../libs/content';
-import { PlayerProps } from '../componnts/Player';
 import { CEFRLevel } from '../schema';
 import { useLevel } from './useLevel';
 import { useNavigate } from 'react-router-dom';
@@ -18,7 +17,7 @@ const getSrc = (entry: EntryData | null, level: CEFRLevel | null) => {
 	return level ? `/${entryId}/${level}/playlist.m3u8` : `/${entryId}/playlist.m3u8`;
 };
 
-export const usePlayer = (entry: EntryData | null): PlayerProps & MediaPlayer => {
+export const usePlayer = (entry: EntryData | null) => {
 	const [level] = useLevel();
 	const src = getSrc(entry, level);
 	const player = useMediaPlayer(src);

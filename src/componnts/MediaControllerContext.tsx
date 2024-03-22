@@ -1,9 +1,8 @@
 import { createContext, FC, ReactNode, useContext, useState } from 'react';
-import { CalibratedEntry, Entry } from '../schema';
 import { EntryData, usePlayer } from '../hooks/usePlayer';
 
 type MediaContextType = {
-	entry: null | Entry | CalibratedEntry;
+	entry: null | EntryData;
 	setEntry: (entry: null | EntryData) => void;
 	player: ReturnType<typeof usePlayer> | null;
 };
@@ -19,9 +18,7 @@ export const MediaControllerProvider: FC<{ children: ReactNode }> = ({ children 
 
 	const player = usePlayer(entry);
 
-	return (
-		<MediaControllerContext.Provider value={{ entry, setEntry, player: entry ? player : null }}>{children}</MediaControllerContext.Provider>
-	);
+	return <MediaControllerContext.Provider value={{ entry, setEntry, player }}>{children}</MediaControllerContext.Provider>;
 };
 
 export const useMediaControllerContext = () => {

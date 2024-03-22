@@ -47,7 +47,7 @@ const Page = () => {
 			</ul>
 			{!isValidating && <div ref={ref} aria-hidden="true" />}
 			{isValidating && (
-				<div className="relative mb-12">
+				<div className="relative mb-32">
 					<LoadingIcon size={32} />
 				</div>
 			)}
