@@ -1,24 +1,27 @@
 import { createContext, FC, ReactNode, useContext, useState } from 'react';
 import { EntryData, usePlayer } from '../hooks/usePlayer';
+import { CEFRLevel } from '../schema';
 
 type MediaContextType = {
 	entry: null | EntryData;
-	setEntry: (entry: null | EntryData) => void;
+	level: null | CEFRLevel;
+	setEntryAndLevel: (s: { entry: EntryData | null; level: CEFRLevel | null }) => void;
 	player: ReturnType<typeof usePlayer> | null;
 };
 
 export const MediaControllerContext = createContext<MediaContextType>({
 	entry: null,
-	setEntry: () => {},
+	level: null,
+	setEntryAndLevel: () => {},
 	player: null,
 });
 
 export const MediaControllerProvider: FC<{ children: ReactNode }> = ({ children }) => {
-	const [entry, setEntry] = useState<null | EntryData>(null);
+	const [{ entry, level }, setEntryAndLevel] = useState<{ entry: EntryData | null; level: CEFRLevel | null }>({ entry: null, level: null });
 
-	const player = usePlayer(entry);
+	const player = usePlayer(entry, level);
 
-	return <MediaControllerContext.Provider value={{ entry, setEntry, player }}>{children}</MediaControllerContext.Provider>;
+	return <MediaControllerContext.Provider value={{ entry, level, setEntryAndLevel, player }}>{children}</MediaControllerContext.Provider>;
 };
 
 export const useMediaControllerContext = () => {

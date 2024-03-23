@@ -3,7 +3,6 @@ import { useMediaPlayer } from './useMediaPlayer';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { getNextPlaybackTime, getPrevPlaybackTime, getTotalDuration, isTTSed } from '../libs/content';
 import { CEFRLevel } from '../schema';
-import { useLevel } from './useLevel';
 import { useNavigate } from 'react-router-dom';
 
 export type EntryData = (Entry | CalibratedEntry) & {
@@ -17,8 +16,7 @@ const getSrc = (entry: EntryData | null, level: CEFRLevel | null) => {
 	return level ? `/${entryId}/${level}/playlist.m3u8` : `/${entryId}/playlist.m3u8`;
 };
 
-export const usePlayer = (entry: EntryData | null) => {
-	const [level] = useLevel();
+export const usePlayer = (entry: EntryData | null, level: null | CEFRLevel) => {
 	const src = getSrc(entry, level);
 	const player = useMediaPlayer(src);
 	const loading = useMemo(() => player.loading || !entry || !isTTSed(entry.content), [player.loading, entry]);

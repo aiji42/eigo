@@ -20,10 +20,10 @@ const Page = () => {
 	const { entry } = useEntry({ entryId, level }, refreshUntil);
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
 
-	const { setEntry, player } = useMediaControllerContext();
+	const { setEntryAndLevel, player } = useMediaControllerContext();
 	useEffect(() => {
-		setEntry(entry);
-	}, [setEntry, entry]);
+		setEntryAndLevel({ entry, level });
+	}, [setEntryAndLevel, entry, level]);
 
 	// 再生を開始したら翻訳を閉じる
 	useEffect(() => {
