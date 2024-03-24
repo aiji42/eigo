@@ -3,7 +3,6 @@ import { FC, ReactNode } from 'react';
 import { clsx } from 'clsx';
 import { isCEFRLevel } from '../libs/utils';
 import { useLevel } from '../hooks/useLevel';
-import { LoadingIcon } from './Icons';
 
 type StickyHeaderProps = {
 	children?: ReactNode;

@@ -1,4 +1,3 @@
-import OpenAI from 'openai';
 import { CEFRLevel } from '../../schema';
 import { getOpenAI } from './openAI';
 
