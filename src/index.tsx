@@ -10,7 +10,7 @@ import {
 } from './libs/db';
 import { ttsContent } from './libs/tts';
 import { Hono } from 'hono';
-import { createCalibrate, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
+import { createCalibrate, createExtractPhrases, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
 import { createContent, isTTSed, joinSentences } from './libs/content';
 import { existsAudioOnBucket, putAudioOnBucket, createM3U } from './libs/audio';
@@ -133,6 +133,7 @@ app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
 		level,
 		minWords: 400,
 		maxWords: 500,
+		type: 'calibrate',
 	});
 	const data: CalibratedData = JSON.parse(calibratedContent);
 
@@ -159,6 +160,30 @@ app.post('/api/translate', async (c) => {
 	if (!text) return new Response('400 Bad request', { status: 400 });
 
 	return c.json({ translated: await translate(text, true) });
+});
+
+app.get('/api/extract-phrases/:entryId', async (c) => {
+	const id = c.req.param('entryId');
+	const level = c.req.query('level');
+
+	let text = '';
+
+	if (level && isCEFRLevel(level)) {
+		const calibratedEntry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
+		if (!calibratedEntry) return c.notFound();
+
+		text = calibratedEntry.content.flatMap(joinSentences).join('\n');
+	} else {
+		const entry = await getEntryById(c.env.DB, Number(id));
+		if (!entry) return c.notFound();
+
+		text = entry.content.flatMap(joinSentences).join('\n');
+	}
+
+	const extractPhrases = createExtractPhrases(serviceBindingsMock(c.env).Calibrate, c.req.raw.clone());
+	const phrases = await extractPhrases({ text, type: 'extract-phrases' });
+
+	return c.json(phrases);
 });
 
 app.get('*', (c) => {

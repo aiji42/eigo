@@ -1,4 +1,4 @@
-import { CalibratePayload } from '../service-bindings/calibrate';
+import { CalibratePayload, ExtractPhrasesPayload } from '../service-bindings/calibrate';
 
 const mapping: Record<string, string> = {
 	TTS: 'http://localhost:8050',
@@ -77,4 +77,20 @@ export const createCalibrate =
 		const res = await fetcher.fetch(newReq);
 		if (!res.ok) throw new Error(await res.text());
 		return res.text();
+	};
+
+export const createExtractPhrases =
+	(fetcher: Fetcher, req: Request) =>
+	async (payload: ExtractPhrasesPayload, cloned = false) => {
+		const newReq = new Request(cloned ? req : req.clone(), {
+			method: 'POST',
+			body: JSON.stringify(payload),
+			headers: {
+				'Content-Type': 'application/json',
+			},
+		});
+
+		const res = await fetcher.fetch(newReq);
+		if (!res.ok) throw new Error(await res.text());
+		return res.json();
 	};
