@@ -188,7 +188,7 @@ app.get('/api/extract-phrases/:entryId', async (c) => {
 
 app.get('*', (c) => {
 	const loadingIconCode = [
-		'1f6f8', // 🛸
+		'1f393', // 🎓
 		'1f30e', // 🌎
 		'1faa9', // 🪩
 		'1f52e', // 🔮
@@ -196,7 +196,8 @@ app.get('*', (c) => {
 		'1f422', // 🐢
 		'1f37f', // 🍿
 		'1f379', // 🍹
-	][Math.floor(Math.random() * 8)];
+		'1f4a1', // 💡
+	][Math.floor(Math.random() * 9)];
 	return c.html(
 		`<!DOCTYPE html>` +
 			renderToString(
