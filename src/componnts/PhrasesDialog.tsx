@@ -47,9 +47,9 @@ export const PhrasesDialog = () => {
 						{isLoading && <LoadingIcon />}
 						<dl>
 							{data?.map(({ target, meaning }, index) => (
-								<div key={index} className="pb-2">
-									<dt className="font-serif text-lg font-bold">{target}</dt>
-									<dd className="text-neutral-500">{meaning}</dd>
+								<div key={index} className="pb-3">
+									<dt className="font-serif text-xl font-bold">{target}</dt>
+									<dd className="text-lg text-neutral-500">{meaning}</dd>
 								</div>
 							))}
 						</dl>
