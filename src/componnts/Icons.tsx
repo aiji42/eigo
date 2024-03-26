@@ -1,3 +1,5 @@
+import { clsx } from 'clsx';
+
 export const SkipPrev = () => {
 	return <span className="material-symbols-rounded -rotate-45 -scale-x-100 text-2xl">forward_media</span>;
 };
@@ -20,6 +22,14 @@ export const PauseIcon = () => {
 
 export const NextTrack = () => {
 	return <span className="material-symbols-rounded text-5xl">skip_next</span>;
+};
+
+export const CloseIcon = ({ className }: { className: string }) => {
+	return <span className={clsx(className, 'material-symbols-rounded')}>close</span>;
+};
+
+export const DictionaryIcon = ({ className }: { className: string }) => {
+	return <span className={clsx(className, 'material-symbols-rounded')}>dictionary</span>;
 };
 
 export const LoadingSpinnerIcon = () => {

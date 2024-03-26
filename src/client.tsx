@@ -14,14 +14,21 @@ const Root = () => {
 	return (
 		<>
 			<ScrollRestoration />
-			<StickyHeader />
-			<ErrorBoundary fallback={<div className="flex items-center justify-center pt-24 text-3xl">🙇‍ Something went wrong...</div>}>
-				<Suspense fallback={<LoadingIcon />}>
-					<MediaControllerProvider>
+			<ErrorBoundary
+				fallback={
+					<div>
+						<StickyHeader onlyLogo />
+						<div className="flex items-center justify-center pt-24 text-3xl">🙇‍ Something went wrong...</div>
+					</div>
+				}
+			>
+				<MediaControllerProvider>
+					<StickyHeader />
+					<Suspense fallback={<LoadingIcon />}>
 						<Outlet />
 						<StickyMediaController />
-					</MediaControllerProvider>
-				</Suspense>
+					</Suspense>
+				</MediaControllerProvider>
 			</ErrorBoundary>
 		</>
 	);

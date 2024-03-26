@@ -3,9 +3,11 @@ import { FC, ReactNode } from 'react';
 import { clsx } from 'clsx';
 import { isCEFRLevel } from '../libs/utils';
 import { useLevel } from '../hooks/useLevel';
+import { PhrasesDialog } from './PhrasesDialog';
 
 type StickyHeaderProps = {
 	children?: ReactNode;
+	onlyLogo?: boolean;
 };
 
 const levelColors = {
@@ -18,7 +20,7 @@ const levelColors = {
 	C2: 'text-teal-200',
 };
 
-export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
+export const StickyHeader: FC<StickyHeaderProps> = ({ children, onlyLogo }) => {
 	const [currentLevel, setLevel] = useLevel();
 
 	return (
@@ -30,23 +32,26 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children }) => {
 					</h1>
 				</Link>
 			</div>
-			<div>
-				{children}
-				<select
-					className={clsx(
-						'appearance-none rounded-md bg-purple-600 bg-transparent bg-gradient-to-tr px-2 py-0.5 text-center font-mono font-bold text-neutral-50',
-						levelColors[currentLevel ?? 'Og'],
-					)}
-					onChange={(e) => setLevel(isCEFRLevel(e.target.value) ? e.target.value : null)}
-					value={currentLevel ?? ''}
-				>
-					{([null, 'A1', 'A2', 'B1'] as const).map((level) => (
-						<option key={level} value={level ?? ''}>
-							{level ?? 'Og'}
-						</option>
-					))}
-				</select>
-			</div>
+			{!onlyLogo && (
+				<div className="flex h-10 items-center gap-4">
+					{children}
+					<PhrasesDialog />
+					<select
+						className={clsx(
+							'appearance-none rounded-md bg-purple-600 bg-transparent bg-gradient-to-tr px-2 py-0.5 text-center font-mono font-bold text-neutral-50',
+							levelColors[currentLevel ?? 'Og'],
+						)}
+						onChange={(e) => setLevel(isCEFRLevel(e.target.value) ? e.target.value : null)}
+						value={currentLevel ?? ''}
+					>
+						{([null, 'A1', 'A2', 'B1'] as const).map((level) => (
+							<option key={level} value={level ?? ''}>
+								{level ?? 'Og'}
+							</option>
+						))}
+					</select>
+				</div>
+			)}
 		</header>
 	);
 };
