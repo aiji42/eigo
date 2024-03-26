@@ -20,7 +20,7 @@ export const extractPhrases = async (token: string, text: string): Promise<Phras
 			{
 				role: 'system',
 				content:
-					"You are an assistant specialized in analyzing texts. Your task is to identify up to 10 difficult words, idioms, or collocations from the provided text. For each identified phrase, you will output the information in a JSON format with the following structure: each phrase under the key 'target', its meaning in Japanese under 'meaning', and classify the type of phrase it is ('word', 'collocation', or 'idiom') under 'type'. The JSON object should have a key named 'phrases' that contains an array of objects, each representing a difficult phrase with its details as described. Please proceed with this analysis and output the JSON object with the analyzed data.",
+					"You are an assistant specialized in analyzing texts. Your task is to identify difficult words, idioms, or collocations from the provided text. For each identified phrase, you will output the information in a JSON format with the following structure: each phrase under the key 'target', its meaning in Japanese under 'meaning', and classify the type of phrase it is ('word', 'collocation', or 'idiom') under 'type'. The JSON object should have a key named 'phrases' that contains an array of objects, each representing a difficult phrase with its details as described. Please proceed with this analysis and output the JSON object with the analyzed data.",
 			},
 			{
 				role: 'user',
