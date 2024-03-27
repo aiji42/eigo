@@ -1,14 +1,9 @@
-import { Entry, CalibratedEntry } from '../schema';
 import { useMediaPlayer } from './useMediaPlayer';
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { getNextPlaybackTime, getPrevPlaybackTime, getTotalDuration, isTTSed } from '../libs/content';
 import { CEFRLevel } from '../schema';
 import { useNavigate } from 'react-router-dom';
-
-export type EntryData = (Entry | CalibratedEntry) & {
-	next: Entry | null;
-	prev: Entry | null;
-};
+import { EntryData } from './useEntry';
 
 const getSrc = (entry: EntryData | null, level: CEFRLevel | null) => {
 	if (!entry) return null;

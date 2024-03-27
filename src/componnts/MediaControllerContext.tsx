@@ -1,6 +1,7 @@
 import { createContext, FC, ReactNode, useContext, useState } from 'react';
-import { EntryData, usePlayer } from '../hooks/usePlayer';
+import { usePlayer } from '../hooks/usePlayer';
 import { CEFRLevel } from '../schema';
+import { EntryData } from '../hooks/useEntry';
 
 type MediaContextType = {
 	entry: null | EntryData;

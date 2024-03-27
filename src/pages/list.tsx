@@ -1,29 +1,18 @@
-import useSWRInfinite from 'swr/infinite';
-import { Entry } from '../schema';
-import { displayRelativeTime, getJson } from '../libs/utils';
+import { displayRelativeTime } from '../libs/utils';
 import { Link } from 'react-router-dom';
 import { LoadingIcon } from '../componnts/Icons';
 import { useInView } from 'react-intersection-observer';
-
-const SIZE = 10;
-
-const getKey = (page: number, previousPageData: Entry[][]) => {
-	if (previousPageData && !previousPageData.length) return null;
-	return `/api/list?offset=${page * SIZE}&size=${SIZE}`;
-};
+import { useEntriesPagination } from '../hooks/useEntriesPagination';
+import { useEffect } from 'react';
 
 const Page = () => {
-	const { data, setSize, size, isValidating } = useSWRInfinite(getKey, getJson<Entry[]>, {
-		suspense: true,
-	});
+	const { data, isValidating, next } = useEntriesPagination(6);
 
 	const { ref, inView: isScrollEnd } = useInView();
 
-	const hasMore = (data?.at(-1)?.length ?? 0) >= SIZE;
-
-	if (isScrollEnd && !isValidating && hasMore) {
-		setSize(size + 1);
-	}
+	useEffect(() => {
+		if (isScrollEnd) next();
+	}, [isScrollEnd, next]);
 
 	// TODO: wordsカウントと、calibratesの有無を表示する
 	return (

@@ -1,7 +1,7 @@
 import { FC } from 'react';
 import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext, BackToStart } from './Icons';
-import { EntryData } from '../hooks/usePlayer';
+import { EntryData } from '../hooks/useEntry';
 import { Link } from 'react-router-dom';
 
 export type PlayerProps = {

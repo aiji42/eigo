@@ -1,29 +1,14 @@
-import {
-	getCalibratedEntryByEntryIdAndCefrLevel,
-	getEntryById,
-	getNextEntry,
-	getPrevEntry,
-	insertCalibratedEntry,
-	paginateEntries,
-	updateCalibratedEntry,
-	updateEntry,
-} from './libs/db';
+import { getCalibratedEntryByEntryIdAndCefrLevel, getEntryById, updateCalibratedEntry, updateEntry } from './libs/db';
 import { ttsContent } from './libs/tts';
 import { Hono } from 'hono';
-import { createCalibrate, createExtractPhrases, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
+import { createExtractPhrases, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
-import { createContent, isTTSed, joinSentences } from './libs/content';
+import { isTTSed, joinSentences } from './libs/content';
 import { existsAudioOnBucket, putAudioOnBucket, createM3U } from './libs/audio';
-import { CalibratedData } from './service-bindings/libs/calibrate';
 import { isCEFRLevel } from './libs/utils';
-
-export type Bindings = {
-	DB: D1Database;
-	TTS: Fetcher;
-	Translate: Fetcher;
-	Calibrate: Fetcher;
-	BUCKET: R2Bucket;
-};
+import { Bindings } from './bindings';
+import { apiEntry } from './routes/api/entry';
+import { apiList } from './routes/api/list';
 
 const app = new Hono<{
 	Bindings: Bindings;
@@ -99,59 +84,9 @@ app.get('/:entryId/:level/playlist.m3u8', async (c) => {
 	return new Response(createM3U(calibratedEntry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
 });
 
-app.get('/api/entry/:id', async (c) => {
-	const id = c.req.param('id');
-	const [entry, next, prev] = await Promise.all([
-		getEntryById(c.env.DB, Number(id)),
-		getNextEntry(c.env.DB, Number(id)),
-		getPrevEntry(c.env.DB, Number(id)),
-	]);
-	if (!entry) return c.notFound();
+app.route('/api/entry', apiEntry);
 
-	return c.json({ ...entry, next, prev });
-});
-
-app.get('/api/calibrated-entry/:entryId/:level', async (c) => {
-	const id = c.req.param('entryId');
-	const level = c.req.param('level');
-	if (!isCEFRLevel(level)) return c.notFound();
-
-	let [calibratedEntry, next, prev] = await Promise.all([
-		getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level),
-		getNextEntry(c.env.DB, Number(id)),
-		getPrevEntry(c.env.DB, Number(id)),
-	]);
-
-	if (calibratedEntry) return c.json({ ...calibratedEntry, next, prev });
-
-	const entry = await getEntryById(c.env.DB, Number(id));
-	if (!entry) return c.notFound();
-
-	const calibre = createCalibrate(serviceBindingsMock(c.env).Calibrate, c.req.raw.clone());
-	const calibratedContent = await calibre({
-		text: entry.content.map(joinSentences).join('\n\n'),
-		level,
-		minWords: 400,
-		maxWords: 500,
-		type: 'calibrate',
-	});
-	const data: CalibratedData = JSON.parse(calibratedContent);
-
-	const paragraphs = data.content.split('\n');
-	const content = await createContent(paragraphs);
-
-	const res = await insertCalibratedEntry(c.env.DB, entry, level, data.title, content);
-
-	return c.json({ ...res, next, prev });
-});
-
-app.get('/api/list', async (c) => {
-	const offset = c.req.query('offset');
-	const size = c.req.query('size');
-	const entries = await paginateEntries(c.env.DB, size ? Number(size) : 10, offset ? Number(offset) : 0);
-
-	return c.json(entries);
-});
+app.route('/api/list', apiList);
 
 app.post('/api/translate', async (c) => {
 	const translate = createTranslate(serviceBindingsMock(c.env).Translate, c.req.raw.clone());
