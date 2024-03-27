@@ -1,7 +1,7 @@
 import { getCalibratedEntryByEntryIdAndCefrLevel, getEntryById, updateCalibratedEntry, updateEntry } from './libs/db';
 import { ttsContent } from './libs/tts';
 import { Hono } from 'hono';
-import { createExtractPhrases, createTranslate, createTTS, serviceBindingsMock } from './libs/service-bindings';
+import { createExtractPhrases, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
 import { isTTSed, joinSentences } from './libs/content';
 import { existsAudioOnBucket, putAudioOnBucket, createM3U } from './libs/audio';
@@ -9,6 +9,7 @@ import { isCEFRLevel } from './libs/utils';
 import { Bindings } from './bindings';
 import { apiEntry } from './routes/api/entry';
 import { apiList } from './routes/api/list';
+import { apiTranslate } from './routes/api/translate';
 
 const app = new Hono<{
 	Bindings: Bindings;
@@ -88,14 +89,7 @@ app.route('/api/entry', apiEntry);
 
 app.route('/api/list', apiList);
 
-app.post('/api/translate', async (c) => {
-	const translate = createTranslate(serviceBindingsMock(c.env).Translate, c.req.raw.clone());
-
-	const { text } = await c.req.json<{ text: string }>();
-	if (!text) return new Response('400 Bad request', { status: 400 });
-
-	return c.json({ translated: await translate(text, true) });
-});
+app.route('/api/translate', apiTranslate);
 
 app.get('/api/extract-phrases/:entryId', async (c) => {
 	const id = c.req.param('entryId');

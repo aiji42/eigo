@@ -15,7 +15,7 @@ const refreshUntil = ({ content }: { content: Content }) => !isTTSed(content);
 // TODO: オリジナルページのURLをソースとして表示する
 // TODO: 再生残り時間がx秒以下になったら次のページのプレイリストをプリフェッチしておく
 const Page = () => {
-	const { entryId } = useParams<'entryId'>();
+	const { entryId = '' } = useParams<'entryId'>();
 	const [level] = useLevel();
 	const { entry } = useEntry({ entryId, level }, refreshUntil);
 	const { translatingKey, translated, translate, isLoading: isLoadingTranslate } = useTranslate(entry?.content);
@@ -71,7 +71,7 @@ const Page = () => {
 									{isLoading && <LoadingIcon size={32} />}
 								</>
 							) : (
-								<p className="rounded-md bg-neutral-100 p-2">{translated?.translated}</p>
+								<p className="rounded-md bg-neutral-100 p-2">{translated}</p>
 							)}
 						</div>
 					);
