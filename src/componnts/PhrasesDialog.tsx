@@ -1,17 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect } from 'react';
 import { CloseIcon, DictionaryIcon, LoadingIcon } from './Icons';
-import useSWR from 'swr';
 import { useParams } from 'react-router-dom';
 import { useLevel } from '../hooks/useLevel';
-import { getJson } from '../libs/utils';
-import { Phrase } from '../service-bindings/libs/extractPhrases';
 import { useMediaControllerContext } from './MediaControllerContext';
+import { usePhrases } from '../hooks/usePhrases';
+import { useDialog } from '../hooks/useDialog';
 
 export const PhrasesDialog = () => {
 	const { dialogRef, openModal, closeModal, isOpening } = useDialog();
-	const { entryId } = useParams<'entryId'>();
+	const { entryId = '' } = useParams<'entryId'>();
 	const [level] = useLevel();
-	const { isLoading, data } = useSWR(isOpening ? `/api/extract-phrases/${entryId}?level=${level}` : null, getJson<Phrase[]>);
+	const { isLoading, phrases } = usePhrases({ entryId, level }, isOpening);
 	const { player } = useMediaControllerContext();
 
 	useEffect(() => {
@@ -46,7 +45,7 @@ export const PhrasesDialog = () => {
 					<div className="relative min-h-80 p-4">
 						{isLoading && <LoadingIcon />}
 						<dl>
-							{data?.map(({ target, meaning }, index) => (
+							{phrases?.map(({ target, meaning }, index) => (
 								<div key={index} className="pb-3">
 									<dt className="font-serif text-xl font-bold">{target}</dt>
 									<dd className="text-lg text-neutral-500">{meaning}</dd>
@@ -58,46 +57,4 @@ export const PhrasesDialog = () => {
 			</dialog>
 		</>
 	);
-};
-
-const useDialog = () => {
-	const dialogRef = useRef<HTMLDialogElement>(null);
-	const [isOpening, setIsOpening] = useState(false);
-	const [trigger, setTrigger] = useState<Element | null>(null);
-
-	const openModal = useCallback(() => {
-		if (dialogRef.current) {
-			setTrigger(document.activeElement);
-			dialogRef.current?.showModal();
-			setIsOpening(true);
-			document.body.style.overflow = 'hidden';
-		}
-	}, []);
-
-	const closeModal = useCallback(() => {
-		if (dialogRef.current) {
-			dialogRef.current.close();
-			setIsOpening(false);
-			if (trigger && 'focus' in trigger && typeof trigger.focus === 'function') trigger.focus();
-			document.body.style.overflow = '';
-		}
-	}, [trigger]);
-
-	// close dialog when click outside
-	useEffect(() => {
-		const dialogEl = dialogRef.current;
-
-		const handleBackdropClick = (event: MouseEvent) => {
-			if (event.target === dialogEl && event.target !== dialogEl?.firstChild) {
-				closeModal();
-			}
-		};
-
-		dialogEl?.addEventListener('click', handleBackdropClick);
-		return () => {
-			dialogEl?.removeEventListener('click', handleBackdropClick);
-		};
-	}, [closeModal]);
-
-	return { dialogRef, openModal, closeModal, isOpening };
 };

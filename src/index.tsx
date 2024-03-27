@@ -10,6 +10,7 @@ import { Bindings } from './bindings';
 import { apiEntry } from './routes/api/entry';
 import { apiList } from './routes/api/list';
 import { apiTranslate } from './routes/api/translate';
+import { apiExtractPhrases } from './routes/api/extract-phrases';
 
 const app = new Hono<{
 	Bindings: Bindings;
@@ -91,29 +92,7 @@ app.route('/api/list', apiList);
 
 app.route('/api/translate', apiTranslate);
 
-app.get('/api/extract-phrases/:entryId', async (c) => {
-	const id = c.req.param('entryId');
-	const level = c.req.query('level');
-
-	let text = '';
-
-	if (level && isCEFRLevel(level)) {
-		const calibratedEntry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
-		if (!calibratedEntry) return c.notFound();
-
-		text = calibratedEntry.content.flatMap(joinSentences).join('\n');
-	} else {
-		const entry = await getEntryById(c.env.DB, Number(id));
-		if (!entry) return c.notFound();
-
-		text = entry.content.flatMap(joinSentences).join('\n');
-	}
-
-	const extractPhrases = createExtractPhrases(serviceBindingsMock(c.env).Calibrate, c.req.raw.clone());
-	const phrases = await extractPhrases({ text, type: 'extract-phrases' });
-
-	return c.json(phrases);
-});
+app.route('/api/extract-phrases', apiExtractPhrases);
 
 app.get('*', (c) => {
 	const loadingIconCode = [
