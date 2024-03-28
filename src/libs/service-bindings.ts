@@ -1,5 +1,5 @@
 import { CalibratePayload, ExtractPhrasesPayload } from '../service-bindings/calibrate';
-import { Phrase } from '../service-bindings/libs/extractPhrases';
+import { ExtractedPhrases } from '../service-bindings/libs/extractPhrases';
 
 const mapping: Record<string, string> = {
 	TTS: 'http://localhost:8050',
@@ -82,7 +82,7 @@ export const createCalibrate =
 
 export const createExtractPhrases =
 	(fetcher: Fetcher, req: Request) =>
-	async (payload: ExtractPhrasesPayload, cloned = false): Promise<Phrase[]> => {
+	async (payload: ExtractPhrasesPayload, cloned = false): Promise<ExtractedPhrases> => {
 		const newReq = new Request(cloned ? req : req.clone(), {
 			method: 'POST',
 			body: JSON.stringify(payload),

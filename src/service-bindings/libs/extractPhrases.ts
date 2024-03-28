@@ -1,26 +1,21 @@
 import { getOpenAI } from './openAI';
 
-export type Phrase = {
-	target: string;
-	meaning: string;
-	type: 'word' | 'collocation' | 'idiom';
-};
+export type ExtractedPhrases = Record<string, string>;
 
-export type ExtractedPhrases = {
-	phrases: Phrase[];
-};
-
-export const extractPhrases = async (token: string, text: string): Promise<Phrase[]> => {
+export const extractPhrases = async (token: string, text: string): Promise<ExtractedPhrases> => {
 	const openAI = getOpenAI(token);
 
+	const segmenter = new Intl.Segmenter('en-US', { granularity: 'word' });
+	const wordsCount = Array.from(segmenter.segment(text)).filter((seg) => seg.isWordLike).length;
+
 	const chatCompletion = await openAI.chat.completions.create({
-		model: 'gpt-4-0125-preview',
+		model: wordsCount > 75 ? 'gpt-4-0125-preview' : 'gpt-3.5-turbo-0125',
 		response_format: { type: 'json_object' },
 		messages: [
 			{
 				role: 'system',
 				content:
-					"You are an assistant specialized in text analysis, tasked with identifying phrases that present a substantial challenge due to their advanced linguistic complexity, specialized cultural, academic, or technical references. Exclude proper nouns such as personal names and company names. Focus on identifying difficult words, idioms, or collocations that are not typically encountered in everyday language or basic educational materials. For each identified phrase, output the information in a JSON format, detailing the phrase under 'target', its meaning in Japanese under 'meaning', and classifying the type of phrase ('word', 'collocation', or 'idiom') under 'type'. The JSON object must include a key named 'phrases', containing an array of objects, each representing a phrase with detailed descriptions as specified. Aim to exclude content that would be considered basic or intermediate, ensuring the analysis prioritizes phrases that would be challenging even for those with a high level of proficiency.",
+					'You are an assistant specialized in English language learning. Pick up idioms and collocations that are important to understand a sentences in order of appearance, and output them in JSON format with the key as the key and the value as the meaning in Japanese.',
 			},
 			{
 				role: 'user',
@@ -47,18 +42,12 @@ export const extractPhrases = async (token: string, text: string): Promise<Phras
 
 	assert(data);
 
-	return data.phrases;
+	return data;
 };
 
 function assert(data: any): asserts data is ExtractedPhrases {
-	if (!data || typeof data !== 'object') throw new Error(`Extraction failed; invalid response: ${data}`);
-	if (!('phrases' in data && Array.isArray(data.phrases))) throw new Error(`Extraction failed; invalid response: ${data}`);
-	for (const phrase of data.phrases) {
-		if (!phrase || typeof phrase !== 'object') throw new Error(`Extraction failed; invalid response: ${data}`);
-		if (!('target' in phrase && typeof phrase.target === 'string')) throw new Error(`Extraction failed; invalid response: ${data}`);
-		if (!('meaning' in phrase && typeof phrase.meaning === 'string')) throw new Error(`Extraction failed; invalid response: ${data}`);
-		if (!('type' in phrase && typeof phrase.type === 'string')) throw new Error(`Extraction failed; invalid response: ${data}`);
-		if (!['word', 'collocation', 'idiom'].includes(phrase.type)) throw new Error(`Extraction failed; invalid response: ${data}`);
-	}
-	return data;
+	if (Object(data) !== data) throw new Error(`Extraction failed; invalid response: ${data}`);
+	Object.values(data).forEach((value) => {
+		if (typeof value !== 'string') throw new Error(`Extraction failed; invalid response: ${data}`);
+	});
 }
