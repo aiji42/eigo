@@ -1,11 +1,14 @@
 import { FC } from 'react';
 import { clsx } from 'clsx';
-import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext, BackToStart } from './Icons';
+import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext, SubtitlesIcon } from './Icons';
 import { EntryData } from '../hooks/useEntry';
 import { Link } from 'react-router-dom';
+import { ExplanationPanel } from './ExplanationPanel';
+import { getPlaying } from '../libs/content';
 
 export type PlayerProps = {
 	mode: 'media' | 'control';
+	showExplanation: boolean;
 	playing: boolean;
 	ended: boolean;
 	playbackRate: number;
@@ -19,18 +22,28 @@ export type PlayerProps = {
 	onClickBack: VoidFunction;
 	onClickForward: VoidFunction;
 	onClickSwitchPlaybackRate: VoidFunction;
+	onClickShowExplanation: VoidFunction;
 	entry: EntryData;
 };
 
 export const Player: FC<PlayerProps> = (props) => {
-	const { duration, currentTime, mode } = props;
+	const { duration, currentTime, mode, entry } = props;
+	const showExplanation = props.showExplanation && mode !== 'media';
+
 	return (
-		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-100 text-neutral-500">
-			<div
-				className="absolute bottom-[calc(100%-2px)] h-0.5 rounded-full bg-green-400"
-				style={{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }}
-			/>
-			{mode === 'media' ? <MediaPlayer {...props} /> : <ControlPlayer {...props} />}
+		<div className="flex w-full max-w-4xl select-none flex-col">
+			{showExplanation && (
+				<div className="rounded-t-xl bg-neutral-50/95 backdrop-blur-lg">
+					<ExplanationPanel text={getPlaying(entry.content, currentTime).sentence?.text} />
+				</div>
+			)}
+			<div className="relative bg-neutral-100">
+				<div
+					className="absolute bottom-[calc(100%-2px)] h-0.5 rounded-full bg-green-400"
+					style={{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }}
+				/>
+				{mode === 'media' ? <MediaPlayer {...props} /> : <ControlPlayer {...props} />}
+			</div>
 		</div>
 	);
 };
@@ -66,13 +79,14 @@ const ControlPlayer: FC<PlayerProps> = ({
 	playbackRate,
 	loading,
 	ended,
+	showExplanation,
 	onClickPlay,
 	onClickPause,
 	onClickNextTrack,
 	onClickBack,
 	onClickForward,
 	onClickSwitchPlaybackRate,
-	onClickBackToStart,
+	onClickShowExplanation,
 }) => {
 	return (
 		<div className="flex items-center py-2">
@@ -80,11 +94,17 @@ const ControlPlayer: FC<PlayerProps> = ({
 				<button
 					type="button"
 					className="flex size-12 items-center justify-center rounded-full active:text-slate-400"
-					onClick={onClickBackToStart}
-					aria-label="Back to start"
-					disabled={loading}
+					onClick={onClickShowExplanation}
+					aria-label={showExplanation ? 'Show explanation' : 'Hide explanation'}
 				>
-					<BackToStart />
+					<SubtitlesIcon
+						className={clsx(
+							'text-3xl',
+							showExplanation
+								? 'bg-transparent bg-gradient-to-tr from-sky-600 to-cyan-400 bg-clip-text text-transparent'
+								: 'text-neutral-500',
+						)}
+					/>
 				</button>
 				<button
 					type="button"
@@ -124,7 +144,7 @@ const ControlPlayer: FC<PlayerProps> = ({
 					onClick={onClickSwitchPlaybackRate}
 					aria-label="Change playback rate"
 				>
-					x{playbackRate}
+					{playbackRate}x
 				</button>
 			</div>
 		</div>

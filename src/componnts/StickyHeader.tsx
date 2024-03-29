@@ -23,7 +23,6 @@ const levelColors = {
 
 export const StickyHeader: FC<StickyHeaderProps> = ({ children, onlyLogo }) => {
 	const [currentLevel, setLevel] = useLevel();
-	const [show, toggle] = useToggleShowExplanation();
 
 	return (
 		<header className="sticky left-0 right-0 top-0 z-10 flex min-h-12 w-full max-w-4xl items-center justify-between bg-neutral-50 p-2 pt-[calc(0.5rem+env(safe-area-inset-top))]">
@@ -37,14 +36,6 @@ export const StickyHeader: FC<StickyHeaderProps> = ({ children, onlyLogo }) => {
 			{!onlyLogo && (
 				<div className="flex h-10 items-center gap-4">
 					{children}
-					<button onClick={toggle} className="m-auto" aria-label={show ? 'Show explanation' : 'Hide explanation'}>
-						<SubtitlesIcon
-							className={clsx(
-								'text-4xl',
-								show ? 'bg-transparent bg-gradient-to-tr from-sky-600 to-cyan-400 bg-clip-text text-transparent' : 'text-neutral-500',
-							)}
-						/>
-					</button>
 					<select
 						className={clsx(
 							'appearance-none rounded-md bg-purple-600 bg-transparent bg-gradient-to-tr px-2 py-0.5 text-center font-mono font-bold text-neutral-50',

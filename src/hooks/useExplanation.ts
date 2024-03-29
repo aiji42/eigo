@@ -9,7 +9,7 @@ const fetcher = async (text: string) => {
 	return await res.json();
 };
 
-export const useExplanation = (text: string | null) => {
+export const useExplanation = (text?: string | null) => {
 	const { data, isLoading } = useSWRImmutable(text, fetcher);
 
 	return { data, isLoading };

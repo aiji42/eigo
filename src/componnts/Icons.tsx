@@ -24,10 +24,6 @@ export const NextTrack = () => {
 	return <span className="material-symbols-rounded text-5xl">skip_next</span>;
 };
 
-export const CloseIcon = ({ className }: { className: string }) => {
-	return <span className={clsx(className, 'material-symbols-rounded')}>close</span>;
-};
-
 export const SubtitlesIcon = ({ className }: { className: string }) => {
 	return <span className={clsx(className, 'material-symbols-rounded')}>shelf_auto_hide</span>;
 };
