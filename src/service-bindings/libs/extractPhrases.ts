@@ -8,6 +8,9 @@ export const extractPhrases = async (token: string, text: string): Promise<Extra
 	const segmenter = new Intl.Segmenter('en-US', { granularity: 'word' });
 	const wordsCount = Array.from(segmenter.segment(text)).filter((seg) => seg.isWordLike).length;
 
+	// ex. "The U.S."
+	if (wordsCount <= 3) return {};
+
 	const chatCompletion = await openAI.chat.completions.create({
 		model: wordsCount > 75 ? 'gpt-4-0125-preview' : 'gpt-3.5-turbo-0125',
 		response_format: { type: 'json_object' },
@@ -15,7 +18,7 @@ export const extractPhrases = async (token: string, text: string): Promise<Extra
 			{
 				role: 'system',
 				content:
-					'You are an assistant specialized in English language learning. Pick up idioms and collocations that are important to understand a sentences in order of appearance, and output them in JSON format with the key as the key and the value as the meaning in Japanese.',
+					'You are an assistant specialized in English language learning. Pick up idioms and collocations that are important to understand a sentences in order of appearance, and output them in JSON format with the key as the key and the value as the meaning in 日本語.',
 			},
 			{
 				role: 'user',

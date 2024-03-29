@@ -1,5 +1,6 @@
 import { FC, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
+import { useExplanation } from '../hooks/useExplanation';
 
 type ParagraphCardProps = {
 	paragraph: {
@@ -11,10 +12,9 @@ type ParagraphCardProps = {
 	};
 	scrollInActive?: boolean;
 	activeSentenceKey?: string;
-	showTranslation?: boolean;
 };
 
-export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenceKey, scrollInActive, showTranslation }) => {
+export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenceKey, scrollInActive }) => {
 	const ref = useRef<HTMLParagraphElement>(null);
 
 	useEffect(() => {
@@ -24,20 +24,41 @@ export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenc
 	}, [!!activeSentenceKey, scrollInActive]);
 
 	return (
-		<p
-			className={clsx(
-				'scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] hyphens-auto break-words p-2 font-serif text-neutral-500',
-				showTranslation && 'opacity-75',
-			)}
-			ref={ref}
-			data-key={paragraph.key}
-		>
-			{paragraph.sentences.map(({ text, key }) => (
-				<span key={key} className={clsx(key === activeSentenceKey && 'text-neutral-900')} lang="en" data-key={key}>
-					{text}
-					{!text.endsWith(' ') && ' '}
-				</span>
+		<div className="scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] hyphens-auto break-words p-2 font-serif text-neutral-500" ref={ref}>
+			{paragraph.sentences.map(({ text, key }, index) => (
+				<Sentence text={text} active={key === activeSentenceKey} key={key} shouldPrepareExplanation={!!activeSentenceKey || index === 0} />
 			))}
-		</p>
+		</div>
+	);
+};
+
+const Sentence = ({ text, active, shouldPrepareExplanation }: { text: string; active: boolean; shouldPrepareExplanation: boolean }) => {
+	return (
+		<div className="relative inline">
+			<span className={clsx(active && 'text-neutral-900')} lang="en">
+				{text}
+				{!text.endsWith(' ') && ' '}
+			</span>
+			{(shouldPrepareExplanation || active) && <ExplanationTooltip text={text} show={active} />}
+		</div>
+	);
+};
+
+const ExplanationTooltip: FC<{ text: string; show: boolean }> = ({ text, show }) => {
+	const { data } = useExplanation(text);
+
+	if (!data || Object.entries(data).length < 1 || !show) return null;
+
+	return (
+		<div className="absolute right-auto top-full z-10 w-max rounded-md border-2 border-neutral-700 bg-neutral-100 p-2 shadow-md">
+			<ul>
+				{Object.entries(data).map(([key, val]) => (
+					<li key={key}>
+						<span className="mr-4 font-serif text-xl font-bold">{key}:</span>
+						<span className="text-lg text-neutral-500">{val}</span>
+					</li>
+				))}
+			</ul>
+		</div>
 	);
 };
