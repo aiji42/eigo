@@ -2,11 +2,13 @@ import { useParams } from 'react-router-dom';
 import { displayRelativeTime } from '../libs/utils';
 import { ParagraphCard } from '../componnts/ParagraphCard';
 import { useEffect } from 'react';
-import { Content, getPlaying, getTotalWordsCount, isTTSed } from '../libs/content';
+import { Content, getNext, getPlaying, getTotalWordsCount, isTTSed } from '../libs/content';
 import { useEntry } from '../hooks/useEntry';
 import { useAwakeScreen } from '../hooks/useAwakeScreen';
 import { useLevel } from '../hooks/useLevel';
 import { useMediaControllerContext } from '../componnts/MediaControllerContext';
+import { useToggleShowExplanation } from '../hooks/useToggleShowExplanation';
+import { ExplanationTooltip } from '../componnts/ExplanationTooltip';
 
 const refreshUntil = ({ content }: { content: Content }) => !isTTSed(content);
 
@@ -23,9 +25,11 @@ const Page = () => {
 	}, [setEntryAndLevel, entry, level]);
 
 	useAwakeScreen(player?.playing);
+	const [showExplanation] = useToggleShowExplanation();
 
 	const currentTime = player?.currentTime ?? 0;
 	const playing = getPlaying(entry.content, currentTime);
+	const nextSentence = getNext(entry.content, currentTime, 'sentence');
 
 	return (
 		<>
@@ -39,12 +43,20 @@ const Page = () => {
 			</div>
 			<div className="mb-32 mt-2 flex flex-col gap-6 text-2xl">
 				{entry.content.map((p, i) => (
-					<ParagraphCard
-						key={i}
-						paragraph={p}
-						scrollInActive={currentTime > 0}
-						activeSentenceKey={playing.paragraph?.key === p.key ? playing.sentence?.key : undefined}
-					/>
+					<div className="relative" key={i}>
+						<ParagraphCard
+							paragraph={p}
+							scrollInActive={currentTime > 0}
+							activeSentenceKey={playing.paragraph?.key === p.key ? playing.sentence?.key : undefined}
+						/>
+						{playing.paragraph?.key === p.key && showExplanation && (
+							<>
+								{playing.sentence && <ExplanationTooltip text={playing.sentence.text} show />}
+								{/* 読み上げ中の次のセンテンスをプリロードしておく */}
+								{nextSentence && <ExplanationTooltip text={nextSentence.text} preload />}
+							</>
+						)}
+					</div>
 				))}
 			</div>
 		</>

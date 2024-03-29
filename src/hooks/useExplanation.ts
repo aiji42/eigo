@@ -1,6 +1,6 @@
 import { hc } from 'hono/client';
 import { ApiExtractPhrases } from '../routes/api/extract-phrases';
-import useSWR from 'swr';
+import useSWRImmutable from 'swr/immutable';
 
 const client = hc<ApiExtractPhrases>('/api/extract-phrases');
 
@@ -10,7 +10,7 @@ const fetcher = async (text: string) => {
 };
 
 export const useExplanation = (text: string | null) => {
-	const { data, isLoading } = useSWR(text, fetcher);
+	const { data, isLoading } = useSWRImmutable(text, fetcher);
 
 	return { data, isLoading };
 };

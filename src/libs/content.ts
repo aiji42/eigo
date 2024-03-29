@@ -77,17 +77,24 @@ export const getPlaying = (content: Content, currentTime: number) => {
 	return { paragraph, sentence };
 };
 
-export const getNextPlaybackTime = (content: Content, currentTime: number, segment: 'sentence' | 'paragraph' = 'paragraph') => {
+export const getNext = <T extends 'sentence' | 'paragraph'>(
+	content: Content,
+	currentTime: number,
+	segment: T,
+): T extends 'sentence' ? Sentence | null : Paragraph | null => {
 	const { paragraph, sentence } = getPlaying(content, currentTime);
-	if (!sentence || !paragraph) return -1;
-	if (sentence.offset === null || paragraph.offset === null) return 0;
+	if (!sentence || !paragraph) return null;
 
 	const sentences = content.flatMap(({ sentences }) => sentences);
 	const index =
 		segment === 'sentence' ? sentences.findIndex(({ key }) => sentence.key === key) : content.findIndex(({ key }) => paragraph.key === key);
-	const next = segment === 'sentence' ? sentences[index + 1] : content[index + 1];
+	return (segment === 'sentence' ? sentences[index + 1] : content[index + 1]) as T extends 'sentence' ? Sentence : Paragraph;
+};
 
-	return next?.offset ?? -1;
+export const getNextPlaybackTime = (content: Content, currentTime: number, segment: 'sentence' | 'paragraph' = 'paragraph') => {
+	const next = getNext(content, currentTime, segment);
+	if (!next) return -1;
+	return next.offset ?? 0;
 };
 
 export const getPrevPlaybackTime = (
