@@ -54,7 +54,11 @@ const Sentence: FC<{ text: string; active?: boolean }> = ({ text, active }) => {
 				},
 			}),
 			offset(4),
-			flip(),
+			flip({
+				padding: {
+					bottom: 128,
+				},
+			}),
 		],
 		open: !!data,
 	});
