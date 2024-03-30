@@ -2,6 +2,7 @@ import { FC, useEffect, useRef } from 'react';
 import { clsx } from 'clsx';
 import { useExplanation } from '../hooks/useExplanation';
 import { useToggleShowExplanation } from '../hooks/useToggleShowExplanation';
+import { useFloating, autoUpdate, shift, size } from '@floating-ui/react';
 
 type ParagraphCardProps = {
 	paragraph: {
@@ -17,6 +18,7 @@ type ParagraphCardProps = {
 
 export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenceKey, scrollInActive }) => {
 	const ref = useRef<HTMLParagraphElement>(null);
+
 	const [show] = useToggleShowExplanation();
 
 	useEffect(() => {
@@ -26,39 +28,42 @@ export const ParagraphCard: FC<ParagraphCardProps> = ({ paragraph, activeSentenc
 	}, [!!activeSentenceKey, scrollInActive]);
 
 	return (
-		<div
-			className="scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] overflow-x-clip hyphens-auto break-words p-2 font-serif text-neutral-400"
-			ref={ref}
-		>
-			{paragraph.sentences.map(({ text, key }, index) => (
-				<div className={clsx('relative inline', key === activeSentenceKey && 'text-neutral-900')} key={key} lang="en">
-					{text}{' '}
-					{key === activeSentenceKey && show && (
-						<div className="absolute left-0 right-0 top-full z-10 mx-auto mt-1 w-max max-w-4xl">
-							<ExplanationPanel text={text} />
-						</div>
-					)}
-				</div>
-			))}
+		<div className="scroll-mt-[calc(3.5rem+env(safe-area-inset-top))] hyphens-auto break-words p-2 font-serif text-neutral-400" ref={ref}>
+			{paragraph.sentences.map(({ text, key }, index) => {
+				const active = key === activeSentenceKey;
+				return <Sentence text={text} active={active} key={key} />;
+			})}
 		</div>
 	);
 };
 
-const ExplanationPanel: FC<{ text?: string | null }> = ({ text }) => {
-	const { data } = useExplanation(text ?? null);
-
-	if (!data || Object.entries(data).length < 1) return null;
-
+const Sentence: FC<{ text: string; active?: boolean }> = ({ text, active }) => {
+	const [showExp] = useToggleShowExplanation();
+	const { data } = useExplanation(active && showExp ? text : null);
+	const { refs, floatingStyles } = useFloating({
+		whileElementsMounted: autoUpdate,
+		middleware: [shift(), size()],
+		open: !!data,
+	});
 	return (
-		<div className="rounded-md border-2 bg-neutral-100 p-2 shadow-md">
-			<ul>
-				{Object.entries(data).map(([key, val]) => (
-					<li key={key}>
-						<span className="mr-4 text-xl text-neutral-900">{key}:</span>
-						<span className="text-lg text-neutral-500">{val}</span>
-					</li>
-				))}
-			</ul>
-		</div>
+		<>
+			<span className={clsx(active && 'text-neutral-900')} lang="en" ref={refs.setReference}>
+				{text}{' '}
+			</span>
+			{data && Object.values(data).length && (
+				<div className="z-10" ref={refs.setFloating} style={floatingStyles}>
+					<div className="rounded-md border-2 border-sky-400 bg-neutral-100 p-1 shadow-lg">
+						<ul>
+							{Object.entries(data).map(([key, val]) => (
+								<li key={key}>
+									<span className="mr-4 text-xl text-neutral-900">{key}:</span>
+									<span className="text-lg text-neutral-500">{val}</span>
+								</li>
+							))}
+						</ul>
+					</div>
+				</div>
+			)}
+		</>
 	);
 };
