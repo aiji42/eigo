@@ -42,7 +42,7 @@ const Page = () => {
 					<p>{getTotalWordsCount(entry.content).toLocaleString()} words</p>
 				</div>
 			</div>
-			<div className="mb-64 mt-2 flex flex-col gap-6 text-2xl">
+			<div className="mb-32 mt-2 flex flex-col gap-6 text-2xl">
 				{entry.content.map((p, i) => (
 					<ParagraphCard
 						key={i}
