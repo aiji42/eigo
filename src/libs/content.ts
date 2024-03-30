@@ -91,7 +91,7 @@ export const getNext = <T extends 'sentence' | 'paragraph'>(
 	return (segment === 'sentence' ? sentences[index + 1] : content[index + 1]) as T extends 'sentence' ? Sentence : Paragraph;
 };
 
-export const getNextPlaybackTime = (content: Content, currentTime: number, segment: 'sentence' | 'paragraph' = 'paragraph') => {
+export const getNextPlaybackTime = (content: Content, currentTime: number, segment: 'sentence' | 'paragraph' = 'sentence') => {
 	const next = getNext(content, currentTime, segment);
 	if (!next) return -1;
 	return next.offset ?? 0;

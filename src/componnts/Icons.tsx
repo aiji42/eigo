@@ -24,6 +24,10 @@ export const NextTrack = () => {
 	return <span className="material-symbols-rounded text-5xl">skip_next</span>;
 };
 
+export const Replay = () => {
+	return <span className="material-symbols-rounded text-3xl">replay</span>;
+};
+
 export const SubtitlesIcon = ({ className }: { className: string }) => {
 	return <span className={clsx(className, 'material-symbols-rounded')}>shelf_auto_hide</span>;
 };

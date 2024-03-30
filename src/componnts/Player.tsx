@@ -1,6 +1,6 @@
 import { FC } from 'react';
 import { clsx } from 'clsx';
-import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext, SubtitlesIcon } from './Icons';
+import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext, SubtitlesIcon, Replay } from './Icons';
 import { EntryData } from '../hooks/useEntry';
 import { Link } from 'react-router-dom';
 import { ExplanationPanel } from './ExplanationPanel';
@@ -48,28 +48,50 @@ export const Player: FC<PlayerProps> = (props) => {
 	);
 };
 
-const MediaPlayer: FC<PlayerProps> = ({ entry: _entry, playing, ended, onClickPlay, onClickNextTrack, onClickPause, loading }) => {
+const MediaPlayer: FC<PlayerProps> = ({
+	entry: _entry,
+	playing,
+	ended,
+	onClickPlay,
+	onClickNextTrack,
+	onClickPause,
+	onClickBackToStart,
+	loading,
+}) => {
 	const entry = ended ? _entry.next : _entry;
 	const entryId = !entry ? null : 'entryId' in entry ? entry.entryId : entry.id;
 
 	return (
-		<div className="flex items-center">
+		<div className="flex items-center justify-between">
 			<Link to={entryId ? `/${entryId}` : '/'} replace={ended} className="max-w-3/4 flex items-center gap-2 overflow-hidden">
 				<img src={entry?.thumbnailUrl ?? ''} alt={entry?.title} className="max-h-[72px] w-32 object-cover" />
 				<p className="line-clamp-2 h-full text-ellipsis">{!entryId ? 'Back to list page' : `${ended ? 'Next: ' : ''}${entry?.title}`}</p>
 			</Link>
-			<button
-				type="button"
-				className={clsx(
-					'relative mx-4 flex size-14 items-center',
-					playing ? 'text-slate-600 active:text-slate-500' : 'text-green-600 active:text-green-500',
+			<div className="mx-4 flex items-center gap-4 md:gap-10">
+				{ended && (
+					<button
+						type="button"
+						className="flex size-8 items-center justify-center text-slate-600 active:text-slate-500"
+						onClick={onClickBackToStart}
+						aria-label="Replay"
+						disabled={loading}
+					>
+						<Replay />
+					</button>
 				)}
-				onClick={ended ? onClickNextTrack : playing ? onClickPause : onClickPlay}
-				aria-label={ended ? 'Next track' : playing ? 'Pause' : 'Play'}
-				disabled={loading}
-			>
-				{loading ? <LoadingSpinnerIcon /> : playing ? <PauseIcon /> : <PlayIcon />}
-			</button>
+				<button
+					type="button"
+					className={clsx(
+						'relative flex size-14 items-center',
+						playing ? 'text-slate-600 active:text-slate-500' : 'text-green-600 active:text-green-500',
+					)}
+					onClick={ended ? onClickNextTrack : playing ? onClickPause : onClickPlay}
+					aria-label={ended ? 'Next track' : playing ? 'Pause' : 'Play'}
+					disabled={loading}
+				>
+					{loading ? <LoadingSpinnerIcon /> : playing ? <PauseIcon /> : <PlayIcon />}
+				</button>
+			</div>
 		</div>
 	);
 };

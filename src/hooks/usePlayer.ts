@@ -85,9 +85,9 @@ export const usePlayer = (entry: EntryData | null, level: null | CEFRLevel) => {
 	const skipToNext = useCallback(() => {
 		if (!entry) return;
 		const time = getNextPlaybackTime(entry.content, player.getCurrentTime());
-		if (time < 0) nextTrack();
+		if (time < 0) return;
 		else player.seek(time + 0.01);
-	}, [entry, player.seek, player.getCurrentTime, nextTrack]);
+	}, [entry, player.seek, player.getCurrentTime]);
 
 	const switchPlaybackRate = useCallback(() => {
 		const rates = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -96,7 +96,10 @@ export const usePlayer = (entry: EntryData | null, level: null | CEFRLevel) => {
 		player.setPlaybackRate(rates[next]);
 	}, [player.playbackRate, player.setPlaybackRate]);
 
-	const backToStart = useCallback(() => player.seek(0), [player.seek]);
+	const backToStart = useCallback(() => {
+		player.seek(0);
+		player.play();
+	}, [player.seek, player.play]);
 
 	return {
 		...player,
