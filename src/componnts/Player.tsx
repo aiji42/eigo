@@ -3,8 +3,6 @@ import { clsx } from 'clsx';
 import { LoadingSpinnerIcon, NextTrack, PauseIcon, PlayIcon, SkipPrev, SkipNext, SubtitlesIcon, Replay } from './Icons';
 import { EntryData } from '../hooks/useEntry';
 import { Link } from 'react-router-dom';
-import { ExplanationPanel } from './ExplanationPanel';
-import { getPlaying } from '../libs/content';
 
 export type PlayerProps = {
 	mode: 'media' | 'control';
@@ -27,23 +25,15 @@ export type PlayerProps = {
 };
 
 export const Player: FC<PlayerProps> = (props) => {
-	const { duration, currentTime, mode, entry } = props;
-	const showExplanation = props.showExplanation && mode !== 'media';
+	const { duration, currentTime, mode } = props;
 
 	return (
-		<div className="flex w-full max-w-4xl select-none flex-col">
-			{showExplanation && (
-				<div className="rounded-t-xl bg-neutral-50/95 backdrop-blur-lg">
-					<ExplanationPanel text={getPlaying(entry.content, currentTime).sentence?.text} />
-				</div>
-			)}
-			<div className="relative bg-neutral-100">
-				<div
-					className="absolute bottom-[calc(100%-2px)] h-0.5 rounded-full bg-green-400"
-					style={{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }}
-				/>
-				{mode === 'media' ? <MediaPlayer {...props} /> : <ControlPlayer {...props} />}
-			</div>
+		<div className="relative flex w-full max-w-4xl select-none flex-col bg-neutral-100">
+			<div
+				className="absolute bottom-[calc(100%-2px)] h-0.5 rounded-full bg-green-400"
+				style={{ width: duration ? `${(currentTime / duration) * 100}%` : 0 }}
+			/>
+			{mode === 'media' ? <MediaPlayer {...props} /> : <ControlPlayer {...props} />}
 		</div>
 	);
 };
