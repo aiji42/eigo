@@ -1,25 +1,24 @@
-import * as cheerio from 'cheerio';
+import { parseHTML } from 'linkedom';
+import { Readability } from '@mozilla/readability';
 import { Content, createContent } from './content';
 
-export const scrapeContent = async (url: string, selector: string): Promise<Content> => {
-	const res = await fetch(url);
-	const text = await res.text();
-	const $ = cheerio.load(text);
+export const scrapeContent = async (url: string): Promise<Content> => {
+	const text = await fetch(url).then((res) => res.text());
 
-	const paragraphs: string[] = [];
-	$(selector).each((i, elem) => {
-		$(elem)
-			.text()
-			.split('\n')
-			.forEach((p) => {
-				const trim = p.trim();
-				if (!ignorableParagraph(trim)) paragraphs.push(trim);
-			});
-	});
+	const { document } = parseHTML(text);
+	const reader = new Readability(document);
+	const article = reader.parse();
+
+	if (!article) return createContent([]);
+
+	const paragraphs = article.textContent
+		.split('\n')
+		.map((p) => p.trim())
+		.filter(isValid);
 
 	return createContent(paragraphs);
 };
 
-const ignorableParagraph = (text: string) => {
-	return !text.endsWith('.');
+const isValid = (text: string) => {
+	return !!text && text.endsWith('.');
 };

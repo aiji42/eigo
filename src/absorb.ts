@@ -34,9 +34,10 @@ export default {
 			for (const item of feed.items) {
 				const persistedEntry = await getEntryByUrl(env.DB, item.link);
 				if (persistedEntry) continue;
-				const content = await scrapeContent(item.link, rule.rule.contentSelector);
+				const content = await scrapeContent(item.link);
+
 				// パラグラフが少ない場合は保存しない
-				if (!content.length) continue;
+				if (content.length < 4) continue;
 				const entry = await insertEntry(env.DB, channel, item, content);
 
 				const thumbnail = await generateFeaturedImg(env.OPEN_AI_API_KEY, [item.title, joinSentences(content[0])].join('\n'));
