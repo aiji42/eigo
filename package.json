@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "deploy": "run-s deploy:absorb deploy:tts deploy:translate deploy:calibrate deploy:main --print-label",
+    "deploy": "run-s deploy:task deploy:main --print-label",
     "deploy:main": "$npm_execpath run build && wrangler pages deploy",
     "deploy:task": "wrangler deploy -c wrangler.task.toml",
     "migrate": "wrangler d1 migrations apply eigo-d1 --local",
