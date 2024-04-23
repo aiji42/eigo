@@ -28,28 +28,6 @@ export const displayRelativeTime = (_date: Date | string) => {
 	return days === 1 ? '1 day' : `${days} days`;
 };
 
-export const getJson = async <T>(url: string): Promise<T> => {
-	const res = await fetch(url);
-	if (!res.ok) throw new Error(`fetch failed: ${res.status} ${res.statusText}`);
-	return await res.json();
-};
-
-export const getJsonNoError = async <T>(url: string): Promise<T | null> => {
-	const res = await fetch(url);
-	if (!res.ok) return null;
-	return await res.json();
-};
-
-export const postJson = async <T>(url: string, data: any): Promise<T> => {
-	const res = await fetch(url, {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/json' },
-		body: JSON.stringify(data),
-	});
-	if (!res.ok) throw new Error(`fetch failed: ${res.status} ${res.statusText}`);
-	return await res.json();
-};
-
 export const isCEFRLevel = (level?: string | null): level is CEFRLevel => {
 	if (!level) return false;
 	return ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].includes(level);

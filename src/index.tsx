@@ -1,16 +1,10 @@
-import { getCalibratedEntryByEntryIdAndCefrLevel, getEntryById, updateCalibratedEntry, updateEntry } from './libs/db';
-import { ttsContent } from './libs/tts';
 import { Hono } from 'hono';
-import { createExtractPhrases, createTTS, serviceBindingsMock } from './libs/service-bindings';
 import { renderToString } from 'react-dom/server';
-import { isTTSed, joinSentences } from './libs/content';
-import { existsAudioOnBucket, putAudioOnBucket, createM3U } from './libs/audio';
-import { isCEFRLevel } from './libs/utils';
 import { Bindings } from './bindings';
 import { apiEntry } from './routes/api/entry';
 import { apiList } from './routes/api/list';
-import { apiTranslate } from './routes/api/translate';
 import { apiExtractPhrases } from './routes/api/extract-phrases';
+import { playlist } from './routes/playlist';
 
 const app = new Hono<{
 	Bindings: Bindings;
@@ -28,69 +22,11 @@ app.get('/local-r2-pr', async (c) => {
 	});
 });
 
-// TODO: honoのRPCを使ってリファクタ
-app.get('/:entryId/playlist.m3u8', async (c) => {
-	const id = c.req.param('entryId');
-	let entry = await getEntryById(c.env.DB, Number(id));
-	if (!entry) return c.notFound();
-
-	if (!isTTSed(entry.content)) {
-		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
-		const { newContent, audios } = await ttsContent(tts, entry.content);
-		await Promise.all(audios.map(async ({ audio, key, duration }) => putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration })));
-		entry = await updateEntry(c.env.DB, entry.id, { content: newContent });
-	} else {
-		await Promise.all(
-			entry.content
-				.flatMap(({ sentences }) => sentences)
-				.map(async ({ key, text }) => {
-					if (!(await existsAudioOnBucket(c.env.BUCKET, id, key))) {
-						const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw.clone());
-						const { duration, audio } = await tts(text, true);
-						await putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration });
-					}
-				}),
-		);
-	}
-
-	return new Response(createM3U(entry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
-});
-
-// TODO: PlayListの生成を共通化する
-app.get('/:entryId/:level/playlist.m3u8', async (c) => {
-	const id = c.req.param('entryId');
-	const level = c.req.param('level');
-	if (!isCEFRLevel(level)) return c.notFound();
-	let calibratedEntry = await getCalibratedEntryByEntryIdAndCefrLevel(c.env.DB, Number(id), level);
-	if (!calibratedEntry) return c.notFound();
-
-	if (!isTTSed(calibratedEntry.content)) {
-		const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw);
-		const { newContent, audios } = await ttsContent(tts, calibratedEntry.content);
-		await Promise.all(audios.map(async ({ audio, key, duration }) => putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration })));
-		calibratedEntry = await updateCalibratedEntry(c.env.DB, calibratedEntry.id, { content: newContent });
-	} else {
-		await Promise.all(
-			calibratedEntry.content
-				.flatMap(({ sentences }) => sentences)
-				.map(async ({ key, text }) => {
-					if (!(await existsAudioOnBucket(c.env.BUCKET, id, key))) {
-						const tts = createTTS(serviceBindingsMock(c.env).TTS, c.req.raw.clone());
-						const { duration, audio } = await tts(text, true);
-						await putAudioOnBucket(c.env.BUCKET, id, key, audio, { duration });
-					}
-				}),
-		);
-	}
-
-	return new Response(createM3U(calibratedEntry), { headers: { 'Content-Type': 'application/vnd.apple.mpegurl' } });
-});
+app.route('/', playlist);
 
 app.route('/api/entry', apiEntry);
 
 app.route('/api/list', apiList);
-
-app.route('/api/translate', apiTranslate);
 
 app.route('/api/extract-phrases', apiExtractPhrases);
 
