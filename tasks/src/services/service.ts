@@ -2,8 +2,9 @@ import { KiribiPerformer } from 'kiribi/performer';
 import { Env } from '../type';
 import { drizzle, DrizzleD1Database } from 'drizzle-orm/d1';
 import * as schema from '../../../src/schema';
-import OpenAI from 'openai';
+import { OpenAI } from 'openai';
 import GoogleAuth from 'cloudflare-workers-and-google-oauth';
+import { ExecutionContext } from 'hono';
 
 export abstract class Service<P extends unknown = any> extends KiribiPerformer<P, Env> {
 	protected db: DrizzleD1Database<typeof schema>;

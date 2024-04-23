@@ -4,7 +4,7 @@ import { createContent } from '../../../src/libs/content';
 import { Service } from './service';
 import * as schema from '../../../src/schema';
 
-export class Scraper extends Service<{ channelId: number; url: string }> {
+export class Scraper extends Service {
 	async perform({ channelId, url }: { channelId: number; url: string }) {
 		const exists = await this.db.query.entries.findFirst({ where: (record, { eq }) => eq(record.url, url) }).then((res) => !!res);
 		if (exists) return;

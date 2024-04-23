@@ -527,22 +527,22 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.1.tgz#16308cea045f0fc777b6ff20a9f25474dd8293d2"
   integrity sha512-9TANp6GPoMtYzQdt54kfAyMmz1+osLlXdg2ENroU7zzrtflTLrrC/lgrIfaSe+Wu0b89GKccT7vxXA0MoAIO+Q==
 
-"@hono/node-server@^1.8.2":
-  version "1.8.2"
-  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.8.2.tgz#940b3a0dbd7adbc510b79b626f3603258493354b"
-  integrity sha512-h8l2TBLCPHZBUrrkosZ6L5CpBLj6zdESyF4B+zngiCDF7aZFQJ0alVbLx7jn8PCVi9EyoFf8a4hOZFi1tD95EA==
+"@hono/node-server@^1.11.0":
+  version "1.11.0"
+  resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.11.0.tgz#18d73d0a79d1c0ca387d02866231b5e2d9eb7b5e"
+  integrity sha512-TLIJq9TMtD1NEG1mVoqNUn1Ita0qSaB5XboZErjFBcO/GJYXwWY4dVdTi9G0lbxtu0x+hJXDItcLaFHb7rlFTw==
 
 "@hono/vite-cloudflare-pages@^0.2.5":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@hono/vite-cloudflare-pages/-/vite-cloudflare-pages-0.2.5.tgz#a231c7a41a114ee65a98d8757941693b824c7140"
   integrity sha512-/Cw4bREPf2OelHDc/2oVXYXemyKz+wXkC+5uK8ZLo8c2JV7vthSchQPWK7O6BGe7al0z5qKVqhTYkfZvuW0T5w==
 
-"@hono/vite-dev-server@^0.9.0":
-  version "0.9.0"
-  resolved "https://registry.yarnpkg.com/@hono/vite-dev-server/-/vite-dev-server-0.9.0.tgz#b9bc8c4cacd82c5fee5211329603b7f52d0d4c28"
-  integrity sha512-2kyl0Ly5lBwXodF0YEKlCWXRX8g4ovFZo++O+9LPA+SGvUQLfF2NVs8iTPJ7ZyL2VRa1ZRnUtjK+rFyEbqCJzg==
+"@hono/vite-dev-server@^0.11.1":
+  version "0.11.1"
+  resolved "https://registry.yarnpkg.com/@hono/vite-dev-server/-/vite-dev-server-0.11.1.tgz#211ac6b187ab8ff034f269446b0389c0aeb58f62"
+  integrity sha512-maTukjHPH19XVyE9zU7bBFg3WIiiKrJ5sFa3GMDJxJFKn16sAT1X5IIYJgXSGCb5hWiIJRU+sE/ybuIzb6qlBg==
   dependencies:
-    "@hono/node-server" "^1.8.2"
+    "@hono/node-server" "^1.11.0"
     miniflare "^3.20231218.2"
     minimatch "^9.0.3"
 
@@ -2069,12 +2069,7 @@ hls.js@*, hls.js@^1.5.7:
   resolved "https://registry.yarnpkg.com/hls.js/-/hls.js-1.5.7.tgz#e069e78fe962a422d16aa17a2bfc2f1e2321089d"
   integrity sha512-Hnyf7ojTBtXHeOW1/t6wCBJSiK1WpoKF9yg7juxldDx8u3iswrkPt2wbOA/1NiwU4j27DSIVoIEJRAhcdMef/A==
 
-hono@^4.1.1:
-  version "4.1.1"
-  resolved "https://registry.yarnpkg.com/hono/-/hono-4.1.1.tgz#eaf1f0250be29b0e5aa0909917ace4b074ea8aec"
-  integrity sha512-+ljwSwMby5vYaA1ZmP8iQSq/bF5wb8gGwFdybJk3A4yNwtn4X0zuyim49VNCYHBUi/jfY0bnzwntth4/eX6NHw==
-
-hono@^4.2.4:
+hono@^4.2.4, hono@^4.2.6:
   version "4.2.6"
   resolved "https://registry.yarnpkg.com/hono/-/hono-4.2.6.tgz#064a50df90860799e86fc14f84ba994a050cf43e"
   integrity sha512-AtbHZJYWsm+uFHLz0C6xltX7hjOV44a55gSEGBfoQOJ00KSxEUOoiIkmd+NXfapNX0j2GCKhqMmYeegBdHRwcQ==
@@ -2369,10 +2364,10 @@ kind-of@^6.0.3:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-kiribi@^0.0.5:
-  version "0.0.5"
-  resolved "https://registry.yarnpkg.com/kiribi/-/kiribi-0.0.5.tgz#1500255b776693199151507ab2596cc9e00a9584"
-  integrity sha512-hraargNVXq9Yv/v8CyXDxKNS56MBUUPFh+Y4nn83+gH6FTeJ8BzW6xfGhMTA2Ts8QGZj8WZyL+bicXbUky7JCA==
+kiribi@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/kiribi/-/kiribi-0.0.7.tgz#aaa6abc7bea679f87643a14139a11294ab1d54ae"
+  integrity sha512-0l5NgSFvUWA73IiUZXAPvenXgUH4Z8M5SSZEE3uUXGR+NQQFyIc6MgDyAl9ilUOWbZPdcC853OTXegzep5L9Xw==
   dependencies:
     "@hono/zod-validator" "^0.2.1"
     "@prisma/adapter-d1" "^5.12.1"
@@ -3782,12 +3777,7 @@ typed-array-length@^1.0.5:
     is-typed-array "^1.1.13"
     possible-typed-array-names "^1.0.0"
 
-typescript@^5.4.2:
-  version "5.4.2"
-  resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.2.tgz#0ae9cebcfae970718474fe0da2c090cad6577372"
-  integrity sha512-+2/g0Fds1ERlP6JsakQQDXjZdZMM+rqpamFZJEKh4kwTIn3iDkgKtby0CeNd5ATNZ4Ry1ax15TMx0W2V+miizQ==
-
-typescript@~5.4.2:
+typescript@^5.4.5, typescript@~5.4.2:
   version "5.4.5"
   resolved "https://registry.yarnpkg.com/typescript/-/typescript-5.4.5.tgz#42ccef2c571fdbd0f6718b1d1f5e6e5ef006f611"
   integrity sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==
@@ -4054,6 +4044,6 @@ zod@^3.20.2, zod@^3.20.6:
   integrity sha512-iC+8Io04lddc+mVqQ9AZ7OQ2MrUKGN+oIQyq1vemgt46jwCwLfhq7/pwnBnNXXXZb8VTVLKwp9EDkx+ryxIWmg==
 
 zod@^3.22.4:
-  version "3.23.0"
-  resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.0.tgz#a25dab5052702834233e0041e9dd8b6a8480e744"
-  integrity sha512-OFLT+LTocvabn6q76BTwVB0hExEBS0IduTr3cqZyMqEDbOnYmcU+y0tUAYbND4uwclpBGi4I4UUBGzylWpjLGA==
+  version "3.23.3"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-3.23.3.tgz#eeb068f83acb55310174673dee631dfa0be5510d"
+  integrity sha512-tPvq1B/2Yu/dh2uAIH2/BhUlUeLIUvAjr6dpL/75I0pCYefHgjhXk1o1Kob3kTU8C7yU1j396jFHlsVWFi9ogg==
