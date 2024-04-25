@@ -33,7 +33,11 @@ export class RssReader extends Service<number> {
 
 		await Promise.all(
 			feed.items.map(async (item) => {
-				await this.env.KIRIBI.enqueue('SCRAPER', { channelId: channel.id, url: item.link });
+				const existing = await this.db.query.entries
+					.findFirst({ where: (record, { eq }) => eq(record.url, item.link) })
+					.then((res) => !!res);
+
+				if (!existing) await this.env.KIRIBI.enqueue('SCRAPER', { channelId: channel.id, url: item.link });
 			}),
 		);
 	}
