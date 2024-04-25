@@ -5,7 +5,7 @@ compatibility_date = "2024-04-03"
 node_compat = true
 
 [triggers]
-crons = ["0 */2 * * *", "0 0 * * *"] # 2時間毎がabsorber実行, 1日毎がsweep
+crons = ["0 */2 * * *", "0 0 * * *", "*/5 * * * *"] # 2時間毎がabsorber実行, 1日毎がsweep, 5分毎がrecover
 
 [[kv_namespaces]]
 binding = "CACHE"

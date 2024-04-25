@@ -2364,10 +2364,10 @@ kind-of@^6.0.3:
   resolved "https://registry.yarnpkg.com/kind-of/-/kind-of-6.0.3.tgz#07c05034a6c349fa06e24fa35aa76db4580ce4dd"
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
-kiribi@^0.0.8:
-  version "0.0.8"
-  resolved "https://registry.yarnpkg.com/kiribi/-/kiribi-0.0.8.tgz#ea4cd8ac3451829b6ba910c6a1bb655cc9c4aa6c"
-  integrity sha512-a207ybER/kmYAaRnzkw0RSx53fHx9/nDVg+EGBtZI7/FIGjv9wwJggjd9DN3L5ViAbkr+7KoSqnTE3ke44HLwg==
+kiribi@^0.0.10:
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/kiribi/-/kiribi-0.0.10.tgz#fd464b69938b9d95fa27b7189cccdb2732ff5d5f"
+  integrity sha512-RsEo+xHOYxrEVjsiOTeLJZvfD+QjDqE+9QE/hhjfj8jOh0yCW4R7ANDkfYmY8iW8bXyXlJ47yiGpGxrJaTI/ag==
   dependencies:
     "@hono/zod-validator" "^0.2.1"
     "@prisma/adapter-d1" "^5.12.1"

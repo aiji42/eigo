@@ -20,5 +20,9 @@ export default class extends Kiribi {
 		// every day at 00:00 UTC
 		// テスト環境では /__scheduled?cron=0+0+*+*+* にアクセスで疑似起動できる
 		if (controller.cron === '0 0 * * *') await this.sweep();
+
+		// every 5 minutes
+		// テスト環境では /__scheduled?cron=*/5+*+*+*+* にアクセスで疑似起動できる
+		if (controller.cron === '*/5 * * * *') await this.recover();
 	}
 }
