@@ -12,8 +12,13 @@ export { PhrasesExtractor } from './services/phrases-extractor';
 export default class extends Kiribi {
 	client = client;
 	rest = rest;
-	async scheduled() {
-		// テスト環境では /__scheduled?cron=*+*+*+*+* にアクセスで疑似起動できる
-		await this.enqueue('ABSORBER', '');
+	async scheduled(controller: ScheduledController) {
+		// every 2 hours
+		// テスト環境では /__scheduled?cron=0+*/2+*+*+* にアクセスで疑似起動できる
+		if (controller.cron === '0 */2 * * *') await this.enqueue('ABSORBER', '');
+
+		// every day at 00:00 UTC
+		// テスト環境では /__scheduled?cron=0+0+*+*+* にアクセスで疑似起動できる
+		if (controller.cron === '0 0 * * *') await this.sweep();
 	}
 }
