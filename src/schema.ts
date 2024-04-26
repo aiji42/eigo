@@ -7,9 +7,7 @@ export const absorbRules = sqliteTable('AbsorbRules', {
 	name: text('name').notNull(),
 	type: text('type', { enum: ['SSR2.0'] }).notNull(),
 	url: text('url').notNull(),
-	rule: text('rule', { mode: 'json' }).notNull().$type<{
-		contentSelector: string;
-	}>(),
+	isActive: integer('isActive', { mode: 'boolean' }).notNull().default(true),
 });
 
 export const absorbRuleRelations = relations(absorbRules, ({ one }) => ({

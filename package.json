@@ -8,6 +8,7 @@
     "deploy:task": "wrangler deploy -c wrangler.task.toml",
     "migrate": "wrangler d1 migrations apply eigo-d1 --local",
     "migrate:prod": "wrangler d1 migrations apply eigo-d1",
+		"migrate:create": "drizzle-kit generate:sqlite --out migrations --schema src/schema.ts",
     "seed": "wrangler d1 execute eigo-d1 --file d1/seed.sql --local",
     "seed:prod": "wrangler d1 execute eigo-d1 --file d1/seed.sql",
     "db:reset": "rm -rf .wrangler/state/v3/d1 && yarn migrate && yarn seed",
